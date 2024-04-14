@@ -13,14 +13,18 @@
 </head>
 
 <body>
-
+    <% if (user) { %>
     <%- include('../partials/header.ejs'); %>
+    <% } %>
 
   <main role="main" class="container">
     <%- include('../partials/flash') %>
     <%- body %>
   </main>
+
+  <% if (user) { %>
   <%- include('../partials/footer') %>
+  <% } %>  
 </body>
 
 </html>
