@@ -98,7 +98,7 @@ export class UserController {
       })
 
       req.session.flash = { type: 'success', text: 'The account was created successfully. Please login to continue' }
-      res.redirect('./login')
+      res.redirect('./')
     } catch (error) {
       if (error.code === 11000) {
         req.session.flash = { type: 'danger', text: 'The username is already in use.' }
