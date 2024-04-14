@@ -16,13 +16,14 @@ import { fileURLToPath } from 'node:url'
 import { connectToDatabase } from './config/mongoose.js'
 import { morganLogger } from './config/morgan.js'
 import { sessionOptions } from './config/sessionOptions.js'
-import { wss } from './config/webSocketServer.js'
+import { logger } from './config/winston.js'
+// import { wss } from './config/webSocketServer.js'
 import { router } from './routes/router.js'
 
 try {
   // Connect to MongoDB.
   await connectToDatabase(process.env.USER_DB)
-  await connectToDatabase(process.env.MESSAGE_DB)
+  // await connectToDatabase(process.env.MESSAGE_DB)
 
   // Creates an Express application.
   const app = express()
@@ -90,7 +91,7 @@ try {
     res.locals.baseURL = baseURL
 
     // Pass the WebSocket server to the response object.
-    res.wss = wss
+    // res.wss = wss
 
     next()
   })
@@ -100,8 +101,6 @@ try {
 
   // Error handler.
   app.use((err, req, res, next) => {
-    logger.error(err.message, { error: err })
-
     // 404 Not Found.
     if (err.status === 404) {
       res
@@ -135,11 +134,12 @@ try {
     logger.info('Press Ctrl-C to terminate...')
   })
 
-  server.on('upgrade', (request, socket, head) => {
+  /* server.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, (socket) => {
       wss.emit('connection', socket, request)
     })
   })
+  */
 } catch (err) {
   logger.error(err.message, { error: err })
   process.exitCode = 1
