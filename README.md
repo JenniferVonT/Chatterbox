@@ -7,3 +7,5 @@ Detta GitLab-projekt kan du använda för att spara ner saker som hör till din 
 Det är på detta GitLab-projekt du kommer att göra din _"merge request"_.
 
 👉 __Ersätt gärna denna sida med eget innehåll.__
+
+Testar commit!
