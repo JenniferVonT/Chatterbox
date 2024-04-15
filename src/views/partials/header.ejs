@@ -2,20 +2,25 @@
 
   <nav class="header-nav">
     <ul>
-      <li id="friendsIcon" class="nav-icons"><img src="" alt="Friends">
+      <li id="friendsIcon" class="nav-icons"><img src="./img/friend-icon.svg" alt="Friends">
         <ul id="collapsible-friend-list">
-            <li><a href="./addFriend">+ add friend</a></li>
-            <!--- APPEND ALL FRIENDS --->
+          <li><a href="./addFriend">+ add friend</a></li>
+          <!--- APPEND ALL FRIENDS --->
         </ul>
       </li>
-      <li id="groupIcon" class="nav-icons"><img src="" alt="Groups"></li>
-      <li id="settingsIcon" class="nav-icons"><img src="" alt="Settings"></li>
+      <li id="groupIcon" class="nav-icons"><img src="./img/group-icon.svg" alt="Groups">
+        <ul id="collapsible-group-list">
+          <li><a href="./createGroup">+ create Group</a></li>
+          <!--- APPEND ALL GROUPS -->
+        </ul>
+      </li>
+      <li id="settingsIcon" class="nav-icons"><img src="./img/settings-icon.svg" alt="Settings"></li>
     </ul>
   </nav>
 
   <!-- Implement a custom component for showing who is logged in -->
-  
+
   <form class="logout-form" action="./logout" method="POST">
-    <button class="logout-btn" type="submit">Logout</button>
+    <button class="logout-btn" type="submit"><img src="./img/logout-btn.svg" alt="Logout"></button>
   </form>
 </header>
