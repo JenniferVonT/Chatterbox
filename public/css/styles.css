@@ -1,0 +1,100 @@
+/*
+Primary colors for the application, from lightest to darkest:
+
+color (purple):
+#D3B1C2
+#C197D2
+#613659
+#211522
+
+gray scale:
+#474747
+#2E2E2E
+#242424
+*/
+
+html {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: #211522;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+/*<---- VALIDATION ERROR MESSAGE BOX ---->*/
+.flash_message {
+    width: 300px; /* Adjust as needed */
+    margin: auto; /* Center horizontally */
+    padding: 20px;
+    background-color: #D3B1C2;
+    border: 1px solid #211522;
+    border-radius: 5px;
+    text-align: center; /* Center text */
+    position: absolute; /* Position independently */
+    top: 150px; /* Adjust top position */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center horizontally */
+}
+
+/*<----  Starting pages styles (non-logged in user), login, signup and reclaim account ---->*/
+#starting-pages {
+    background-image: url("../img/loginBackground.jpg");
+    background-size: cover 100%;
+    background-repeat: no-repeat;
+    background-position: center top;
+}
+
+.starting-pages-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+    color: #D3B1C2;
+}
+
+.user-forms {
+    width: 300px; /* Adjust as needed */
+    padding: 20px;
+    border: 1px solid #D3B1C2;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.user-forms > input {
+    margin: 5px;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    background-color: #f5e2eb;
+}
+
+.starting-pages-div a,
+.starting-pages-div a:active {
+    color: #D3B1C2;
+}
+
+.starting-pages-div a:hover {
+    color: #613659;
+}
+
+.submit-button-user button {
+    margin: 5px;
+    width: 80px;
+    height: 30px;
+    color: #D3B1C2;
+    border-radius: 3px;
+    border: 1px solid #D3B1C2;
+    background-color: #211522;
+}
+
+.submit-button-user button:hover {
+    color: #211522;
+    border: 1px solid #211522;
+    background-color: #D3B1C2;
+}
+
+/*<----   ---->*/
