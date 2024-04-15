@@ -1,5 +1,5 @@
 /**
- * @file Defines the HomeController class.
+ * @file Defines the userController class.
  * @module controllers/HomeController
  * @author Jennifer von Trotta-Treyden <jv222th@student.lnu.se>
  * @version 1.0.0
@@ -55,7 +55,7 @@ export class UserController {
       req.session.user = user
 
       // Redirect.
-      res.redirect('./home')
+      res.redirect('./start')
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./')
@@ -100,8 +100,11 @@ export class UserController {
       req.session.flash = { type: 'success', text: 'The account was created successfully. Please login to continue' }
       res.redirect('./')
     } catch (error) {
-      if (error.code === 11000) {
-        req.session.flash = { type: 'danger', text: 'The username is already in use.' }
+      if (error.code === 11000 && error.message.includes('email')) {
+        req.session.flash = { type: 'danger', text: 'That email is already in use.' }
+        res.redirect('./signup')
+      } else if (error.code === 11000) {
+        req.session.flash = { type: 'danger', text: 'That username is already in use.' }
         res.redirect('./signup')
       } else {
         req.session.flash = { type: 'danger', text: error.message }
@@ -129,6 +132,17 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async reclaimUser (req, res, next) {
+    // CODE HERE.
+  }
+
+  /**
+   * Handles when a user tries to logout from an account.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async logout (req, res, next) {
     // CODE HERE.
   }
 }

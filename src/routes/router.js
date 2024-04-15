@@ -8,10 +8,12 @@
 import express from 'express'
 import http from 'node:http'
 import { router as userRouter } from './userRouter.js'
+import { router as mainRouter } from './mainRouter.js'
 
 export const router = express.Router()
 
 router.use('/', userRouter)
+router.use('/start', mainRouter)
 
 // Catch 404 (ALWAYS keep this as the last route).
 router.use('*', (req, res, next) => {

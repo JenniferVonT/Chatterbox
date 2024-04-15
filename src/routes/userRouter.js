@@ -1,6 +1,6 @@
 /**
- * @file Defines the home router.
- * @module homeRouter
+ * @file Defines the user router.
+ * @module userRouter
  * @author Jennifer von Trotta-Treyden <jv222th@student.lnu.se>
  * @version 1.0.0
  */
@@ -20,3 +20,5 @@ router.post('/signup', (req, res, next) => controller.signupUser(req, res, next)
 
 router.get('/reclaim', (req, res, next) => controller.reclaim(req, res, next))
 router.post('/reclaim', (req, res, next) => controller.reclaimUser(req, res, next))
+
+router.post('logout', (req, res, next) => controller.logout(req, res, next))

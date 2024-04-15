@@ -6,23 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chatterbox</title>
   <base href="<%= baseURL %>" />
-  <link rel="icon" href="./img/favicon.ico" />
+  <link rel="icon" href="./favicon.ico" />
   <link rel="stylesheet" href="./css/styles.css" />
   <%- defineContent('style') %>
   <%- defineContent('script') %>
 </head>
 
-<body <%= (!user) ? 'id=starting-pages' : 'id=logged-in-pages' %>>
-    <% if (user) { %>
-    <%- include('../partials/header.ejs'); %>
-    <% } %>
+<body <%= !locals.user ? 'id=starting-pages' : 'id=logged-in-pages' %>>
+  <% if (locals.user) { %>
+    <%- include('../partials/header.ejs') %>
+  <% } %>
 
-  <main role="main" class="container" id="test">
+  <main role="main" class="container">
     <%- include('../partials/flash') %>
     <%- body %>
   </main>
 
-  <% if (user) { %>
+  <% if (locals.user) { %>
   <%- include('../partials/footer') %>
   <% } %>  
 </body>
