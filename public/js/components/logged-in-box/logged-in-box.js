@@ -16,7 +16,7 @@ template.innerHTML = `
   #container {
     display: flex;
     align-items: center;
-    height: 50px;
+    height: 46px;
     width: max-content;
     background-color: transparent;
     border: 2px solid #D3B1C2;

@@ -29,19 +29,31 @@ header {
     color: #D3B1C2;
     border-bottom: 6px solid #613659;
     display: flex;
-    height: 50px;
-    padding-bottom: 20px;
+    align-items: center;
+    height: 70px;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
+    justify-content: space-between;
 }
 
-header ul {
-    list-style: none;
+logged-in-box {
+    margin: 5px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
 }
 
-.logout-btn{
+.logout-form {
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: flex-end; /* Align to the right */
+    margin-right: 20px;
+}
+
+.logout-btn {
     background-color: transparent;
     border: none;
     padding: 0;
@@ -54,17 +66,62 @@ header ul {
     margin: 0 auto;
 }
 
-.logout-form {
-    display: inline;
+/*<---- NAVIGATION ---->*/
+nav ul { /* All lists */
+    list-style: none;
     margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0.5em;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+nav ul ul { /* Inner list */
+    background-color: #613659;
+    box-shadow: 5px 5px 5px #211522;
+    flex-direction: column;
+    width: 180px;
+    max-height: 400px;
+    overflow-y: auto;
+    position: absolute;
+    visibility: hidden;
+    left: 0;
+    top: calc(100% + 6px);
+    border-bottom-right-radius: 10px;
+    transition: visibility 0s, opacity 0.5s linear;
+    transition-delay: 0.2s;
+}
+
+nav ul li:hover ul {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+#collapsible-group-list li,
+#collapsible-friend-list li,
+nav a {
+    color: #D3B1C2;
+    text-decoration: none;
+    display: block;
+    padding: 0.5em;
+}
+
+nav a:hover {
+    color: #C197D2;
+}
+
+.nav-icons {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    height: 100%;
 }
 
 .nav-icons img {
     height: 50px;
-}
-
-logged-in-box {
-    margin: 5px;
 }
 
 /*<---- FOOTER ---->*/
@@ -80,6 +137,7 @@ footer {
     justify-content: center;
     padding-bottom: 20px;
     position: fixed;
+    z-index: 1;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -165,8 +223,69 @@ foother i {
     background-color: #D3B1C2;
 }
 
-/*<--- LOGGED IN BODY --->*/
+/*<---- LOGGED IN BODY ---->*/
 
 #logged-in-pages {
     background: #2E2E2E;
+}
+
+/*<---- SCROLL-BAR CUSTOMIZATION ---->*/
+/* Width */
+::-webkit-scrollbar {
+    width: 7px; /* width of the entire scrollbar */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #613659; /* color of the track */
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #211522; /* color of the scroll thumb */
+    border-radius: 10px; /* roundness of the scroll thumb */
+}
+
+/* Firefox-specific styles */
+@-moz-document url-prefix() {
+    /* Track and handle styles for Firefox */
+    * {
+        scrollbar-color: #211522 #613659; /* thumb and track color */
+        scrollbar-width: thin; /* width of the scrollbar */
+    }
+
+    *::-moz-scrollbar-thumb {
+        background: #211522; /* color of the scroll thumb */
+        border-radius: 10px; /* roundness of the scroll thumb */
+    }
+
+    *::-moz-scrollbar-track {
+        background: #613659; /* color of the track */
+        border-radius: 10px; /* roundness of the scrollbar track */
+    }
+}
+
+/*<---- MEDIA QUERIES ---->*/
+@media (max-width: 600px) {
+    nav ul.active {
+        display: flex;
+    }
+
+    .nav-icons {
+        margin-right: 5px;
+    }
+
+    .header-nav {
+        position: relative;
+    }
+
+    nav ul ul {
+        left: 0;
+    }
+
+    logged-in-box {
+        display: none;
+    }
 }
