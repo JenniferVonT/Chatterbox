@@ -24,4 +24,12 @@ You can insert a profile image into the component by inserting an `img` element 
 
 ## Example
 
-<!-- Insert image here when it is finished. -->
+The component is transparent så it can be used on any background.
+
+![Examples](./img/component-examples.png)
+
+1. gray
+2. dark purple
+3. white
+4. textured
+5. textured with a profile image
