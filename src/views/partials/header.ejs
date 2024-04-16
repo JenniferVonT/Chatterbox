@@ -18,7 +18,9 @@
     </ul>
   </nav>
 
-  <!-- Implement a custom component for showing who is logged in -->
+  <logged-in-box name="<%= locals.user.username %>">
+    <img slot="profile" src="./img/<%= locals.user.profileImg" alt="profile">
+  </logged-in-box>
 
   <form class="logout-form" action="./logout" method="POST">
     <button class="logout-btn" type="submit"><img src="./img/logout-btn.svg" alt="Logout"></button>
