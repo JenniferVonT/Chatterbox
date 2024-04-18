@@ -7,6 +7,8 @@
 
 import { UserModel } from '../models/userModel.js'
 import bcrypt from 'bcrypt'
+import { randomize } from 'randomatic'
+import { transfer } from '../lib/mailer.js'
 
 /**
  * Encapsulates a controller.
@@ -132,7 +134,57 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async reclaimUser (req, res, next) {
-    // CODE HERE.
+    try {
+    // Find user.
+      const { email } = req.body
+      const user = await UserModel.findOne({ email })
+
+      // If the user doesn't exist throw an error.
+      if (!user) {
+        const error = new Error('User not found')
+        error.code = 400
+        throw error
+      }
+
+      // Create a random reset code and save in the users DB.
+      const resetCode = randomize('Aa0', 6)
+
+      // Save the resetCode to the user doc in the db.
+      user.resetCode = resetCode
+
+      // Save the updated user doc,
+      await user.save()
+
+      // Send an email to the user.
+      const sendMail = await transfer(user)
+
+      if (!sendMail) {
+        const error = new Error('Mail failed')
+        error.code = 400
+        throw error
+      }
+
+      req.session.flash = { type: 'success', text: 'If the account exists a reset code has been sent to the given email' }
+      res.redirect('./reclaim/reset')
+    } catch (error) {
+      // Makes sure that the same message is sent to the client no matter if the user exists or not.
+      if (error.message === 'User not found' || error.message === 'Mail failed') {
+        req.session.flash = { type: 'success', text: 'If the account exists a reset code has been sent to the given email' }
+        res.redirect('./reclaim/reset')
+      }
+      next(error)
+    }
+  }
+
+  /**
+   * Handles when a user sends in their resetCode.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async resetUser (req, res, next) {
+    // Insert method when the user sends in the reset code recieved in the email.
   }
 
   /**

@@ -32,6 +32,10 @@ const schema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     validate: [isEmail, 'Please provide a valid email address.']
+  },
+  resetCode: {
+    type: String,
+    unique: true
   }
 })
 
