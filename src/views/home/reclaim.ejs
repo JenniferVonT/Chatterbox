@@ -1,5 +1,8 @@
 <div class="starting-pages-div">
   <h2>Lost your account?</h2>
+  <% if (resetCode) { %>
+    <p>CODE SENT!</p>
+  <% } %>
   <form action="./reclaim" method="POST" class="user-forms">
     <input autocomplete="off" type="email" class="form-control" id="accountEmail" name="email" placeholder="Enter you email" required autofocus />
     <div class="submit-button-user">

@@ -30,8 +30,14 @@ export async function transfer (user) {
       from: process.env.EMAIL, // sender address
       to: user.email, // Reciever
       subject: 'Reclaim account', // Subject line
-      text: 'Hello world?', // plain text body
-      html: '<b>Hello world?</b>' // html body
+      text: `Hello!\n
+            Your reset code is: ${user.resetCode}\n
+            If it wasn't you who requested an account reset ignore this email.\n
+            Do not share this code as it is used to reset your account, it only has a one time use and expires in 30min.`,
+      html: `<b>Hello!</b><br>
+            <p>Your reset code is: <b>${user.resetCode}</b></p><br>
+            <i>If it wasn't you who requested an account reset ignore this email.</i><br>
+            <i>Do not share this code as it is used to reset your account, it only has a one time use and expires in 30min.</i>`
     })
 
     logger.silly(`Email sent to user: ${user.username}`)

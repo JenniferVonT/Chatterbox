@@ -152,19 +152,21 @@ export class UserController {
       // Save the resetCode to the user doc in the db.
       user.resetCode = resetCode
 
-      // Save the updated user doc,
-      await user.save()
+      // Save only the updated field,
+      await user.save({ validateBeforeSave: false })
 
       // Send an email to the user.
       await transfer(user)
 
-      req.session.flash = { type: 'success', text: 'If the account exists a reset code has been sent to the given email' }
-      res.redirect('./reclaim/reset')
+      res.locals.flash = { type: 'success', text: 'If the account exists a reset code has been sent to the given email' }
+      res.locals.resetCode = true
+      res.render('home/reclaim')
     } catch (error) {
       // Makes sure that the same message is sent to the client no matter if the user exists or not.
-      if (error.message === 'User not found' || error.message === 'Mail failed') {
-        req.session.flash = { type: 'success', text: 'If the account exists a reset code has been sent to the given email' }
-        res.redirect('./reclaim/reset')
+      if (error.message === 'User not found') {
+        res.locals.flash = { type: 'success', text: 'If the account exists a reset code has been sent to the given email' }
+        res.locals.resetCode = true
+        res.render('home/reclaim')
       }
       next(error)
     }

@@ -35,11 +35,12 @@ const schema = new mongoose.Schema({
   },
   resetCode: {
     type: String,
-    unique: true
+    expireAfterSeconds: 120
   }
 })
 
 schema.add(BASE_SCHEMA)
+schema.index({ resetCode: 1 }, { expireAfterSeconds: 120 })
 
 // Salts and hashes password before save.
 schema.pre('save', async function () {

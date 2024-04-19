@@ -95,6 +95,7 @@ try {
 
     // Pass the base URL to the views.
     res.locals.baseURL = baseURL
+    res.locals.resetCode = false
 
     // Pass the WebSocket server to the response object.
     // res.wss = wss
