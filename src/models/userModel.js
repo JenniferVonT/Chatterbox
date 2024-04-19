@@ -35,17 +35,12 @@ const schema = new mongoose.Schema({
   },
   resetCode: {
     type: String,
-    expireAfterSeconds: 120
+    expireAfterSeconds: 120 // 2min, CHANGE TO 0.5HOURS LATER!
   }
 })
 
 schema.add(BASE_SCHEMA)
-schema.index({ resetCode: 1 }, { expireAfterSeconds: 120 })
-
-// Salts and hashes password before save.
-schema.pre('save', async function () {
-  this.password = await bcrypt.hash(this.password, 10)
-})
+schema.index({ resetCode: 1 }, { expireAfterSeconds: 120 }) // CHANGE TO 0.5HOURS LATER!
 
 /**
  * Authenticates a user.

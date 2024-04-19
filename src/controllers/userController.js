@@ -93,9 +93,12 @@ export class UserController {
         throw error
       }
 
+      // Hash and salt the password before creating a user in the DB.
+      const hashedPassword = await bcrypt.hash(password, 10)
+
       await UserModel.create({
         username,
-        password,
+        hashedPassword,
         email
       })
 
@@ -180,7 +183,88 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async resetUser (req, res, next) {
-    // Insert method when the user sends in the reset code recieved in the email.
+    try {
+      const { email, resetCode, password, password2 } = req.body
+
+      // Validate if they wrote the same password twice.
+      if (password !== password2) {
+        const error = new Error('The password has to match!')
+        error.status = 400
+        throw error
+      }
+
+      // Check the length of the password.
+      if (password.length < 10 || password.length > 256) {
+        const error = new Error('Password length to short/long')
+        error.status = 400
+        throw error
+      }
+
+      // See if there is a user...
+      const user = await UserModel.findOne({ email })
+
+      if (!user) {
+        const error = new Error('User not found')
+        error.status = 404
+        throw error
+      }
+
+      // ...and if the reset code match continue.
+      if (!user.resetCode || user.resetCode !== resetCode) {
+        const error = new Error('Reset code does not match!')
+        error.status = 400
+        throw error
+      }
+
+      // Save the new password and set the resetCode to false
+      user.password = await bcrypt.hash(password, 10)
+      user.resetCode = undefined
+      await user.save()
+
+      req.session.flash = { type: 'success', text: 'The account was reset successfully. Please login to continue' }
+      res.redirect('../')
+    } catch (error) {
+      // If the password has the wrong lenght.
+      if (error.message === 'Password length to short/long') {
+        res.locals.flash = {
+          type: 'danger',
+          text: 'The new password is to short or to long. It should be between 10-256 characters long!'
+        }
+        res.locals.resetCode = true
+        res.render('home/reclaim')
+      }
+
+      // If the passwords does not match.
+      if (error.message === 'The password has to match!') {
+        res.locals.flash = {
+          type: 'danger',
+          text: 'The passwords no not match!'
+        }
+        res.locals.resetCode = true
+        res.render('home/reclaim')
+      }
+
+      // If the user does not exist.
+      if (error.message === 'User not found') {
+        res.locals.flash = {
+          type: 'danger',
+          text: 'That email does not exist'
+        }
+        res.locals.resetCode = true
+        res.render('home/reclaim')
+      }
+
+      // If the reset code does not match.
+      if (error.message === 'Reset code does not match!') {
+        res.locals.flash = {
+          type: 'danger',
+          text: 'The reset code does not match!'
+        }
+        res.locals.resetCode = true
+        res.render('home/reclaim')
+      }
+      next(error)
+    }
   }
 
   /**

@@ -20,5 +20,6 @@ router.post('/signup', (req, res, next) => controller.signupUser(req, res, next)
 
 router.get('/reclaim', (req, res, next) => controller.reclaim(req, res, next))
 router.post('/reclaim', (req, res, next) => controller.reclaimUser(req, res, next))
+router.post('/reclaim/reset', (req, res, next) => controller.resetUser(req, res, next))
 
 router.post('logout', (req, res, next) => controller.logout(req, res, next))
