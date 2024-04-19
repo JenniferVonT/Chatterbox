@@ -9,8 +9,8 @@ import nodemailer from 'nodemailer'
 import { logger } from '../config/winston.js'
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
+  service: 'gmail',
+  port: 587, // Set to 587 in production
   secure: false, // Use `true` for port 465, `false` for all other ports
   auth: {
     user: process.env.EMAIL,
@@ -27,7 +27,7 @@ export async function transfer (user) {
   try {
     // send mail with defined transport object
     await transporter.sendMail({
-      from: `"Support" <${process.env.EMAIL}>`, // sender address
+      from: process.env.EMAIL, // sender address
       to: user.email, // Reciever
       subject: 'Reclaim account', // Subject line
       text: 'Hello world?', // plain text body

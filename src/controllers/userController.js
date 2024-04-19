@@ -7,7 +7,7 @@
 
 import { UserModel } from '../models/userModel.js'
 import bcrypt from 'bcrypt'
-import { randomize } from 'randomatic'
+import randomize from 'randomatic'
 import { transfer } from '../lib/mailer.js'
 
 /**
@@ -156,13 +156,7 @@ export class UserController {
       await user.save()
 
       // Send an email to the user.
-      const sendMail = await transfer(user)
-
-      if (!sendMail) {
-        const error = new Error('Mail failed')
-        error.code = 400
-        throw error
-      }
+      await transfer(user)
 
       req.session.flash = { type: 'success', text: 'If the account exists a reset code has been sent to the given email' }
       res.redirect('./reclaim/reset')
