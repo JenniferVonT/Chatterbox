@@ -275,6 +275,20 @@ export class UserController {
    * @param {Function} next - Express next middleware function.
    */
   async logout (req, res, next) {
-    // CODE HERE.
+    try {
+      if (req.session.user) {
+        // Remove the session.
+        req.session.destroy()
+
+        res.redirect('../')
+      } else {
+        // If a user is not active/logged in, throw a 404 error
+        const error = new Error('Not Found')
+        error.status = 404
+        throw error
+      }
+    } catch (error) {
+      next(error)
+    }
   }
 }
