@@ -12,6 +12,15 @@ export const router = express.Router()
 
 const controller = new UserController()
 
+// Check if there is already a user logged in to the session.
+router.get('/', (req, res, next) => {
+  if (req.session.user) {
+    res.redirect('./start')
+  } else {
+    next()
+  }
+})
+
 router.get('/', (req, res, next) => controller.login(req, res, next))
 router.post('/login', (req, res, next) => controller.loginUser(req, res, next))
 

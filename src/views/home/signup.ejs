@@ -1,3 +1,4 @@
+<% if (!locals.user) { %>
 <div class="starting-pages-div">
   <h2>Sign-up!</h2>
   <p>Your email will only be used for recovering your account.</p>
@@ -13,4 +14,4 @@
   </form>
   <p><a href="./">Login...</a> or <a href="./reclaim">forgot your password?</a></p>
 </div>
-  
+<% } %>

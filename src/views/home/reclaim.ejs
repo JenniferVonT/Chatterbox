@@ -1,3 +1,4 @@
+<% if (!locals.user) { %>
 <div class="starting-pages-div">
   <h2>Lost your account?</h2>
   <% if (resetCode) { %>
@@ -20,3 +21,4 @@
   <% } %>
   <p><a href="./">Login</a> or <a href="./signup">signup</a></p>
 </div>
+<% } %>
