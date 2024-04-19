@@ -10,7 +10,7 @@ import { logger } from '../config/winston.js'
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  port: 587, // Set to 587 in production
+  port: 587,
   secure: false, // Use `true` for port 465, `false` for all other ports
   auth: {
     user: process.env.EMAIL,
@@ -34,7 +34,7 @@ export async function transfer (user) {
             Your reset code is: ${user.resetCode}\n
             If it wasn't you who requested an account reset ignore this email.\n
             Do not share this code as it is used to reset your account, it only has a one time use and expires in 30min.`,
-      html: `<b>Hello!</b><br>
+      html: `<b>Hello, ${user.username}!</b><br>
             <p>Your reset code is: <b>${user.resetCode}</b></p><br>
             <i>If it wasn't you who requested an account reset ignore this email.</i><br>
             <i>Do not share this code as it is used to reset your account, it only has a one time use and expires in 30min.</i>`

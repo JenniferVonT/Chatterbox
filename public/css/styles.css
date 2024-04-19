@@ -39,7 +39,9 @@ header {
 }
 
 logged-in-box {
-    margin: 5px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     align-items: center;
     flex: 1;

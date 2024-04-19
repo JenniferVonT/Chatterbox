@@ -3,9 +3,9 @@
   <% if (resetCode) { %>
     <form action="./reclaim/reset" method="POST" class="user-forms">
       <input autocomplete="off" type="email" class="form-control" id="accountEmail" name="email" placeholder="Enter you email" required autofocus />
-      <input autocomplete="off" type="text" class="form-control" id="resetCode" name="resetCode" placeholder="Enter your ResetCode" required />
-      <input autocomplete="off" type="password" class="form-control" id="accountPassword" name="password" placeholder="Enter a new password" required autofocus />
-      <input autocomplete="off" type="password" class="form-control" id="accountPassword2" name="password2" placeholder="Repeat new password" required autofocus />
+      <input autocomplete="off" type="text" class="form-control" id="resetCode" name="resetCode" placeholder="Enter your reset code" required />
+      <input autocomplete="off" type="password" class="form-control" id="accountPassword" name="password" placeholder="Enter a new password" required />
+      <input autocomplete="off" type="password" class="form-control" id="accountPassword2" name="password2" placeholder="Repeat new password" required />
       <div class="submit-button-user">
         <button type="submit">Reset</button>
       </div>
@@ -20,4 +20,3 @@
   <% } %>
   <p><a href="./">Login</a> or <a href="./signup">signup</a></p>
 </div>
-  

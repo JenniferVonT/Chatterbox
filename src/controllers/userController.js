@@ -216,7 +216,7 @@ export class UserController {
         throw error
       }
 
-      // Save the new password and set the resetCode to false
+      // Save the new password and set the resetCode to false.
       user.password = await bcrypt.hash(password, 10)
       user.resetCode = undefined
       await user.save()
