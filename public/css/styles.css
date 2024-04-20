@@ -22,6 +22,10 @@ body {
     overflow-x: hidden;
 }
 
+.hidden {
+    display: none;
+}
+
 /*<---- HEADER ---->*/
 header {
     background-image: url('../img/loginBackground.jpg');

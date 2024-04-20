@@ -57,7 +57,7 @@ export class UserController {
       req.session.user = user
 
       // Redirect.
-      res.redirect('./start')
+      res.redirect('./main')
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./')

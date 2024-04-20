@@ -1,6 +1,5 @@
 <% if (locals.user) { %>
-<header class="header">
-
+<header class="header" UserID="<%= locals.user.id %>">
   <nav class="header-nav">
     <ul>
       <li id="friendsIcon" class="nav-icons"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon">
@@ -19,7 +18,7 @@
     </ul>
   </nav>
 
-  <logged-in-box name="username">
+  <logged-in-box name="<%= locals.user.username %>">
     <img slot="profile" src="./img/placeholder-profile-img.png" alt="profile">
   </logged-in-box>
 
