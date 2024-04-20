@@ -235,6 +235,11 @@ foother i {
     background: #2E2E2E;
 }
 
+#logged-in-pages main {
+    padding-top: 80px;
+    padding-bottom: 90px;
+}
+
 /*<---- SCROLL-BAR CUSTOMIZATION ---->*/
 /* Width */
 ::-webkit-scrollbar {

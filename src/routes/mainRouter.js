@@ -16,6 +16,7 @@ const controller = new MainController()
 router.param('id', (req, res, next, user) => controller.loadAccount(req, res, next, user))
 
 router.get('/', (req, res, next) => controller.start(req, res, next))
-router.get('/settings/:id', (req, res, next) => controller.settings(req, res, next))
+
+router.get('/settings', (req, res, next) => controller.settings(req, res, next))
 router.get('/friends/:id', (req, res, next) => controller.friends(req, res, next))
 router.get('/groups/:id', (req, res, next) => controller.groups(req, res, next))

@@ -1,20 +1,23 @@
 <% if (locals.user) { %>
-<header class="header" UserID="<%= locals.user.id %>">
+<header class="header">
   <nav class="header-nav">
     <ul>
-      <li id="friendsIcon" class="nav-icons"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon">
+      <li id="friendsIcon" class="nav-icons">
+        <a href="./main/friends/<%= locals.user.id %>"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon"></a>
         <ul id="collapsible-friend-list">
           <li><a href="./addFriend">+ add friend</a></li>
           <!--- APPEND ALL FRIENDS -->
         </ul>
       </li>
-      <li id="groupIcon" class="nav-icons"><img src="./img/group-icon.svg" alt="Groups" id="group-icon">
+      <li id="groupIcon" class="nav-icons">
+        <a href="./main/groups/<%= locals.user.id %>"><img src="./img/group-icon.svg" alt="Groups" id="group-icon"></a>
         <ul id="collapsible-group-list">
           <li><a href="./createGroup">+ create group</a></li>
           <!--- APPEND ALL GROUPS -->
         </ul>
       </li>
-      <li id="settingsIcon" class="nav-icons"><img src="./img/settings-icon.svg" alt="Settings" id="settings-icon"></li>
+      <li id="settingsIcon" class="nav-icons">
+        <a href="./main/settings"><img src="./img/settings-icon.svg" alt="Settings" id="settings-icon"></a></li>
     </ul>
   </nav>
 
