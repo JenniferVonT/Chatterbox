@@ -84,7 +84,7 @@ export class UserController {
    */
   async signupUser (req, res, next) {
     try {
-      const { username, password, password2, email } = req.body
+      let { username, password, password2, email } = req.body
 
       // Validate if they wrote the same password twice.
       if (password !== password2) {
@@ -93,12 +93,19 @@ export class UserController {
         throw error
       }
 
+      // Check the length of the password.
+      if (password.length < 10 || password.length > 256) {
+        const error = new Error('Password length must be between 10 and 256 characters')
+        error.status = 400
+        throw error
+      }
+
       // Hash and salt the password before creating a user in the DB.
-      const hashedPassword = await bcrypt.hash(password, 10)
+      password = await bcrypt.hash(password, 10)
 
       await UserModel.create({
         username,
-        hashedPassword,
+        password,
         email
       })
 
@@ -108,13 +115,14 @@ export class UserController {
       if (error.code === 11000 && error.message.includes('email')) {
         req.session.flash = { type: 'danger', text: 'That email is already in use.' }
         res.redirect('./signup')
-      } else if (error.code === 11000) {
+      }
+      if (error.code === 11000) {
         req.session.flash = { type: 'danger', text: 'That username is already in use.' }
         res.redirect('./signup')
-      } else {
-        req.session.flash = { type: 'danger', text: error.message }
-        res.redirect('./signup')
       }
+      req.session.flash = { type: 'danger', text: error.message }
+      res.redirect('./signup')
+      next(error)
     }
   }
 
