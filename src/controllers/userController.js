@@ -113,15 +113,20 @@ export class UserController {
       res.redirect('./')
     } catch (error) {
       if (error.code === 11000 && error.message.includes('email')) {
-        req.session.flash = { type: 'danger', text: 'That email is already in use.' }
-        res.redirect('./signup')
+        res.locals.flash = { type: 'danger', text: 'That email is already in use.' }
+        res.render('home/signup')
       }
       if (error.code === 11000) {
-        req.session.flash = { type: 'danger', text: 'That username is already in use.' }
-        res.redirect('./signup')
+        res.locals.flash = { type: 'danger', text: 'That username is already in use.' }
+        res.render('home/signup')
       }
-      req.session.flash = { type: 'danger', text: error.message }
-      res.redirect('./signup')
+      if (error.message.includes('email')) {
+        res.locals.flash = { type: 'danger', text: 'Please provide a valid email adress.' }
+        res.render('home/signup')
+      } else {
+        res.locals.flash = { type: 'danger', text: error.message }
+        res.render('home/signup')
+      }
       next(error)
     }
   }

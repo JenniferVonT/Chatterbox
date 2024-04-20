@@ -1,1 +1,9 @@
-<h1>HELLO THIS IS A TEST!!!!</h1>
+<% if (locals.user) { %>
+<profile-img></profile-img>
+
+<div id="settings-container">
+  <email-change></email-change>
+  <password-change></password-change>
+  <delete-account></delete-account>
+</div>
+<% } %>
