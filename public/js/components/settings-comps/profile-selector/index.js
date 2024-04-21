@@ -1,1 +1,1 @@
-import './profile-img.js'
+import './profile-selector.js'

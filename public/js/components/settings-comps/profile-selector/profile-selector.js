@@ -8,8 +8,18 @@
 const template = document.createElement('template')
 template.innerHTML = `
 <style>
-  .hidden {
-    display: none;
+  :host {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #startContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   #selected {
@@ -19,27 +29,42 @@ template.innerHTML = `
   button {
     margin: 5px;
     width: 80px;
-    height: 30px;
+    height: min-content;
     color: #D3B1C2;
-    border-radius: 3px;
+    border-radius: 5px;
     border: 1px solid #D3B1C2;
     background-color: #211522;
   }
 
+  button:hover {
+    border-color: #211522;
+    color: #211522;
+    background-color: #D3B1C2;
+  }
+
+  ::slotted(img),
+  img[slot] {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    overflow: hidden;
+  }
+
   .alternatives,
   #currentImgContainer {
+    background-color: #242424;
     border: 2px solid #242424;
-    border-radius: 6px;
+    border-radius: 10px;
     margin: 10px;
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     overflow: hidden;
-    object-fit: cover;
   }
 
   #currentImgContainer {
     width: 100px;
     height: 100px;
+    margin: 5px;
   }
 
   .alternatives:hover {
@@ -48,8 +73,12 @@ template.innerHTML = `
 
   #imgContainer {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: space-around;
+  }
+
+  .hidden {
+    display: none !important;
   }
 </style>
 
@@ -60,14 +89,26 @@ template.innerHTML = `
 </div>
 
 <div id="imgContainer" class="hidden">
-  <slot name="profile1" class="alternatives"><slot>
-  <slot name="profile2" class="alternatives"><slot>
-  <slot name="profile3" class="alternatives"><slot>
-  <slot name="profile4" class="alternatives"><slot>
-  <slot name="profile5" class="alternatives"><slot>
-
-  <button id="submitBtn">Submit new image</button>
+  <div class="alternatives">
+    <slot name="profile1"><slot>
+  </div>
+  <div class="alternatives">
+    <slot name="profile2"><slot>
+  </div>
+  <div class="alternatives">
+    <slot name="profile3"><slot>
+  </div>
+  <div class="alternatives">
+    <slot name="profile4"><slot>
+  </div>
+  <div class="alternatives">
+    <slot name="profile5"><slot>
+  </div>
 </div>
+<div id="imgBtns" class="hidden">
+  <button id="submitBtn">Change</button>
+  <button id="backBtn">Back</button>
+<div>
 `
 
 customElements.define('profile-selector',
@@ -84,62 +125,156 @@ customElements.define('profile-selector',
       this.attachShadow({ mode: 'open' })
         .appendChild(template.content.cloneNode(true))
 
+      // Images and containers.
       this.imageCont = this.shadowRoot.querySelector('#imgContainer')
       this.startCont = this.shadowRoot.querySelector('#startContainer')
       this.currentImgCont = this.shadowRoot.querySelector('#currentImgContainer')
-      this.images = this.shadowRoot.querySelectorAll('.alternatives')
+      this.images = this.querySelectorAll('img')
+      this.imgContainers = this.shadowRoot.querySelectorAll('.alternatives')
+
+      // Buttons.
       this.submitBtn = this.shadowRoot.querySelector('#submitBtn')
       this.startBtn = this.shadowRoot.querySelector('#startBtn')
+      this.backBtn = this.shadowRoot.querySelector('#backBtn')
+      this.imgBtns = this.shadowRoot.querySelector('#imgBtns')
 
+      // Methods and eventlisteners.
+      this.startBtn.addEventListener('click', () => this.#handleStartBtn())
       this.#insertCurrentImg()
+      this.#handleAmountOfImg()
+      this.#handleImgEvents()
     }
 
     /**
-     * Called when the element is inserted into the DOM.
+     * Called when it is inserted into the DOM.
      */
     connectedCallback () {
-      this.startBtn.addEventListener('click', this.#handleStartBtn())
-      this.submitBtn.addEventListener('click', this.#handleSubmitBtn())
-    }
-
-    /**
-     * Called when the element is removed from the DOM.
-     */
-    disconnectedCallback () {
-      this.startBtn.removeEventListener('click', this.#handleStartBtn())
-      this.submitBtn.removeEventListener('click', this.#handleSubmitBtn())
+      this.submitBtn.addEventListener('click', () => this.#handleSubmitBtn())
+      this.backBtn.addEventListener('click', () => this.#handleBackBtn())
     }
 
     /**
      * Handles the setting up of the start button.
      */
     #handleStartBtn () {
-      // INSERT CODE.
+      this.startCont.classList.add('hidden')
+      this.imageCont.classList.remove('hidden')
+      this.imgBtns.classList.remove('hidden')
     }
 
     /**
      * Handles the submit button, triggers the custom-event.
      */
     #handleSubmitBtn () {
-      // INSERT CODE.
+      // Find the image container with the selected attribute.
+      const selectedImgCont = this.shadowRoot.querySelector('.alternatives[id="selected"]').firstElementChild
+
+      if (selectedImgCont) {
+        // Get the name attribute and the img element.
+        const attribute = selectedImgCont.getAttribute('name')
+        console.log(attribute)
+
+        let selectedImg = ''
+
+        this.images.forEach(img => {
+          if (img.getAttribute('slot') === attribute) {
+            selectedImg = img
+          }
+        })
+
+        // If a selected image exists get the file name and trigger the custom event.
+        if (selectedImg) {
+          console.log('SelectedImg exists')
+          const src = selectedImg.getAttribute('src')
+          let fileName = ''
+
+          // Extract file name.
+          const lastIndex = src.lastIndexOf('/')
+          if (lastIndex !== -1) {
+            fileName = src.substring(lastIndex + 1)
+          } else {
+            fileName = src
+          }
+
+          // Trigger the custom event to communicate a change has been made.
+          this.dispatchEvent(new CustomEvent('profileImageChanged', {
+            bubbles: true,
+            composed: true,
+            detail: { fileName }
+          }))
+        }
+      }
+
+      // Remove selected.
+      this.imgContainers.forEach(cont => {
+        cont.removeAttribute('id')
+      })
+
+      this.startCont.classList.remove('hidden')
+      this.imageCont.classList.add('hidden')
+      this.imgBtns.classList.add('hidden')
+    }
+
+    /**
+     * Handles the button to get back to the original form.
+     */
+    #handleBackBtn () {
+      this.startCont.classList.remove('hidden')
+      this.imageCont.classList.add('hidden')
+      this.imgBtns.classList.add('hidden')
+
+      // Remove selected.
+      this.imgContainers.forEach(cont => {
+        cont.removeAttribute('id')
+      })
+    }
+
+    /**
+     * Removes slots if there isn't 5 images.
+     */
+    #handleAmountOfImg () {
+      const length = this.images.length
+      // If there is less than 5 images slotted remove the slots.
+      if (length < 5) {
+        for (let i = 5; i > length; i--) {
+          const slotToRemove = this.shadowRoot.querySelector('.alternatives:nth-last-child(1)')
+          if (slotToRemove) {
+            slotToRemove.remove()
+          }
+        }
+      }
+    }
+
+    /**
+     * Sets all the eventlisteners for the images.
+     */
+    #handleImgEvents () {
+      this.imgContainers.forEach(cont => {
+        cont.addEventListener('click', () => {
+          // Remove the selected id attribute from all the img options.
+          this.imgContainers.forEach(cont => {
+            cont.removeAttribute('id', 'selected')
+          })
+
+          // Add the selected id to the element being clicked.
+          cont.setAttribute('id', 'selected')
+        })
+      })
     }
 
     /**
      * Inserts the currently configured profile image in the [current] slot.
      */
     #insertCurrentImg () {
-      // Find the element with the current attribute.
-      const currentImg = [...this.images].find(image => image.hasAttribute('current'))
+      // Remove the the img in the container.
+      this.currentImgCont.textContent = ''
 
-      // If it finds an element with the current attribute set it as the current profile
-      if (currentImg) {
-        this.currentImgCont.append(currentImg)
-      } else {
-        const img = document.createElement('img')
-        img.setAttribute('src', './img/placeholder-profile-img.png')
-        img.setAttribute('alt', 'img')
-
-        this.currentImgCont.append(img)
+      // Find the element with the current attribute and insert it into the current image container.
+      for (const img of this.images) {
+        if (img.hasAttribute('current')) {
+          const currentImg = img.cloneNode(true)
+          this.currentImgCont.append(currentImg)
+        }
       }
     }
   }
