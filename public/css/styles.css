@@ -26,9 +26,8 @@ body {
     background-color: #2E2E2E;
     max-width: 100%;
     overflow-x: hidden;
-    overflow-y: hidden;
     display: grid;
-    grid-template-columns: 200px auto 200px;
+    grid-template-columns: 10vw auto 10vw;
     grid-template-rows: min-content auto min-content;
     grid-template-areas:
         "nav nav nav"
@@ -36,6 +35,11 @@ body {
         "footer footer footer";
     padding-top: 70px;
     padding-bottom: 80px;
+}
+
+main {
+    overflow-y: auto;
+    height: calc(100vh - 120px);
 }
 
 .hidden {
@@ -223,10 +227,12 @@ foother i {
 }
 
 
-.user-forms > input {
+.user-forms > input,
+.changing-forms > input {
     margin: 5px;
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     background-color: #f5e2eb;
+    width: auto;
 }
 
 .starting-pages-div a,
@@ -240,7 +246,7 @@ foother i {
 
 .submit-button-user button {
     margin: 5px;
-    width: 80px;
+    width: max-content;
     height: 30px;
     color: #D3B1C2;
     border-radius: 5px;
@@ -257,10 +263,66 @@ foother i {
 /*<---- LOGGED IN BODY ---->*/
 #logged-in-pages main {
     grid-area: main;
+    height: 100%;
     color: #D3B1C2;
     overflow-y: auto;
     margin-top: 20px;
     margin-bottom: 20px;
+}
+
+/*<---- SETTINGS-PAGE ---->*/
+#settings {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+profile-selector {
+    height: 200px;
+    margin: 10px;
+}
+
+#settings-container {
+    width: 100%;
+    display: flex;
+    gap: 5px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+}
+
+.settings-components h3 {
+    display: flex;
+    background-color: #211522;
+    height: 40px;
+    color: #D3B1C2;
+    text-align: center;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    margin-bottom: 30px;
+    padding: 10px;
+}
+
+.settings-components {
+    justify-content: center;
+    border: 2px solid #242424;
+    border-radius: 10px;
+    width: 30%;
+    height: 400px;
+    box-sizing: border-box;
+    flex-shrink: 1;
+}
+
+.settings-components form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 1;
 }
 
 /*<---- SCROLL-BAR CUSTOMIZATION ---->*/
@@ -307,10 +369,13 @@ foother i {
         font-size: 95%;
     }
     body {
-        grid-template-columns: 100px auto 100px;
+        grid-template-columns: 2vw auto 2vw;
     }
     logged-in-box {
         left: 62.5%;
+    }
+    #settings-container {
+        gap: 2px;
     }
 }
 
@@ -319,7 +384,6 @@ foother i {
         font-size: 80%;
     }
     body {
-        overflow-y: auto;
         grid-template-columns: auto;
         grid-template-rows: min-content auto min-content;
         grid-template-areas:
@@ -327,6 +391,16 @@ foother i {
             "main main main"
             "footer footer footer";  
     }
+
+    main {
+        margin-bottom: 50px;
+    }
+
+    footer {
+        height: 40px;
+        padding-bottom: 15px;
+    }
+
     nav ul.active {
         display: flex;
     }
@@ -345,5 +419,17 @@ foother i {
 
     logged-in-box {
         display: none;
+    }
+
+    #settings-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .settings-components {
+        width: 90vw;
+        height: max-content;
+        margin-bottom: 20px;
     }
 }

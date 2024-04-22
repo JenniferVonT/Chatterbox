@@ -196,8 +196,10 @@ customElements.define('profile-selector',
 
           // Get the element with the current attr and switch the current attr to the new one.
           const lastCurrentImg = this.querySelector('[current]')
-          lastCurrentImg.toggleAttribute('current')
-          selectedImg.toggleAttribute('current')
+          if (lastCurrentImg) {
+            lastCurrentImg.removeAttribute('current')
+          }
+          selectedImg.setAttribute('current', '')
 
           // Insert the newly selected image into the preview.
           this.#insertCurrentImg()
