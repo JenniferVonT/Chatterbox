@@ -12,7 +12,8 @@ Is called when the user picks a profile image, includes the profile image file n
 
 Insert up to 5 img elements with slot attributes to fill the component.
 
-`slot="profile#"` - The profile images to pick from, switch # to a number between 1-5.\n
+`slot="profile#"` - The profile images to pick from, switch # to a number between 1-5.
+
 `current` - The attribute put on the current image (the image to be shown at the top).
 
 ```html
