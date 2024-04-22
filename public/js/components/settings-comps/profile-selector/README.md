@@ -6,7 +6,7 @@ A Custom web component that displays up to 5 slotted profile images.
 
 ### `profileImageChanged`
 
-Is called when the user picks a profile image, includes the img elements src value.
+Is called when the user picks a profile image, includes the profile image file name (for example: imageName.png).
 
 ## Customization
 
