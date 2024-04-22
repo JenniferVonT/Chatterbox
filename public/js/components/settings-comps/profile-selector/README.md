@@ -27,5 +27,5 @@ Insert up to 5 img elements with slot attributes to fill the component.
 
 ## Example
 
-<!--- ![Example](img/url.gif) --->
-<!--- ![Example](img/url.png) --->
+![Example](img/profile-selector-example.png)
+![Example](img/profile-selectorGIF.gif)
