@@ -1,11 +1,5 @@
 <% if (locals.user) { %>
-<profile-selector>
-  <img slot="profile1" src="./img/profile1.png" alt="img" current>
-  <img slot="profile2" src="./img/profile2.png" alt="img">
-  <img slot="profile3" src="./img/profile3.png" alt="img">
-  <img slot="profile4" src="./img/profile4.png" alt="img">
-  <img slot="profile5" src="./img/profile5.png" alt="img">
-</profile-selector>
+
 
 <div id="settings-container" class="hidden">
   <email-change></email-change>
@@ -13,3 +7,10 @@
   <delete-account></delete-account>
 </div>
 <% } %>
+<profile-selector>
+  <img slot="profile1" src="./img/profiles/profile1.jpg" alt="img" current>
+  <img slot="profile2" src="./img/profiles/profile2.jpg" alt="img">
+  <img slot="profile3" src="./img/profiles/profile3.jpg" alt="img">
+  <img slot="profile4" src="./img/profiles/profile4.jpg" alt="img">
+  <img slot="profile5" src="./img/profiles/profile5.jpg" alt="img">
+</profile-selector>

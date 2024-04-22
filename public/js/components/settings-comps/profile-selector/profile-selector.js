@@ -23,7 +23,7 @@ template.innerHTML = `
   }
 
   #selected {
-    border: 2px solid #D3B1C2;
+    border: 2px solid #12ed7c;
   }
 
   button {
@@ -172,7 +172,6 @@ customElements.define('profile-selector',
       if (selectedImgCont) {
         // Get the name attribute and the img element.
         const attribute = selectedImgCont.getAttribute('name')
-        console.log(attribute)
 
         let selectedImg = ''
 
@@ -184,7 +183,6 @@ customElements.define('profile-selector',
 
         // If a selected image exists get the file name and trigger the custom event.
         if (selectedImg) {
-          console.log('SelectedImg exists')
           const src = selectedImg.getAttribute('src')
           let fileName = ''
 
@@ -195,6 +193,14 @@ customElements.define('profile-selector',
           } else {
             fileName = src
           }
+
+          // Get the element with the current attr and switch the current attr to the new one.
+          const lastCurrentImg = this.querySelector('[current]')
+          lastCurrentImg.toggleAttribute('current')
+          selectedImg.toggleAttribute('current')
+
+          // Insert the newly selected image into the preview.
+          this.#insertCurrentImg()
 
           // Trigger the custom event to communicate a change has been made.
           this.dispatchEvent(new CustomEvent('profileImageChanged', {
