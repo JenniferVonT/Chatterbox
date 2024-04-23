@@ -431,4 +431,36 @@ export class UserController {
       next(error)
     }
   }
+
+  // <---------------------------------- DELETE USER ---------------------------------->
+  /**
+   * Handles when a user deletes their account.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async deleteUser (req, res, next) {
+    try {
+      const id = req.session.user
+
+      const user = UserModel.find({ id })
+
+      if (!user) {
+        const error = new Error('The user doesn\'t exist!')
+        error.code = 404
+        throw error
+      }
+
+      // Delete the user from the db and from the session.
+      user.deleteOne()
+      delete req.session.user
+      req.session.destroy()
+
+      req.session.flash = { type: 'success', text: 'The account was successfully deleted!' }
+      res.redirect('./')
+    } catch (error) {
+      next(error)
+    }
+  }
 }
