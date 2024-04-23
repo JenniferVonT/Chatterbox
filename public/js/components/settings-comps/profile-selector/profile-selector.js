@@ -140,17 +140,11 @@ customElements.define('profile-selector',
 
       // Methods and eventlisteners.
       this.startBtn.addEventListener('click', () => this.#handleStartBtn())
+      this.submitBtn.addEventListener('click', () => this.#handleSubmitBtn())
+      this.backBtn.addEventListener('click', () => this.#handleBackBtn())
       this.#insertCurrentImg()
       this.#handleAmountOfImg()
       this.#handleImgEvents()
-    }
-
-    /**
-     * Called when it is inserted into the DOM.
-     */
-    connectedCallback () {
-      this.submitBtn.addEventListener('click', () => this.#handleSubmitBtn())
-      this.backBtn.addEventListener('click', () => this.#handleBackBtn())
     }
 
     /**

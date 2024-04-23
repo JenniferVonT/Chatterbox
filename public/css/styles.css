@@ -43,7 +43,11 @@ main {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+.hidden2 {
+    visibility: hidden !important;
 }
 
 /*<---- VALIDATION ERROR MESSAGE BOX ---->*/
@@ -280,6 +284,7 @@ foother i {
 profile-selector {
     height: 200px;
     margin: 10px;
+    margin-bottom: 20px;
 }
 
 #settings-container {
@@ -289,6 +294,19 @@ profile-selector {
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-evenly;
+}
+
+.settings-components {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #242424;
+    border-radius: 10px;
+    height: 300px;
+    width: 30%;
+    box-sizing: border-box;
+    flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .settings-components h3 {
@@ -302,18 +320,14 @@ profile-selector {
     justify-content: center;
     align-items: center;
     margin: 0;
-    margin-bottom: 30px;
+    cursor: pointer;
     padding: 10px;
+    z-index: 1;
 }
 
-.settings-components {
-    justify-content: center;
-    border: 2px solid #242424;
-    border-radius: 10px;
-    width: 30%;
-    height: 400px;
-    box-sizing: border-box;
-    flex-shrink: 1;
+.settings-components img {
+    width: 25px;
+    height: 25px;
 }
 
 .settings-components form {
@@ -323,6 +337,28 @@ profile-selector {
     justify-content: center;
     align-items: center;
     flex-shrink: 1;
+}
+
+.settings-components delete-account,
+.settings-components form {
+    position: relative;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+.settings-components.expanded form,
+.settings-components.expanded delete-account {
+    height: 100%;
+    visibility: visible;
+}
+
+#deleteAcc {
+    align-items: center;
+}
+#deleteAcc h3 {
+    width: 100%;
 }
 
 /*<---- SCROLL-BAR CUSTOMIZATION ---->*/

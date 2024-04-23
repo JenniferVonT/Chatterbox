@@ -11,10 +11,17 @@ template.innerHTML = `
   :host {
     display: flex;
     justify-content: center;
+    align-items: center;
     padding: 10px;
     box-sizing: border-box;
     max-width: 300px;
     max-height: 400px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .hidden {
@@ -23,8 +30,8 @@ template.innerHTML = `
 
   button {
     margin: 5px;
-    width: 80px;
-    height: min-content;
+    width: max-content;
+    height: 30px;
     border-radius: 5px;
     border: 1px solid #211522;
     color: #211522;
