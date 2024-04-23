@@ -50,6 +50,8 @@ export class UserController {
     }
   }
 
+  // <---------------------------------- CREATE USER ---------------------------------->
+
   /**
    * Renders the signup page.
    *
@@ -117,6 +119,8 @@ export class UserController {
       next(error)
     }
   }
+
+  // <---------------------------------- RECLAIM FORGOTTEN PASSWORD/USERNAME ---------------------------------->
 
   /**
    * Renders the reclaim account page.
@@ -267,6 +271,8 @@ export class UserController {
     }
   }
 
+  // <---------------------------------- LOGOUT USER ---------------------------------->
+
   /**
    * Handles when a user tries to logout from an account.
    *
@@ -291,6 +297,8 @@ export class UserController {
       next(error)
     }
   }
+
+  // <---------------------------------- UPDATE USER WHEN LOGGED IN ---------------------------------->
 
   /**
    * Handles when a user updates their profile image.
@@ -367,6 +375,60 @@ export class UserController {
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./main/settings')
+    }
+  }
+
+  /**
+   * Handles when a user updates their password.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async updatePassword (req, res, next) {
+    try {
+      // Get the variables from the req body.
+      let { oldPassword, newPassword, newPassword2 } = req.body
+      const id = req.session.user
+
+      const username = id.username
+
+      // Check if the old password is correct.
+      const user = await UserModel.authenticate(username, oldPassword)
+
+      if (!user) {
+        const error = new Error('Wrong password!')
+        error.code = 400
+        throw error
+      }
+
+      // If it is check if the new passwords match eachother..
+      if (newPassword !== newPassword2) {
+        const error = new Error('New passwords doesn\'t match!')
+        error.code = 400
+        throw error
+      }
+
+      // Also check if the new password is the same as the old password.
+      if (newPassword === oldPassword) {
+        const error = new Error('New password cannot be the same as the old password')
+        error.code = 400
+        throw error
+      }
+
+      // Hash and salt the password before saving.
+      newPassword = await bcrypt.hash(newPassword, 10)
+
+      user.password = newPassword
+
+      await user.save({ validateBeforeSave: false })
+
+      req.session.flash = { type: 'success', text: 'Your password was successfully updated!' }
+      res.redirect('./main/settings')
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: error.message }
+      res.redirect('./main/settings')
+      next(error)
     }
   }
 }
