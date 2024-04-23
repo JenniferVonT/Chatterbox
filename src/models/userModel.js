@@ -33,6 +33,9 @@ const schema = new mongoose.Schema({
     trim: true,
     validate: [isEmail, 'Please provide a valid email address.']
   },
+  profileImg: {
+    type: String
+  },
   resetCode: {
     type: String,
     expireAfterSeconds: 120 // 2min, CHANGE TO 0.5HOURS LATER!
@@ -54,7 +57,7 @@ schema.statics.authenticate = async function (username, password) {
 
   // If no user found or password is wrong, throw an error.
   if (!userDocument || !(await bcrypt.compare(password, userDocument?.password))) {
-    throw new Error('Invalid credentials.')
+    throw new Error('The username and/or password is incorrect.')
   }
 
   // User found and password correct, return the user.

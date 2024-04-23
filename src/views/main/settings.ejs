@@ -1,6 +1,6 @@
 <% if (locals.user) { %>
   <div id="settings">
-    <profile-selector>
+    <profile-selector current-img="<%= locals.user.profileImg %>">
       <img slot="profile1" src="./img/profiles/profile1.jpg" alt="img">
       <img slot="profile2" src="./img/profiles/profile2.jpg" alt="img">
       <img slot="profile3" src="./img/profiles/profile3.jpg" alt="img">

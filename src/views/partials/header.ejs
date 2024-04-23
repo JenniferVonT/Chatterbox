@@ -22,7 +22,7 @@
   </nav>
 
   <logged-in-box name="<%= locals.user.username %>">
-    <img slot="profile" src="./img/placeholder-profile-img.png" alt="profile">
+    <img slot="profile" src="./img/profiles/<%= locals.user.profileImg %>" alt="profile">
   </logged-in-box>
 
   <form class="logout-form" action="./logout" method="POST">

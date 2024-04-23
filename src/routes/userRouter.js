@@ -21,6 +21,9 @@ router.get('/', (req, res, next) => {
   }
 })
 
+// Provide user data to req.doc to the route if :id is present in the route path.
+router.param('id', (req, res, next, id) => controller.loadUserDocument(req, res, next, id))
+
 router.get('/', (req, res, next) => controller.login(req, res, next))
 router.post('/login', (req, res, next) => controller.loginUser(req, res, next))
 
@@ -32,3 +35,9 @@ router.post('/reclaim', (req, res, next) => controller.reclaimUser(req, res, nex
 router.post('/reclaim/reset', (req, res, next) => controller.resetUser(req, res, next))
 
 router.post('/logout', (req, res, next) => controller.logout(req, res, next))
+
+// Changes made in the settings view.
+router.post('/changeProfileImg', (req, res, next) => controller.updateImg(req, res, next))
+// router.post('/updatePassword/:id', (req, res, next) => controller.updatePassword(req, res, next))
+// router.post('/updateEmail/:id', (req, res, next) => controller.updateEmail(req, res, next))
+// router.post('/deleteAcc/:id', (req, res, next) => controller.deleteAcc(req, res, next))

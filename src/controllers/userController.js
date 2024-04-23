@@ -36,22 +36,8 @@ export class UserController {
   async loginUser (req, res, next) {
     try {
       const { username, password } = req.body
-      const user = await UserModel.findOne({ username })
 
-      if (!user) {
-        const error = new Error('The username and/or password is incorrect.')
-        error.status = 404
-        throw error
-      }
-
-      // Compare the entered password with the stored password.
-      const passwordMatch = await bcrypt.compare(password, user.password)
-
-      if (!passwordMatch) {
-        const error = new Error('The username and/or password is incorrect.')
-        error.status = 401 // Unauthorized
-        throw error
-      }
+      const user = await UserModel.authenticate(username, password)
 
       // Set the user in the session.
       req.session.user = user
@@ -106,7 +92,8 @@ export class UserController {
       await UserModel.create({
         username,
         password,
-        email
+        email,
+        profileImg: 'profile1.jpg'
       })
 
       req.session.flash = { type: 'success', text: 'The account was created successfully. Please login to continue' }
@@ -302,6 +289,42 @@ export class UserController {
       }
     } catch (error) {
       next(error)
+    }
+  }
+
+  /**
+   * Handles when a user updates their profile image.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async updateImg (req, res, next) {
+    try {
+      const body = req.body
+      const image = body.image
+      const id = req.session.user
+
+      // Find the user and insert the profile img URI.
+      const user = await UserModel.findOne({ id })
+
+      // If the user doesn't exist throw an error.
+      if (!user) {
+        const error = new Error('User not found')
+        error.code = 400
+        throw error
+      }
+
+      user.profileImg = image
+
+      // Save the updated user.
+      await user.save({ validateBeforeSave: false })
+
+      req.session.flash = { type: 'success', text: 'Your profile image was successfully updated!' }
+      res.redirect('./')
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: error.message }
+      res.redirect('./')
     }
   }
 }

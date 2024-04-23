@@ -1,5 +1,7 @@
-// Set up the settings page:
+// The user id.
+// const USERID = document.querySelector('i[user-id]').getAttribute('user-id')
 
+// <----------------------------- SETTINGS PAGE ----------------------------->
 document.querySelectorAll('.settings-components h3').forEach(h3 => {
   h3.addEventListener('click', () => {
     const parent = h3.closest('.settings-components')
@@ -14,3 +16,37 @@ document.querySelectorAll('.settings-components h3').forEach(h3 => {
     }
   })
 })
+
+// Handle the profile img being changed:
+const profileSelector = document.querySelector('profile-selector')
+profileSelector.addEventListener('profileImageChanged', (event) => handleProfileChange(event))
+
+/**
+ * Handles the post request to the server to change profile image.
+ *
+ * @param {Event} event - the custom event for profile images.
+ */
+async function handleProfileChange (event) {
+  try {
+    const data = event.detail
+    const imageURI = data.fileName
+
+    const response = await fetch('/changeProfileImg', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        image: imageURI
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error('post request failed!')
+    }
+  } catch (error) {
+    console.error('An error occured: ', error)
+  }
+}
+
+// Handle the deletion of an account in the settings:
