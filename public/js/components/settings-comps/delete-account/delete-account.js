@@ -9,8 +9,8 @@ const template = document.createElement('template')
 template.innerHTML = `
 <style>
   :host {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    display: block;
+    display: flex;
+    justify-content: center;
     padding: 10px;
     box-sizing: border-box;
     max-width: 300px;
@@ -99,9 +99,9 @@ template.innerHTML = `
   }
 </style>
 <div id="component-container">
-  <button>Delete account</button>
+  <button id="firstBtn">Delete account</button>
 
-  <form>
+  <form class="hidden">
     <label class="container">Confirm, you will not be able to retrieve your account again!
       <input type="checkbox" id="delete-box" name="confirmDelete" required>
       <span class="checkmark"></span>
@@ -124,6 +124,43 @@ customElements.define('delete-account',
 
       this.attachShadow({ mode: 'open' })
         .appendChild(template.content.cloneNode(true))
+
+      this.firstBtn = this.shadowRoot.querySelector('button#firstBtn')
+      this.form = this.shadowRoot.querySelector('form')
+    }
+
+    /**
+     * Called when the element is inserted in the DOM.
+     */
+    connectedCallback () {
+      this.firstBtn.addEventListener('click', () => this.#handleFirstBtn())
+      this.form.addEventListener('submit', (event) => this.#handleSubmit(event))
+    }
+
+    /**
+     * Handles the first button press.
+     */
+    #handleFirstBtn () {
+      this.firstBtn.classList.add('hidden')
+      this.form.classList.remove('hidden')
+    }
+
+    /**
+     * Handles the final confirming submit.
+     *
+     * @param {Event} event - The submit event.
+     */
+    #handleSubmit (event) {
+      event.preventDefault()
+
+      const userID = this.getAttribute('user-id')
+
+      // Dispatch a custom event for a deletion.
+      this.dispatchEvent(new CustomEvent('deleteAccount', {
+        bubbles: true,
+        composed: true,
+        detail: { userID }
+      }))
     }
   }
 )

@@ -16,6 +16,15 @@ A simple custom component that helps the user to delete an account.
 Is called when the user wants to delete their account.
 Includes the user-id to delete.
 
+The user-id will be dispatched under `detail: { userID }`
+
+#### example (to get payload):
+```javascript
+// First pass the custom event through an eventlistener to the method handling said event.
+const data = event.detail
+const userID = data.userID
+```
+
 ## Example
 
 <!--- ![Example](insert example img) --->
