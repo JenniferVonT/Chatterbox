@@ -327,4 +327,46 @@ export class UserController {
       res.redirect('./')
     }
   }
+
+  /**
+   * Handles when a user updates their email.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async updateEmail (req, res, next) {
+    try {
+      // Get the required variables from the req body.
+      const { password, oldEmail, newEmail } = req.body
+      const username = req.session.user.username
+
+      const user = await UserModel.authenticate(username, password)
+
+      // Check if the password matches.
+      if (!user) {
+        const error = new Error('Wrong password!')
+        error.code = 400
+        throw error
+      }
+
+      // Check if the old email matches the saved one.
+      if (user.email !== oldEmail) {
+        const error = new Error('The old email does not match!')
+        error.code = 400
+        throw error
+      }
+
+      // If all is fine save the new email to the user.
+      user.email = newEmail
+
+      await user.save({ validateBeforeSave: false })
+
+      req.session.flash = { type: 'success', text: 'Your email was successfully updated!' }
+      res.redirect('./main/settings')
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: error.message }
+      res.redirect('./main/settings')
+    }
+  }
 }

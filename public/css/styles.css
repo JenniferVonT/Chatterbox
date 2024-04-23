@@ -26,6 +26,7 @@ body {
     background-color: #2E2E2E;
     max-width: 100%;
     overflow-x: hidden;
+    overflow-y: hidden;
     display: grid;
     grid-template-columns: 10vw auto 10vw;
     grid-template-rows: min-content auto min-content;
@@ -38,7 +39,6 @@ body {
 }
 
 main {
-    overflow-y: auto;
     height: calc(100vh - 120px);
 }
 
@@ -50,20 +50,16 @@ main {
     visibility: hidden !important;
 }
 
-/*<---- VALIDATION ERROR MESSAGE BOX ---->*/
+/*<---- VALIDATION FLASH MESSAGE BOX ---->*/
 .flash_message {
     width: 60vw;
-    margin: max-content;
+    margin: 20px auto;
     padding: 20px;
     background-color: #D3B1C2;
     color: #242424;
     border: 1px solid #211522;
     border-radius: 5px;
     text-align: center; /* Center text */
-    position: absolute; /* Position independently */
-    top: 5vh; /* Adjust top position */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Center horizontally */
 }
 
 /*<---- HEADER ---->*/
