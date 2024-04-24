@@ -9,6 +9,7 @@ import { UserModel } from '../models/userModel.js'
 import bcrypt from 'bcrypt'
 import randomize from 'randomatic'
 import { transfer } from '../lib/mailer.js'
+import validator from 'validator'
 
 /**
  * Encapsulates a controller.
@@ -368,6 +369,14 @@ export class UserController {
         throw error
       }
 
+      const { isEmail } = validator
+
+      if (!isEmail(newEmail)) {
+        const error = new Error('The new email is not a valid email!')
+        error.code = 400
+        throw error
+      }
+
       // If all is fine save the new email to the user.
       user.email = newEmail
 
@@ -376,6 +385,9 @@ export class UserController {
       req.session.flash = { type: 'success', text: 'Your email was successfully updated!' }
       res.redirect('./main/settings')
     } catch (error) {
+      if (error.message === 'The username and/or password is incorrect.') {
+        error.message = 'Wrong password, try again!'
+      }
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./main/settings')
     }
@@ -429,6 +441,9 @@ export class UserController {
       req.session.flash = { type: 'success', text: 'Your password was successfully updated!' }
       res.redirect('./main/settings')
     } catch (error) {
+      if (error.message === 'The username and/or password is incorrect.') {
+        error.message = 'The old password is incorrect!'
+      }
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./main/settings')
     }
