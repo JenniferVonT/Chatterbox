@@ -311,10 +311,11 @@ export class UserController {
     try {
       const body = req.body
       const image = body.image
-      const id = req.session.user
+      const sessionUser = req.session.user
+      const id = sessionUser.id
 
       // Find the user and insert the profile img URI.
-      const user = await UserModel.findOne({ id })
+      const user = await UserModel.findOne({ _id: id })
 
       // If the user doesn't exist throw an error.
       if (!user) {
@@ -430,7 +431,6 @@ export class UserController {
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./main/settings')
-      next(error)
     }
   }
 
@@ -444,9 +444,10 @@ export class UserController {
    */
   async deleteUser (req, res, next) {
     try {
-      const id = req.session.user
+      const sessionUser = req.session.user
+      const id = sessionUser.id
 
-      const user = UserModel.find({ id })
+      const user = await UserModel.findOne({ _id: id })
 
       if (!user) {
         const error = new Error('The user doesn\'t exist!')
@@ -455,14 +456,15 @@ export class UserController {
       }
 
       // Delete the user from the db and from the session.
-      user.deleteOne()
-      delete req.session.user
-      req.session.destroy()
+      await user.deleteOne()
 
+      delete req.session.user
+
+      res.status(200).json({ success: true, message: 'Account was deleted' })
       req.session.flash = { type: 'success', text: 'The account was successfully deleted!' }
-      res.redirect('./')
     } catch (error) {
-      next(error)
+      req.session.flash = { type: 'danger', text: 'Something went wrong when trying to delete the account, try again!' }
+      res.status(500).json({ success: false, message: 'Something went wrong when deleting the account, try again!' })
     }
   }
 }

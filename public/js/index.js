@@ -1,6 +1,3 @@
-// The user id.
-// const USERID = document.querySelector('i[user-id]').getAttribute('user-id')
-
 // <----------------------------- SETTINGS PAGE ----------------------------->
 document.querySelectorAll('.settings-components h3').forEach(h3 => {
   h3.addEventListener('click', () => {
@@ -58,3 +55,24 @@ async function handleProfileChange (event) {
 }
 
 // Handle the deletion of an account in the settings:
+
+const deleteUser = document.querySelector('delete-account')
+
+deleteUser.addEventListener('deleteAccount', () => deleteUserHandler())
+
+/**
+ * Handles when a user deletes their account.
+ */
+async function deleteUserHandler () {
+  try {
+    const response = await fetch('/deleteUser', { method: 'POST' })
+
+    if (response.status !== 200) {
+      location.replace(location.href)
+    }
+
+    location.replace('/')
+  } catch (error) {
+    console.error('An error occured: ', error)
+  }
+}

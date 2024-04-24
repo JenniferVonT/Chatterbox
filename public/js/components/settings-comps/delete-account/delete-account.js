@@ -160,13 +160,10 @@ customElements.define('delete-account',
     #handleSubmit (event) {
       event.preventDefault()
 
-      const userID = this.getAttribute('user-id')
-
       // Dispatch a custom event for a deletion.
       this.dispatchEvent(new CustomEvent('deleteAccount', {
         bubbles: true,
-        composed: true,
-        detail: { userID }
+        composed: true
       }))
     }
   }
