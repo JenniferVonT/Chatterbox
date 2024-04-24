@@ -328,11 +328,13 @@ export class UserController {
       // Save the updated user.
       await user.save({ validateBeforeSave: false })
 
+      req.session.user = user
+
       req.session.flash = { type: 'success', text: 'Your profile image was successfully updated!' }
-      res.redirect('./')
+      res.status(200).json({ success: true, message: 'Profile image successfully updated!' })
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
-      res.redirect('./')
+      res.status(500).json({ success: false, message: error.message })
     }
   }
 

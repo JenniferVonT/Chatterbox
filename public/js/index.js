@@ -19,6 +19,10 @@ document.querySelectorAll('.settings-components h3').forEach(h3 => {
 
 // Handle the profile img being changed:
 const profileSelector = document.querySelector('profile-selector')
+const profileURI = profileSelector.getAttribute('current-img')
+const currentImage = profileSelector.querySelector(`img[src="./img/profiles/${profileURI}"]`)
+currentImage.setAttribute('current', '')
+
 profileSelector.addEventListener('profileImageChanged', (event) => handleProfileChange(event))
 
 /**
@@ -41,9 +45,13 @@ async function handleProfileChange (event) {
       })
     })
 
-    if (!response.ok) {
+    if (response.status !== 200) {
       throw new Error('post request failed!')
     }
+
+    currentImage.setAttribute('current', '')
+
+    location.replace(location.href)
   } catch (error) {
     console.error('An error occured: ', error)
   }
