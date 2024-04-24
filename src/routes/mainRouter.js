@@ -7,16 +7,15 @@
 
 import express from 'express'
 import { MainController } from '../controllers/mainController.js'
+import { router as friendRouter } from './friendRouter.js'
 
 export const router = express.Router()
 
 const controller = new MainController()
 
-// Provide req.user to the route if :id is present in the route path.
-router.param('id', (req, res, next, user) => controller.loadAccount(req, res, next, user))
-
 router.get('/', (req, res, next) => controller.start(req, res, next))
 
 router.get('/settings', (req, res, next) => controller.settings(req, res, next))
-router.get('/friends/:id', (req, res, next) => controller.friends(req, res, next))
-router.get('/groups/:id', (req, res, next) => controller.groups(req, res, next))
+router.get('/groups', (req, res, next) => controller.groups(req, res, next))
+
+router.use('/friends', friendRouter)

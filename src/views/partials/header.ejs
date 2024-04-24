@@ -3,16 +3,16 @@
   <nav class="header-nav">
     <ul>
       <li id="friendsIcon" class="nav-icons">
-        <a href="./main/friends/<%= locals.user.id %>"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon"></a>
+        <a href="./main/friends"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon"></a>
         <ul id="collapsible-friend-list">
-          <li><a href="./addFriend">+ add friend</a></li>
+          <li><a href="./main/friends">+ add friend</a></li>
           <!--- APPEND ALL FRIENDS -->
         </ul>
       </li>
       <li id="groupIcon" class="nav-icons">
-        <a href="./main/groups/<%= locals.user.id %>"><img src="./img/group-icon.svg" alt="Groups" id="group-icon"></a>
+        <a href="./main/groups"><img src="./img/group-icon.svg" alt="Groups" id="group-icon"></a>
         <ul id="collapsible-group-list">
-          <li><a href="./createGroup">+ create group</a></li>
+          <li><a href="./main/groups/add">+ create group</a></li>
           <!--- APPEND ALL GROUPS -->
         </ul>
       </li>

@@ -1,3 +1,6 @@
+import './components/logged-in-box/index.js'
+import './components/settings-comps/delete-account/index.js'
+
 // <----------------------------- SETTINGS PAGE ----------------------------->
 document.querySelectorAll('.settings-components h3').forEach(h3 => {
   h3.addEventListener('click', () => {

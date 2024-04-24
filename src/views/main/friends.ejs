@@ -1,0 +1,76 @@
+<% if (locals.user) { %>
+<!--------------------------------SEARCHBOX-------------------------------->
+<div id="friend-page">
+  <div id="searchbox">
+    <h3>Search for users:</h3>
+    <form method="POST" action="./search" id="search-form">
+      <input type="text" autocomplete="off" name="searchTerm" minlength="1" placeholder="Search for a user!" required>
+      <div class="submit-button-user">
+        <button type="submit">Search</button>
+      </div>
+    </form>
+    <% if (viewData.searchResult) { %>
+    <% if (viewData.searchResult > 0) { %>
+      <div class="search-results">
+        <table id="search-table">
+          <thead></thead>
+          <tbody>
+          <% for (const result of viewData.searchResult) { %>
+            <tr class="search-profile">
+              <td>
+                <div class="friend-profile-img">
+                  <img src="./img/profiles/<%= result.profileImg %>" alt="profileImg">
+                </div>
+              </td>
+              <td class="search-username">
+                <%= result.username %>
+              </td>
+              <td class="search-add-btn">
+                <a href="./friends/add/<%= result.id %>" class="button-style">Add as friend</a>
+              </td>
+            </tr>
+          <% } %>
+          </tbody> 
+        </table>
+      </div>
+    <% } else { %>
+      <div class="search-results no-result">
+        <h3>NO RESULTS</h3>
+      </div>
+    <% } %>
+    <% } %>
+  </div>
+
+<!--------------------------------FRIENDLIST-------------------------------->
+  <div id="friend-list">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <% if (viewData.friends) { %>
+      <% for (const friend of viewData.friends) { %>
+      <tbody>
+        <tr>
+          <td>
+            <div class="friend-profile-img">
+              <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
+            </div>
+          </td>
+          <td class="friend-username">
+            <%= friend.username %>
+          </td>
+          <td class="friend-action">
+            <a href="./friends/remove/<%= friend.id %>" class="button-style">Remove</a>
+          </td>
+        </tr>
+      </tbody>
+      <% } %>
+      <% } %>
+    </table>
+  </div>
+</div> <!---Last div for the page!--->
+<% } %> <!---Keep this last!--->

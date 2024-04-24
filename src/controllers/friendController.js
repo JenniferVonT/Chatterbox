@@ -1,6 +1,6 @@
 /**
- * @file Defines the mainController class.
- * @module controllers/mainController
+ * @file Defines the friendController class.
+ * @module controllers/friendController
  * @author Jennifer von Trotta-Treyden <jv222th@student.lnu.se>
  * @version 1.0.0
  */
@@ -8,11 +8,11 @@
 import { UserModel } from '../models/userModel.js'
 
 /**
- * Encapsulates the main controller.
+ * Encapsulates the friend controller.
  */
-export class MainController {
+export class FriendController {
   /**
-   * Provide req.user to the route if :id is present.
+   * Provide req.friend to the route if :id is present.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -32,7 +32,7 @@ export class MainController {
       }
 
       // Provide the account to req.
-      req.user = account
+      req.friend = account
 
       // Next middleware.
       next()
@@ -42,35 +42,35 @@ export class MainController {
   }
 
   /**
-   * Renders the start view when logged in.
+   * Renders the friends view when logged in.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async start (req, res, next) {
-    res.render('main/index')
+  async friends (req, res, next) {
+    try {
+      res.render('main/friends', { viewData: {} })
+    } catch (error) {
+      next(error)
+    }
   }
 
   /**
-   * Renders the settings view when logged in.
+   * Handles adding a friend to the friends-list.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async settings (req, res, next) {
-    res.render('main/settings')
-  }
+  async add (req, res, next) {}
 
   /**
-   * Renders the group view when logged in.
+   * Handles removing of a friend on the friends-list.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async groups (req, res, next) {
-    res.render('main/groups')
-  }
+  async remove (req, res, next) {}
 }
