@@ -13,10 +13,6 @@ gray scale:
 #242424
 */
 
-profile-selector {
-    margin-top: 100px;
-}
-
 html {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     color: #211522;
@@ -46,11 +42,11 @@ main {
     display: none !important;
 }
 
-.hidden2 {
+.hiddenVis {
     visibility: hidden !important;
 }
 
-/*<---- VALIDATION FLASH MESSAGE BOX ---->*/
+/*<-------------------------- VALIDATION FLASH MESSAGE BOX -------------------------->*/
 .flash_message {
     width: 60vw;
     margin: 20px auto;
@@ -62,7 +58,24 @@ main {
     text-align: center; /* Center text */
 }
 
-/*<---- HEADER ---->*/
+/*<-------------------------- BUTTONS -------------------------->*/
+.submit-button-user button {
+    margin: 5px;
+    width: max-content;
+    height: 30px;
+    color: #D3B1C2;
+    border-radius: 5px;
+    border: 1px solid #D3B1C2;
+    background-color: #211522;
+}
+
+.submit-button-user button:hover {
+    color: #211522;
+    border: 1px solid #211522;
+    background-color: #D3B1C2;
+}
+
+/*<-------------------------- HEADER -------------------------->*/
 header {
     background-image: url('../img/loginBackground.jpg');
     background-color: #211522;
@@ -110,7 +123,7 @@ logged-in-box {
     margin: 0 auto;
 }
 
-/*<---- NAVIGATION ---->*/
+/*<-------------------------- NAVIGATION -------------------------->*/
 nav ul { /* All lists */
     list-style: none;
     margin: 0;
@@ -168,7 +181,7 @@ nav a:hover {
     height: 50px;
 }
 
-/*<---- FOOTER ---->*/
+/*<-------------------------- FOOTER -------------------------->*/
 
 footer {
     background-color: #211522;
@@ -193,7 +206,17 @@ foother i {
     margin: 10px;
 }
 
-/*<----  Starting pages (non-logged in user), login, signup and reclaim account ---->*/
+/*<-------------------------- LOGGED IN BODY -------------------------->*/
+#logged-in-pages main {
+    grid-area: main;
+    height: 100%;
+    color: #D3B1C2;
+    overflow-y: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/*<----------------------  STARTING PAGES (non-logged in user), /login, /signup and /reclaim -------------------->*/
 #starting-pages {
     background-image: url("../img/loginBackground.jpg");
     background-size: cover 100%;
@@ -244,33 +267,7 @@ foother i {
     color: #613659;
 }
 
-.submit-button-user button {
-    margin: 5px;
-    width: max-content;
-    height: 30px;
-    color: #D3B1C2;
-    border-radius: 5px;
-    border: 1px solid #D3B1C2;
-    background-color: #211522;
-}
-
-.submit-button-user button:hover {
-    color: #211522;
-    border: 1px solid #211522;
-    background-color: #D3B1C2;
-}
-
-/*<---- LOGGED IN BODY ---->*/
-#logged-in-pages main {
-    grid-area: main;
-    height: 100%;
-    color: #D3B1C2;
-    overflow-y: auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-/*<---- SETTINGS-PAGE ---->*/
+/*<--------------------------- SETTINGS-PAGE -------------------------->*/
 #settings {
     display: flex;
     flex-direction: column;
@@ -297,12 +294,14 @@ profile-selector {
     overflow: hidden;
     border: 2px solid #242424;
     border-radius: 10px;
-    height: 300px;
+    max-height: 50px;
+    height: auto;
     width: 30%;
     box-sizing: border-box;
     flex-shrink: 1;
     display: flex;
     flex-direction: column;
+    transition: max-height 1s ease-in-out, visibility 1s ease-in-out;
 }
 
 .settings-components h3 {
@@ -339,14 +338,16 @@ profile-selector {
 .settings-components form {
     position: relative;
     width: 100%;
-    height: 0;
     overflow: hidden;
-    transition: height 0.5s ease-in-out, visibility 0.5s ease-in-out;
 }
 
 .settings-components.expanded form,
 .settings-components.expanded delete-account {
-    height: 100%;
+    visibility: visible;
+}
+
+.settings-components.expanded {
+    max-height: 500px;
     visibility: visible;
 }
 
@@ -357,7 +358,77 @@ profile-selector {
     width: 100%;
 }
 
-/*<---- SCROLL-BAR CUSTOMIZATION ---->*/
+/*<-------------------------- FRIENDS-PAGE -------------------------->*/
+#friends-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#searchbox {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #242424;
+    border-radius: 10px;
+    width: 40vw;
+    padding-bottom: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: max-height 1s ease-in-out, visibility 1s ease-in-out;
+    max-height: 35px;
+}
+
+#searchbox h3 {
+    display: flex;
+    background-color: #211522;
+    height: 30px;
+    width: 100%;
+    color: #D3B1C2;
+    text-align: center;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1;
+}
+
+#searchbox input {
+    width:30ch;
+}
+
+#searchbox > form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#searchbox.expanded > form {
+    visibility: visible;
+}
+
+#searchbox.expanded {
+    max-height: 200px;
+    visibility: visible;
+}
+
+#search-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
 /* Width */
 ::-webkit-scrollbar {
     width: 7px; /* width of the entire scrollbar */
@@ -395,7 +466,7 @@ profile-selector {
     }
 }
 
-/*<---- MEDIA QUERIES ---->*/
+/*<-------------------------- MEDIA QUERIES -------------------------->*/
 @media (max-width: 900px) {
     html {
         font-size: 95%;
@@ -406,6 +477,8 @@ profile-selector {
     logged-in-box {
         left: 62.5%;
     }
+
+    /*<------ SETTINGS ------>*/
     #settings-container {
         gap: 2px;
     }
@@ -433,6 +506,7 @@ profile-selector {
         padding-bottom: 15px;
     }
 
+    /*<------ HEADER/NAV ------>*/
     nav ul.active {
         display: flex;
     }
@@ -453,6 +527,7 @@ profile-selector {
         display: none;
     }
 
+    /*<------ SETTINGS ------>*/
     #settings-container {
         display: flex;
         flex-direction: column;

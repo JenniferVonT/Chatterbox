@@ -11,7 +11,7 @@
     <div id="settings-container">
       <div class="settings-components" id="changeEmailContainer">
         <h3>Change e-mail: <img src="./img/rollDownIcon.svg" alt="down"></h3>
-        <form method="POST" action="./updateEmail" class="changing-forms hidden2">
+        <form method="POST" action="./updateEmail" class="changing-forms hiddenVis">
           <input autocomplete="off" type="password" class="form-control" id="ch-email-password" minlength="10" maxlength="256" name="password" placeholder="Enter your password" required />
           <input autocomplete="off" type="email" class="form-control" id="ch-email-old" name="oldEmail" placeholder="Old e-mail" required autofocus />
           <input autocomplete="off" type="email" class="form-control" id="ch-email-new" name="newEmail" placeholder="New e-mail" required autofocus />
@@ -23,7 +23,7 @@
   
       <div class="settings-components" id="changePasswordContainer">
         <h3>Change password: <img src="./img/rollDownIcon.svg" alt="down"></h3>
-        <form method="POST" action="./updatePassword" class="changing-forms hidden2">
+        <form method="POST" action="./updatePassword" class="changing-forms hiddenVis">
           <input autocomplete="off" type="password" class="form-control" id="old-password" minlength="10" maxlength="256" name="oldPassword" placeholder="Old password" required />
           <input autocomplete="off" type="password" class="form-control" id="new-password" minlength="10" maxlength="256" name="newPassword" placeholder="New password" required />
           <input autocomplete="off" type="password" class="form-control" id="new-password2" minlength="10" maxlength="256" name="newPassword2" placeholder="Repeat new password" required />
@@ -35,7 +35,7 @@
   
       <div class="settings-components" id="deleteAcc">
         <h3>Delete account: <img src="./img/rollDownIcon.svg" alt="down"></h3>
-        <delete-account class="hidden2"></delete-account>
+        <delete-account class="hiddenVis"></delete-account>
       </div>
     </div>
   </div>

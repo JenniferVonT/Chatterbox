@@ -1,11 +1,11 @@
 <% if (locals.user) { %>
-<!--------------------------------SEARCHBOX-------------------------------->
-<div id="friend-page">
+<div id="friends-page">
+<!---------------------SEARCHBOX--------------------->
   <div id="searchbox">
-    <h3>Search for users:</h3>
-    <form method="POST" action="./search" id="search-form">
+    <h3 id="search-users">Search for users:</h3>
+    <form method="POST" action="./search" id="search-form" class="hiddenVis">
       <input type="text" autocomplete="off" name="searchTerm" minlength="1" placeholder="Search for a user!" required>
-      <div class="submit-button-user">
+      <div class="submit-button-user" id="search-button">
         <button type="submit">Search</button>
       </div>
     </form>
@@ -46,14 +46,11 @@
     <table>
       <thead>
         <tr>
-          <th></th>
-          <th></th>
-          <th></th>
         </tr>
       </thead>
-      <% if (viewData.friends) { %>
-      <% for (const friend of viewData.friends) { %>
       <tbody>
+      <% if (locals.user.friends) { %> 
+      <% for (const friend of locals.user.friends) { %>
         <tr>
           <td>
             <div class="friend-profile-img">
@@ -67,9 +64,8 @@
             <a href="./friends/remove/<%= friend.id %>" class="button-style">Remove</a>
           </td>
         </tr>
+      <% }} %>
       </tbody>
-      <% } %>
-      <% } %>
     </table>
   </div>
 </div> <!---Last div for the page!--->

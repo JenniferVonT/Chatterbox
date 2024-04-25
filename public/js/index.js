@@ -1,81 +1,32 @@
 import './components/logged-in-box/index.js'
 import './components/settings-comps/delete-account/index.js'
-
-// <----------------------------- SETTINGS PAGE ----------------------------->
-document.querySelectorAll('.settings-components h3').forEach(h3 => {
-  h3.addEventListener('click', () => {
-    const parent = h3.closest('.settings-components')
-    parent.classList.toggle('expanded')
-    const form = parent.querySelector('form')
-    const deleteAcc = parent.querySelector('delete-account')
-
-    if (form) {
-      form.classList.toggle('hidden2')
-    } else {
-      deleteAcc.classList.toggle('hidden2')
-    }
-  })
-})
-
-// Handle the profile img being changed:
-const profileSelector = document.querySelector('profile-selector')
-const profileURI = profileSelector.getAttribute('current-img')
-const currentImage = profileSelector.querySelector(`img[src="./img/profiles/${profileURI}"]`)
-currentImage.setAttribute('current', '')
-
-profileSelector.addEventListener('profileImageChanged', (event) => handleProfileChange(event))
+import { settingsPage } from './settings.js'
+import { friendsPage } from './friends.js'
 
 /**
- * Handles the post request to the server to change profile image.
- *
- * @param {Event} event - the custom event for profile images.
+ * Determine what page is loaded and run the corresponding js file.
  */
-async function handleProfileChange (event) {
-  try {
-    const data = event.detail
-    const imageURI = data.fileName
+function determinePage () {
+  const page = document.querySelector('main')
+  const firstDiv = page.querySelectorAll('div')
+  let currentPage = ''
 
-    const response = await fetch('/changeProfileImg', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        image: imageURI
-      })
-    })
+  if (firstDiv[0].hasAttribute('id')) {
+    currentPage = firstDiv[0].getAttribute('id')
+  } else {
+    currentPage = firstDiv[1].getAttribute('id')
+  }
 
-    if (response.status !== 200) {
-      throw new Error('post request failed!')
-    }
-
-    currentImage.setAttribute('current', '')
-
-    location.replace(location.href)
-  } catch (error) {
-    console.error('An error occured: ', error)
+  switch (currentPage) {
+    case 'settings':
+      settingsPage()
+      break
+    case 'friends-page':
+      friendsPage()
+      break
+    default:
+      console.error('Unknown page:', currentPage)
   }
 }
 
-// Handle the deletion of an account in the settings:
-
-const deleteUser = document.querySelector('delete-account')
-
-deleteUser.addEventListener('deleteAccount', () => deleteUserHandler())
-
-/**
- * Handles when a user deletes their account.
- */
-async function deleteUserHandler () {
-  try {
-    const response = await fetch('/deleteUser', { method: 'POST' })
-
-    if (response.status !== 200) {
-      location.replace(location.href)
-    }
-
-    location.replace('/')
-  } catch (error) {
-    console.error('An error occured: ', error)
-  }
-}
+document.addEventListener('DOMContentLoaded', determinePage())
