@@ -35,7 +35,7 @@ export const settingsPage = function () {
       const data = event.detail
       const imageURI = data.fileName
 
-      const response = await fetch('/changeProfileImg', {
+      const response = await fetch('/chatterbox/changeProfileImg', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -68,13 +68,14 @@ export const settingsPage = function () {
    */
   async function deleteUserHandler () {
     try {
-      const response = await fetch('/deleteUser', { method: 'POST' })
+      const response = await fetch('/chatterbox/deleteUser', { method: 'POST' })
 
       if (response.status !== 200) {
-        location.replace(location.href)
+        console.error('Couldn\'t delete the user.')
+        location.reload()
       }
 
-      location.replace('/')
+      location.replace('/chatterbox')
     } catch (error) {
       console.error('An error occured: ', error)
     }
