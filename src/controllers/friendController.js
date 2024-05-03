@@ -57,6 +57,34 @@ export class FriendController {
   }
 
   /**
+   * Handles searching for users..
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async searchUsers (req, res, next) {
+    const { searchTerm } = req.body
+
+    // Create a regex pattern to match usernames that start with the search term.
+    const regexPattern = new RegExp(`^${searchTerm}`)
+
+    try {
+      // Find all users with complete or partial matches, only get the username, user-id and profileImg.
+      const searchResult = await UserModel.find(
+        { username: regexPattern },
+        { username: 1, id: 1, profileImg: 1 }
+      )
+
+      const viewData = { results: searchResult.map(result => result.toObject()) }
+
+      res.render('main/friends', { viewData })
+    } catch (error) {
+
+    }
+  }
+
+  /**
    * Handles adding a friend to the friends-list.
    *
    * @param {object} req - Express request object.

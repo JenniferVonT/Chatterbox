@@ -5,7 +5,6 @@ export const friendsPage = function () {
   const searchboxTitle = document.querySelector('#search-users')
   const searchBox = document.querySelector('#searchbox')
   const searchForm = document.querySelector('#search-form')
-  console.log(searchBox, searchForm, searchboxTitle)
 
   searchboxTitle.addEventListener('click', () => {
     searchBox.classList.toggle('expanded')

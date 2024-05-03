@@ -397,6 +397,8 @@ profile-selector {
     cursor: pointer;
     padding: 5px;
     z-index: 1;
+    position: sticky;
+    top: 0;
 }
 
 #searchbox input {
@@ -419,7 +421,8 @@ profile-selector {
 }
 
 #searchbox.expanded {
-    max-height: 200px;
+    max-height: 350px;
+    overflow-y: auto;
     visibility: visible;
 }
 
@@ -427,6 +430,25 @@ profile-selector {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.search-results {
+    display: flex;
+    margin-top: auto;
+}
+
+.friend-profile-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    border: 2px solid #D3B1C2;
+    overflow: hidden;
+}
+
+.friend-profile-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
@@ -482,6 +504,10 @@ profile-selector {
     /*<------ SETTINGS ------>*/
     #settings-container {
         gap: 2px;
+    }
+
+    #searchbox {
+        width: 60vw;
     }
 }
 
@@ -539,5 +565,10 @@ profile-selector {
         width: 90vw;
         height: max-content;
         margin-bottom: 20px;
+    }
+
+    /*<------ FRIENDS-PAGE ------>*/
+    #searchbox {
+        width: 80vw;
     }
 }

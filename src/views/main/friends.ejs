@@ -1,21 +1,21 @@
 <% if (locals.user) { %>
 <div id="friends-page">
 <!---------------------SEARCHBOX--------------------->
-  <div id="searchbox">
+  <div id="searchbox" <%= viewData.results ? 'class=expanded' : 'class=' %>>
     <h3 id="search-users">Search for users:</h3>
-    <form method="POST" action="./search" id="search-form" class="hiddenVis">
+    <form method="POST" action="./main/friends" id="search-form" <%= !viewData.results ? 'class=hiddenVis' : '' %>>
       <input type="text" autocomplete="off" name="searchTerm" minlength="1" placeholder="Search for a user!" required>
       <div class="submit-button-user" id="search-button">
         <button type="submit">Search</button>
       </div>
     </form>
-    <% if (viewData.searchResult) { %>
-    <% if (viewData.searchResult > 0) { %>
+
+    <% if (viewData.results && viewData.results.length > 0) { %>
       <div class="search-results">
         <table id="search-table">
           <thead></thead>
           <tbody>
-          <% for (const result of viewData.searchResult) { %>
+          <% for (const result of viewData.results) { %>
             <tr class="search-profile">
               <td>
                 <div class="friend-profile-img">
@@ -33,11 +33,10 @@
           </tbody> 
         </table>
       </div>
-    <% } else { %>
+    <% } else if (viewData.results && viewData.results.length === 0) { %>
       <div class="search-results no-result">
         <h3>NO RESULTS</h3>
       </div>
-    <% } %>
     <% } %>
   </div>
 

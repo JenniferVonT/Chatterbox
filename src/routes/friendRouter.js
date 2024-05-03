@@ -16,6 +16,7 @@ const controller = new FriendController()
 router.param('id', (req, res, next, user) => controller.loadFriend(req, res, next, user))
 
 router.get('/', (req, res, next) => controller.friends(req, res, next))
+router.post('/', (req, res, next) => controller.searchUsers(req, res, next))
 
 router.post('/add/:id', (req, res, next) => controller.add(req, res, next))
 router.post('/remove/:id', (req, res, next) => controller.remove(req, res, next))
