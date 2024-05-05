@@ -181,5 +181,28 @@ export class FriendController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async remove (req, res, next) {}
+  async remove (req, res, next) {
+    try {
+      // Get the session user object and the friend object.
+      const sessionID = req.session.user.id
+      const friend = req.friend
+      const sessionUser = await UserModel.findById(sessionID)
+
+      // Remove both users from eachothers friends-list.
+      friend.friends = friend.friends.filter(req => req.id !== sessionID)
+      sessionUser.friends = sessionUser.friends.filter(req => req.id !== friend.id)
+
+      // Update the session and save the models in the db.
+      req.session.user.friends = sessionUser.friends
+
+      await friend.save({ validateBeforeSave: false })
+      await sessionUser.save({ validateBeforeSave: false })
+
+      req.session.flash = { type: 'success', text: 'The friend was successfully removed!' }
+      res.redirect('../')
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: 'Something went wrong, try again!' }
+      res.redirect('../')
+    }
+  }
 }

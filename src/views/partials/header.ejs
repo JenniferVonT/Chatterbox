@@ -7,6 +7,18 @@
         <ul id="collapsible-friend-list">
           <li><a href="./main/friends">+ add friend</a></li>
           <!--- APPEND ALL FRIENDS -->
+          <% if (locals.user.friends) { %>
+            <% for (const friend of locals.user.friends) { %>
+              <li>
+                <a href="./main/chat/<%= friend.id %>">
+                  <div class="dropdown-profile-img">
+                    <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
+                  </div>
+                  <%= friend.username %>
+                </a>
+              </li>
+            <% } %>
+          <% } %>
         </ul>
       </li>
       <li id="groupIcon" class="nav-icons">

@@ -124,6 +124,15 @@ logged-in-box {
     margin: 0 auto;
 }
 
+.dropdown-profile-img {
+    border: 2px solid #D3B1C2;
+    border-radius: 10px;
+    height: 40px;
+    width: 40px;
+    overflow: hidden;
+    margin-right: 5px;
+}
+
 /*<-------------------------- NAVIGATION -------------------------->*/
 nav ul { /* All lists */
     list-style: none;
@@ -163,8 +172,9 @@ nav ul li:hover ul {
 nav a {
     color: #D3B1C2;
     text-decoration: none;
-    display: block;
-    padding: 0.5em;
+    display: flex;
+    align-items: center;
+    padding: 5px;
 }
 
 nav a:hover {
@@ -390,9 +400,9 @@ profile-selector {
 }
 
 #friend-list {
-    margin-right: 10px;
-    max-height: 75vh;
-    height: 75vh;
+    max-height: 60vh;
+    height: 60vh;
+    overflow-y: auto;
 }
 
 #search-users,
@@ -439,8 +449,7 @@ profile-selector {
 }
 
 #searchbox.expanded,
-#friendReq-list.expanded,
-#friends-table {
+#friendReq-list.expanded{
     max-height: 30vh;
     overflow-y: auto;
     visibility: visible;
@@ -453,7 +462,8 @@ profile-selector {
 }
 
 .search-results,
-#friendReq-table {
+#friendReq-table,
+#friends-table {
     display: flex;
     flex-direction: column;
     margin-top: auto;
@@ -461,26 +471,42 @@ profile-selector {
 }
 
 #search-table,
-#friendReq-table table {
+#friendReq-table table,
+#friends-table table {
     width: 100%;
-    margin: 10px;
+}
+
+#friends-table {
+    max-height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+#friends-table table {
+    max-height: 100%;
+    object-fit: contain;
+    padding-right: 20px;
+    flex: 1;
 }
 
 .search-profile,
-.reqTable-list {
+.reqTable-list,
+.friend-table-list {
     display: flex;
     align-items: center;
     width: 100%;
 }
 
 .search-profile .search-username,
-.reqTable-list .friend-username {
+.reqTable-list .friend-username,
+.friend-table-list .friend-username {
     margin-left: 10px;
     flex: 1 1 auto; /* Fill the remaining width */
 }
 
 .search-profile .search-add-btn,
-.reqTable-list .friend-action {
+.reqTable-list .friend-action
+.friend-table-list .friend-action {
     margin-right: 10px;
     flex: 0 0 auto; /* Maintain the min-content width */
 }
@@ -499,7 +525,8 @@ profile-selector {
     overflow: hidden;
 }
 
-.friend-profile-img img {
+.friend-profile-img img,
+.dropdown-profile-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -649,7 +676,7 @@ header .gotRequests {
 
     #friend-list {
         max-height: 30vh;
-        height: 30vh;
+        height: 100%;
     }
 
     #search-and-reqs {

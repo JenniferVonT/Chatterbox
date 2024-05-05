@@ -12,7 +12,7 @@
       <tbody>
       <% if (locals.user.friends) { %> 
       <% for (const friend of locals.user.friends) { %>
-        <tr>
+        <tr class="friend-table-list">
           <td>
             <div class="friend-profile-img">
               <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
