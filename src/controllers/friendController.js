@@ -50,12 +50,9 @@ export class FriendController {
    */
   async friends (req, res, next) {
     try {
-      // Get the session user from the req.
-      const sessionUser = req.session.user
+      const viewData = null
 
-      const friendReqs = await this.getFriendReqList(sessionUser)
-
-      res.render('main/friends', { viewData: { friendReqs } })
+      res.render('main/friends', { viewData })
     } catch (error) {
       next(error)
     }
@@ -76,16 +73,12 @@ export class FriendController {
 
     try {
       // Find all users with complete or partial matches, only get the username, user-id and profileImg.
-      const searchResult = await UserModel.find(
+      const searchResults = await UserModel.find(
         { username: regexPattern },
         { username: 1, id: 1, profileImg: 1 }
       )
 
-      const friendReqs = await this.getFriendReqList(req.session.user)
-
-      const viewData = { results: searchResult.map(result => result.toObject()), friendReqs }
-
-      res.render('main/friends', { viewData })
+      res.render('main/friends', { viewData: { results: searchResults } })
     } catch (error) {
 
     }
@@ -99,16 +92,21 @@ export class FriendController {
    * @param {Function} next - Express next middleware function.
    */
   async sendFriendRequest (req, res, next) {
-    const friend = req.friend
-    const sessionUser = req.session.user
+    try {
+      const friend = req.friend
+      const sessionUser = req.session.user
 
-    // Insert the id of the person making the request into the requested users db.
-    friend.friendReqs.push({ id: sessionUser.id })
+      // Insert the id of the person making the request into the requested users db.
+      friend.friendReqs.push({ id: sessionUser.id })
 
-    await friend.save({ validateBeforeSave: false })
+      await friend.save({ validateBeforeSave: false })
 
-    req.session.flash = { type: 'success', text: 'Your friend request was successfully sent!' }
-    res.redirect('../')
+      req.session.flash = { type: 'success', text: 'Your friend request was successfully sent!' }
+      res.redirect('../')
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: 'Something went wrong, try again!' }
+      res.redirect('../')
+    }
   }
 
   /**
@@ -118,7 +116,63 @@ export class FriendController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async add (req, res, next) {}
+  async add (req, res, next) {
+    try {
+      // Get the user-id that send the request and the current session user.
+      const request = req.friend.id
+      const sessionID = req.session.user.id
+      const user = await UserModel.findById(sessionID)
+      const requestUser = await UserModel.findById(request)
+
+      // Remove the request from the friendReq list and add the user to the friend-list instead.
+      user.friendReqs = user.friendReqs.filter(req => req.id !== request)
+      req.session.user.friendReqs = user.friendReqs
+
+      user.friends.push({ id: request })
+      req.session.user.friends = user.friends
+
+      requestUser.friends.push({ id: sessionID })
+
+      // Save only the changed objects.
+      await user.save({ validateBeforeSave: false })
+      await requestUser.save({ validateBeforeSave: false })
+
+      req.session.flash = { type: 'success', text: 'The friend was successfully added!' }
+      res.redirect('../')
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: 'Something went wrong, try again!' }
+      res.redirect('../')
+    }
+  }
+
+  /**
+   * Handles denying a friend request.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async deny (req, res, next) {
+    try {
+      // Get the user-id that send the request and the current session user.
+      const request = req.friend.id
+      const sessionID = req.session.user.id
+      const user = await UserModel.findById(sessionID)
+
+      // Remove the request from the friendReq list and save.
+      user.friendReqs = user.friendReqs.filter(req => req.id !== request)
+
+      req.session.user.friendReqs = user.friendReqs
+
+      await user.save({ validateBeforeSave: false })
+
+      req.session.flash = { type: 'success', text: 'The friend request was denied and removed!' }
+      res.redirect('../')
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: 'Something went wrong, try again!' }
+      res.redirect('../')
+    }
+  }
 
   /**
    * Handles removing of a friend on the friends-list.
@@ -128,24 +182,4 @@ export class FriendController {
    * @param {Function} next - Express next middleware function.
    */
   async remove (req, res, next) {}
-
-  /**
-   * Gets the friend requests that is located within the session user,
-   * creates an object containing the user objects of the requests.
-   *
-   * @param {object} sessionUser - The current session user.
-   * @returns {object[]} - An array containing user objects.
-   */
-  async getFriendReqList (sessionUser) {
-    // Load the friend requests for the session user
-    const friendReqs = []
-    for (const friendRequest of sessionUser.friendReqs) {
-      const friend = await UserModel.findById(friendRequest.id)
-      if (friend) {
-        friendReqs.push(friend)
-      }
-    }
-
-    return friendReqs
-  }
 }

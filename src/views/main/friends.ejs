@@ -35,16 +35,16 @@
 
 <div id="search-and-reqs">
 <!---------------------SEARCHBOX--------------------->
-    <div id="searchbox" <%= viewData.results ? 'class=expanded' : 'class=' %>>
+    <div id="searchbox" <%= viewData && viewData.results ? 'class=expanded' : 'class=' %>>
       <h3 id="search-users">Search for users</h3>
-      <form method="POST" action="./main/friends" id="search-form" <%= !viewData.results ? 'class=hiddenVis' : '' %>>
+      <form method="POST" action="./main/friends" id="search-form" <%= viewData && viewData.results ? '' : 'class=hiddenVis' %>>
         <input type="text" autocomplete="off" name="searchTerm" minlength="1" placeholder="Search for a user!" required>
         <div class="submit-button-user" id="search-button">
           <button type="submit">Search</button>
         </div>
       </form>
 
-      <% if (viewData.results && viewData.results.length > 0) { %>
+      <% if (viewData && viewData.results.length > 0) { %>
         <div class="search-results">
           <table id="search-table">
             <thead></thead>
@@ -69,7 +69,7 @@
             </tbody> 
           </table>
         </div>
-      <% } else if (viewData.results && viewData.results.length === 0) { %>
+      <% } else if (viewData && viewData.results.length === 0) { %>
         <div class="search-results no-result">
           <h3>NO RESULTS</h3>
         </div>
@@ -77,17 +77,17 @@
     </div>
 
 <!--------------------------------FRIEND-REQUESTS-------------------------------->
-    <div id="friendReq-list" <%= viewData.friendReqs.length ? 'class=gotRequests' : 'class=' %>>
-      <h3 id="friend-reqs">Friend requests</h3>
-      <div id="friendReq-table" <%= viewData.friendReqs ? 'class=hiddenVis' : '' %>>
+    <div id="friendReq-list" <%= locals.user.friendReqs.length ? 'class=gotRequests' : 'class=' %>>
+      <h3 id="friend-reqs">Friend requests (<%= locals.user.friendReqs.length %>)</h3>
+      <div id="friendReq-table" <%= locals.user.friendReqs ? 'class=hiddenVis' : '' %>>
         <table>
           <thead>
             <tr>
             </tr>
           </thead>
           <tbody>
-          <% if (viewData.friendReqs) { %> 
-          <% for (const friend of viewData.friendReqs) { %>
+          <% if (locals.user.friendReqs) { %> 
+          <% for (const friend of locals.user.friendReqs) { %>
             <tr class="reqTable-list">
               <td>
                 <div class="friend-profile-img">
