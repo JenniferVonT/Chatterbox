@@ -50,7 +50,12 @@ export class FriendController {
    */
   async friends (req, res, next) {
     try {
-      res.render('main/friends', { viewData: {} })
+      // Get the session user from the req.
+      const sessionUser = req.session.user
+
+      const friendReqs = await this.getFriendReqList(sessionUser)
+
+      res.render('main/friends', { viewData: { friendReqs } })
     } catch (error) {
       next(error)
     }
@@ -76,7 +81,9 @@ export class FriendController {
         { username: 1, id: 1, profileImg: 1 }
       )
 
-      const viewData = { results: searchResult.map(result => result.toObject()) }
+      const friendReqs = await this.getFriendReqList(req.session.user)
+
+      const viewData = { results: searchResult.map(result => result.toObject()), friendReqs }
 
       res.render('main/friends', { viewData })
     } catch (error) {
@@ -91,11 +98,11 @@ export class FriendController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async makeFriendRequest (req, res, next) {
-    // Save the session user as a friend-request in the requested user in the db.
+  async sendFriendRequest (req, res, next) {
     const friend = req.friend
     const sessionUser = req.session.user
 
+    // Insert the id of the person making the request into the requested users db.
     friend.friendReqs.push({ id: sessionUser.id })
 
     await friend.save({ validateBeforeSave: false })
@@ -121,4 +128,24 @@ export class FriendController {
    * @param {Function} next - Express next middleware function.
    */
   async remove (req, res, next) {}
+
+  /**
+   * Gets the friend requests that is located within the session user,
+   * creates an object containing the user objects of the requests.
+   *
+   * @param {object} sessionUser - The current session user.
+   * @returns {object[]} - An array containing user objects.
+   */
+  async getFriendReqList (sessionUser) {
+    // Load the friend requests for the session user
+    const friendReqs = []
+    for (const friendRequest of sessionUser.friendReqs) {
+      const friend = await UserModel.findById(friendRequest.id)
+      if (friend) {
+        friendReqs.push(friend)
+      }
+    }
+
+    return friendReqs
+  }
 }

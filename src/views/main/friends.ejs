@@ -42,6 +42,42 @@
     <% } %>
   </div>
 
+<!--------------------------------FRIEND-REQUESTS-------------------------------->
+  <div id="friendReq-list" <%= viewData.friendReqs.length ? 'class=gotRequests' : 'class=' %>>
+    <h3 id="friend-reqs">Friend requests</h3>
+    <div id="friendReq-table" <%= viewData.friendReqs ? 'class=hiddenVis' : '' %>>
+      <table>
+        <thead>
+          <tr>
+          </tr>
+        </thead>
+        <tbody>
+        <% if (viewData.friendReqs) { %> 
+        <% for (const friend of viewData.friendReqs) { %>
+          <tr class="reqTable-list">
+            <td>
+              <div class="friend-profile-img">
+                <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
+              </div>
+            </td>
+            <td class="friend-username">
+              <%= friend.username %>
+            </td>
+            <td class="friend-action">
+              <form method="POST" action="./main/friends/add/<%= friend.id %>" class="submit-button-user">
+                <button type="submit">Accept</button>
+              </form>
+              <form method="POST" action="./main/friends/deny/<%= friend.id %>" class="submit-button-user">
+                <button type="submit">Deny</button>
+              </form>
+            </td>
+          </tr>
+        <% }} %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 <!--------------------------------FRIENDLIST-------------------------------->
   <div id="friend-list">
     <table>
