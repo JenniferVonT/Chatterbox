@@ -3,7 +3,7 @@
   <nav class="header-nav">
     <ul>
       <li id="friendsIcon" class="nav-icons">
-        <a href="./main/friends"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon"></a>
+        <a href="./main/friends"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon" <%= locals.user.friendReqs.length ? 'class=gotRequests' : '' %>></a>
         <ul id="collapsible-friend-list">
           <li><a href="./main/friends">+ add friend</a></li>
           <!--- APPEND ALL FRIENDS -->

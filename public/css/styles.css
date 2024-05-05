@@ -362,18 +362,25 @@ profile-selector {
 /*<-------------------------- FRIENDS-PAGE -------------------------->*/
 #friends-page {
     display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+#search-and-reqs {
+    display: flex;
     flex-direction: column;
-    align-items: center;
+    width: 50%;
 }
 
 #searchbox,
-#friendReq-list {
+#friendReq-list,
+#friend-list {
     position: relative;
     overflow: hidden;
     border: 2px solid #242424;
     border-radius: 10px;
-    width: 40vw;
-    padding-bottom: 10px;
+    width: 100%;
+    margin-bottom: 10px;
     box-sizing: border-box;
     display: block;
     flex-direction: column;
@@ -382,8 +389,15 @@ profile-selector {
     max-height: 41px;
 }
 
+#friend-list {
+    margin-right: 10px;
+    max-height: 75vh;
+    height: 75vh;
+}
+
 #search-users,
-#friend-reqs {
+#friend-reqs,
+#friend-list-title {
     display: flex;
     background-color: #211522;
     height: 30px;
@@ -408,7 +422,8 @@ profile-selector {
 }
 
 #searchbox > form,
-#friendReq-table {
+#friendReq-table,
+#friends-table {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -424,8 +439,9 @@ profile-selector {
 }
 
 #searchbox.expanded,
-#friendReq-list.expanded {
-    max-height: 350px;
+#friendReq-list.expanded,
+#friends-table {
+    max-height: 30vh;
     overflow-y: auto;
     visibility: visible;
 }
@@ -447,23 +463,31 @@ profile-selector {
 #search-table,
 #friendReq-table table {
     width: 100%;
+    margin: 10px;
 }
 
 .search-profile,
 .reqTable-list {
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .search-profile .search-username,
 .reqTable-list .friend-username {
     margin-left: 10px;
-    flex: 1; /* Fill the remaining width */
+    flex: 1 1 auto; /* Fill the remaining width */
 }
 
 .search-profile .search-add-btn,
 .reqTable-list .friend-action {
+    margin-right: 10px;
     flex: 0 0 auto; /* Maintain the min-content width */
+}
+
+.friend-action {
+    display: flex;
+    flex-direction: row;
 }
 
 .friend-profile-img {
@@ -491,9 +515,15 @@ profile-selector {
     justify-content: center;
 }
 
+header .gotRequests {
+    background-color: #4cbb4c;
+    border-radius: 12px;
+}
+
 #friendReq-list.gotRequests {
     border: 2px solid #4cbb4c;
 }
+
 
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
 /* Width */
@@ -548,11 +578,6 @@ profile-selector {
     /*<------ SETTINGS ------>*/
     #settings-container {
         gap: 2px;
-    }
-
-    #searchbox,
-    #friendReq-list  {
-        width: 60vw;
     }
 }
 
@@ -613,13 +638,26 @@ profile-selector {
     }
 
     /*<------ FRIENDS-PAGE ------>*/
-    #searchbox,
-    #friendReq-list  {
-        width: 80vw;
-    }
-
     .friend-profile-img {
         width: 35px;
         height: 35px;
+    }
+
+    #friends-page {
+        flex-direction: column;
+    }
+
+    #friend-list {
+        max-height: 30vh;
+        height: 30vh;
+    }
+
+    #search-and-reqs {
+        width: 100%;
+    }
+
+    #searchbox.expanded,
+    #friendReq-list.expanded {
+        max-height: 25vh;
     }
 }

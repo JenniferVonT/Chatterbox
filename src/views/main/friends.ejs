@@ -1,85 +1,9 @@
 <% if (locals.user) { %>
 <div id="friends-page">
-<!---------------------SEARCHBOX--------------------->
-  <div id="searchbox" <%= viewData.results ? 'class=expanded' : 'class=' %>>
-    <h3 id="search-users">Search for users:</h3>
-    <form method="POST" action="./main/friends" id="search-form" <%= !viewData.results ? 'class=hiddenVis' : '' %>>
-      <input type="text" autocomplete="off" name="searchTerm" minlength="1" placeholder="Search for a user!" required>
-      <div class="submit-button-user" id="search-button">
-        <button type="submit">Search</button>
-      </div>
-    </form>
-
-    <% if (viewData.results && viewData.results.length > 0) { %>
-      <div class="search-results">
-        <table id="search-table">
-          <thead></thead>
-          <tbody>
-          <% for (const result of viewData.results) { %>
-            <tr class="search-profile">
-              <td>
-                <div class="friend-profile-img">
-                  <img src="./img/profiles/<%= result.profileImg %>" alt="profileImg">
-                </div>
-              </td>
-              <td class="search-username">
-                <%= result.username %>
-              </td>
-              <td class="search-add-btn">
-                <form method="POST" action="./main/friends/friendReq/<%= result.id %>" class="submit-button-user">
-                  <button type="submit">Send friend request</button>
-                </form>
-              </td>
-            </tr>
-          <% } %>
-          </tbody> 
-        </table>
-      </div>
-    <% } else if (viewData.results && viewData.results.length === 0) { %>
-      <div class="search-results no-result">
-        <h3>NO RESULTS</h3>
-      </div>
-    <% } %>
-  </div>
-
-<!--------------------------------FRIEND-REQUESTS-------------------------------->
-  <div id="friendReq-list" <%= viewData.friendReqs.length ? 'class=gotRequests' : 'class=' %>>
-    <h3 id="friend-reqs">Friend requests</h3>
-    <div id="friendReq-table" <%= viewData.friendReqs ? 'class=hiddenVis' : '' %>>
-      <table>
-        <thead>
-          <tr>
-          </tr>
-        </thead>
-        <tbody>
-        <% if (viewData.friendReqs) { %> 
-        <% for (const friend of viewData.friendReqs) { %>
-          <tr class="reqTable-list">
-            <td>
-              <div class="friend-profile-img">
-                <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
-              </div>
-            </td>
-            <td class="friend-username">
-              <%= friend.username %>
-            </td>
-            <td class="friend-action">
-              <form method="POST" action="./main/friends/add/<%= friend.id %>" class="submit-button-user">
-                <button type="submit">Accept</button>
-              </form>
-              <form method="POST" action="./main/friends/deny/<%= friend.id %>" class="submit-button-user">
-                <button type="submit">Deny</button>
-              </form>
-            </td>
-          </tr>
-        <% }} %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
 <!--------------------------------FRIENDLIST-------------------------------->
-  <div id="friend-list">
+<div id="friend-list">
+  <h3 id="friend-list-title">Friends</h3>
+  <div id="friends-table">
     <table>
       <thead>
         <tr>
@@ -98,12 +22,95 @@
             <%= friend.username %>
           </td>
           <td class="friend-action">
-            <a href="./friends/remove/<%= friend.id %>" class="button-style">Remove</a>
+            <form method="POST" action="./main/friends/remove/<%= friend.id %>" class="submit-button-user">
+              <button type="submit">Remove</button>
+            </form>
           </td>
         </tr>
       <% }} %>
       </tbody>
     </table>
+  </div>
+</div>
+
+<div id="search-and-reqs">
+<!---------------------SEARCHBOX--------------------->
+    <div id="searchbox" <%= viewData.results ? 'class=expanded' : 'class=' %>>
+      <h3 id="search-users">Search for users</h3>
+      <form method="POST" action="./main/friends" id="search-form" <%= !viewData.results ? 'class=hiddenVis' : '' %>>
+        <input type="text" autocomplete="off" name="searchTerm" minlength="1" placeholder="Search for a user!" required>
+        <div class="submit-button-user" id="search-button">
+          <button type="submit">Search</button>
+        </div>
+      </form>
+
+      <% if (viewData.results && viewData.results.length > 0) { %>
+        <div class="search-results">
+          <table id="search-table">
+            <thead></thead>
+            <tbody>
+            <% for (const result of viewData.results) { %>
+              <tr class="search-profile">
+                <td>
+                  <div class="friend-profile-img">
+                    <img src="./img/profiles/<%= result.profileImg %>" alt="profileImg">
+                  </div>
+                </td>
+                <td class="search-username">
+                  <%= result.username %>
+                </td>
+                <td class="search-add-btn">
+                  <form method="POST" action="./main/friends/friendReq/<%= result.id %>" class="submit-button-user">
+                    <button type="submit">Send friend request</button>
+                  </form>
+                </td>
+              </tr>
+            <% } %>
+            </tbody> 
+          </table>
+        </div>
+      <% } else if (viewData.results && viewData.results.length === 0) { %>
+        <div class="search-results no-result">
+          <h3>NO RESULTS</h3>
+        </div>
+      <% } %>
+    </div>
+
+<!--------------------------------FRIEND-REQUESTS-------------------------------->
+    <div id="friendReq-list" <%= viewData.friendReqs.length ? 'class=gotRequests' : 'class=' %>>
+      <h3 id="friend-reqs">Friend requests</h3>
+      <div id="friendReq-table" <%= viewData.friendReqs ? 'class=hiddenVis' : '' %>>
+        <table>
+          <thead>
+            <tr>
+            </tr>
+          </thead>
+          <tbody>
+          <% if (viewData.friendReqs) { %> 
+          <% for (const friend of viewData.friendReqs) { %>
+            <tr class="reqTable-list">
+              <td>
+                <div class="friend-profile-img">
+                  <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
+                </div>
+              </td>
+              <td class="friend-username">
+                <%= friend.username %>
+              </td>
+              <td class="friend-action">
+                <form method="POST" action="./main/friends/add/<%= friend.id %>" class="submit-button-user">
+                  <button type="submit">Accept</button>
+                </form>
+                <form method="POST" action="./main/friends/deny/<%= friend.id %>" class="submit-button-user">
+                  <button type="submit">Deny</button>
+                </form>
+              </td>
+            </tr>
+          <% }} %>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div> <!---Last div for the page!--->
 <% } %> <!---Keep this last!--->
