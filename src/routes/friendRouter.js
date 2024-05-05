@@ -18,5 +18,6 @@ router.param('id', (req, res, next, user) => controller.loadFriend(req, res, nex
 router.get('/', (req, res, next) => controller.friends(req, res, next))
 router.post('/', (req, res, next) => controller.searchUsers(req, res, next))
 
+router.post('/friendReq/:id', (req, res, next) => controller.makeFriendRequest(req, res, next))
 router.post('/add/:id', (req, res, next) => controller.add(req, res, next))
 router.post('/remove/:id', (req, res, next) => controller.remove(req, res, next))

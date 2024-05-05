@@ -26,7 +26,9 @@
                 <%= result.username %>
               </td>
               <td class="search-add-btn">
-                <a href="./friends/add/<%= result.id %>" class="button-style">Add as friend</a>
+                <form method="POST" action="./main/friends/friendReq/<%= result.id %>" class="submit-button-user">
+                  <button type="submit">Send friend request</button>
+                </form>
               </td>
             </tr>
           <% } %>

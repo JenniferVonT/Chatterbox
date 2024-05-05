@@ -39,7 +39,13 @@ const schema = new mongoose.Schema({
   resetCode: {
     type: String,
     expireAfterSeconds: 120 // 2min, CHANGE TO 0.5HOURS LATER!
-  }
+  },
+  friendReqs: [{
+    id: String
+  }],
+  friends: [{
+    id: String
+  }]
 })
 
 schema.add(BASE_SCHEMA)

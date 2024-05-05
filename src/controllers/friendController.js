@@ -19,7 +19,7 @@ export class FriendController {
    * @param {Function} next - Express next middleware function.
    * @param {string} user - The username for the account to load.
    */
-  async loadAccount (req, res, next, user) {
+  async loadFriend (req, res, next, user) {
     try {
       // Get the account.
       const account = await UserModel.findById(user)
@@ -82,6 +82,26 @@ export class FriendController {
     } catch (error) {
 
     }
+  }
+
+  /**
+   * Handles sending a friend request.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async makeFriendRequest (req, res, next) {
+    // Save the session user as a friend-request in the requested user in the db.
+    const friend = req.friend
+    const sessionUser = req.session.user
+
+    friend.friendReqs.push({ id: sessionUser.id })
+
+    await friend.save({ validateBeforeSave: false })
+
+    req.session.flash = { type: 'success', text: 'Your friend request was successfully sent!' }
+    res.redirect('../')
   }
 
   /**
