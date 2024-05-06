@@ -40,6 +40,9 @@ const schema = new mongoose.Schema({
     type: String,
     expireAfterSeconds: 120 // 2min, CHANGE TO 0.5HOURS LATER!
   },
+  sentFriendReqs: [{
+    id: String
+  }],
   friendReqs: [{
     id: String
   }],

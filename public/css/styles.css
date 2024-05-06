@@ -75,6 +75,11 @@ main {
     background-color: #D3B1C2;
 }
 
+.inactive-btn button {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 /*<-------------------------- HEADER -------------------------->*/
 header {
     background-image: url('../img/loginBackground.jpg');
@@ -177,7 +182,8 @@ nav a {
     padding: 5px;
 }
 
-nav a:hover {
+nav a:hover,
+nav a:active {
     color: #C197D2;
 }
 
@@ -399,6 +405,10 @@ profile-selector {
     max-height: 41px;
 }
 
+#friendReq-list {
+    justify-content: center;
+}
+
 #friend-list {
     max-height: 60vh;
     height: 60vh;
@@ -428,7 +438,7 @@ profile-selector {
 }
 
 #searchbox input {
-    width:30ch;
+    width: 30ch;
 }
 
 #searchbox > form,
@@ -449,7 +459,7 @@ profile-selector {
 }
 
 #searchbox.expanded,
-#friendReq-list.expanded{
+#friendReq-list.expanded {
     max-height: 30vh;
     overflow-y: auto;
     visibility: visible;
@@ -466,12 +476,12 @@ profile-selector {
 #friends-table {
     display: flex;
     flex-direction: column;
-    margin-top: auto;
-    margin: 10px;
+    margin-top: 10px;
+    padding: 10px;
 }
 
 #search-table,
-#friendReq-table table,
+#friendReq-table > table,
 #friends-table table {
     width: 100%;
 }
@@ -484,9 +494,17 @@ profile-selector {
 
 #friends-table table {
     max-height: 100%;
+    width: 100%;
     object-fit: contain;
     padding-right: 20px;
     flex: 1;
+}
+
+#friendReq-table {
+    width: 95%;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
 }
 
 .search-profile,
@@ -505,10 +523,26 @@ profile-selector {
 }
 
 .search-profile .search-add-btn,
-.reqTable-list .friend-action
+.reqTable-list .friend-action,
 .friend-table-list .friend-action {
     margin-right: 10px;
     flex: 0 0 auto; /* Maintain the min-content width */
+}
+
+.reqTable-list {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+    border-bottom: 2px solid #242424;
+}
+
+.friend-table-list {
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: 2px solid #242424;
 }
 
 .friend-action {
@@ -533,7 +567,9 @@ profile-selector {
 }
 
 #search-table tr {
-    padding-bottom: 6px;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: 2px solid #242424;
 }
 
 .no-result {
@@ -542,15 +578,9 @@ profile-selector {
     justify-content: center;
 }
 
-header .gotRequests {
-    background-color: #4cbb4c;
-    border-radius: 12px;
-}
-
 #friendReq-list.gotRequests {
     border: 2px solid #4cbb4c;
 }
-
 
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
 /* Width */
@@ -649,6 +679,13 @@ header .gotRequests {
 
     logged-in-box {
         display: none;
+    }
+
+    nav ul li:active ul {
+        display: block;
+        visibility: visible;
+        opacity: 1;
+        transition-delay: 0s;
     }
 
     /*<------ SETTINGS ------>*/

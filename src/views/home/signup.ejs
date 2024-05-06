@@ -4,7 +4,7 @@
   <p>Your email will only be used for recovering your account.</p>
   <form action="./signup" method="POST" class="user-forms">
     <input autocomplete="off" type="email" class="form-control" id="accountEmail" name="email" placeholder="Enter your email" required autofocus />
-    <input autocomplete="off" type="text" class="form-control" id="accountUsername" name="username" placeholder="Enter a username" required />
+    <input autocomplete="off" type="text" class="form-control" id="accountUsername" minlength="1" maxlength="20" name="username" placeholder="Enter a username" required />
     <input autocomplete="off" type="password" class="form-control" id="accountPassword" minlength="10" maxlength="256" name="password" placeholder="Enter a password" required />
     <input autocomplete="off" type="password" class="form-control" id="accountPassword2" minlength="10" maxlength="256" name="password2" placeholder="Repeat password" required />
     <i>By signing up you agree that you are 15 years or older</i>

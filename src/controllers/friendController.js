@@ -96,11 +96,16 @@ export class FriendController {
       const friend = req.friend
       const sessionUser = req.session.user
 
+      const user = await UserModel.findById(sessionUser.id)
+
       // Insert the id of the person making the request into the requested users db.
       friend.friendReqs.push({ id: sessionUser.id })
+      user.sentFriendReqs.push({ id: friend.id })
 
       await friend.save({ validateBeforeSave: false })
+      await user.save({ validateBeforeSave: false })
 
+      req.session.user = user
       req.session.flash = { type: 'success', text: 'Your friend request was successfully sent!' }
       res.redirect('../')
     } catch (error) {
@@ -126,10 +131,8 @@ export class FriendController {
 
       // Remove the request from the friendReq list and add the user to the friend-list instead.
       user.friendReqs = user.friendReqs.filter(req => req.id !== request)
-      req.session.user.friendReqs = user.friendReqs
 
       user.friends.push({ id: request })
-      req.session.user.friends = user.friends
 
       requestUser.friends.push({ id: sessionID })
 
@@ -137,6 +140,7 @@ export class FriendController {
       await user.save({ validateBeforeSave: false })
       await requestUser.save({ validateBeforeSave: false })
 
+      req.session.user = user
       req.session.flash = { type: 'success', text: 'The friend was successfully added!' }
       res.redirect('../')
     } catch (error) {
@@ -162,10 +166,9 @@ export class FriendController {
       // Remove the request from the friendReq list and save.
       user.friendReqs = user.friendReqs.filter(req => req.id !== request)
 
-      req.session.user.friendReqs = user.friendReqs
-
       await user.save({ validateBeforeSave: false })
 
+      req.session.user = user
       req.session.flash = { type: 'success', text: 'The friend request was denied and removed!' }
       res.redirect('../')
     } catch (error) {
@@ -192,12 +195,10 @@ export class FriendController {
       friend.friends = friend.friends.filter(req => req.id !== sessionID)
       sessionUser.friends = sessionUser.friends.filter(req => req.id !== friend.id)
 
-      // Update the session and save the models in the db.
-      req.session.user.friends = sessionUser.friends
-
       await friend.save({ validateBeforeSave: false })
       await sessionUser.save({ validateBeforeSave: false })
 
+      req.session.user = sessionUser
       req.session.flash = { type: 'success', text: 'The friend was successfully removed!' }
       res.redirect('../')
     } catch (error) {

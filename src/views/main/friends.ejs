@@ -34,6 +34,7 @@
 </div>
 
 <div id="search-and-reqs">
+
 <!---------------------SEARCHBOX--------------------->
     <div id="searchbox" <%= viewData && viewData.results ? 'class=expanded' : 'class=' %>>
       <h3 id="search-users">Search for users</h3>
@@ -60,9 +61,43 @@
                   <%= result.username %>
                 </td>
                 <td class="search-add-btn">
-                  <form method="POST" action="./main/friends/friendReq/<%= result.id %>" class="submit-button-user">
-                    <button type="submit">Send friend request</button>
-                  </form>
+                  <% let requestSent = false %>
+                  <% let alreadyFriends = false %>
+
+                  <% for (const req of locals.user.sentFriendReqs) { %>
+                      <% if (req.id === result.id) { %>
+                          <% requestSent = true %>
+                          <% break %>
+                      <% } %>
+                  <% } %>
+
+                  <% for (const req of locals.user.friendReqs) { %>
+                    <% if (req.id === result.id) { %>
+                        <% requestSent = true %>
+                        <% break %>
+                    <% } %>
+                <% } %>
+
+                  <% for (const req of locals.user.friends) { %>
+                      <% if (req.id === result.id) { %>
+                          <% alreadyFriends = true %>
+                          <% break %>
+                      <% } %>
+                  <% } %>
+                  
+                  <% if (!requestSent && !alreadyFriends) { %>
+                      <form method="POST" action="./main/friends/friendReq/<%= result.id %>" class="submit-button-user">
+                          <button type="submit">Send friend request</button>
+                      </form>
+                  <% } else if (requestSent) { %>
+                    <div class="submit-button-user inactive-btn">
+                      <button>Request already sent</button>
+                    </div>
+                  <% } else if (alreadyFriends) { %>
+                    <div class="submit-button-user inactive-btn">
+                      <button>Already friends</button>
+                    </div>
+                  <% } %>
                 </td>
               </tr>
             <% } %>
@@ -112,5 +147,5 @@
       </div>
     </div>
   </div>
-</div> <!---Last div for the page!--->
+</div>
 <% } %> <!---Keep this last!--->
