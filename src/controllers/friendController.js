@@ -131,9 +131,12 @@ export class FriendController {
 
       // Remove the request from the friendReq list and add the user to the friend-list instead.
       user.friendReqs = user.friendReqs.filter(req => req.id !== request)
+      user.sentFriendReqs = user.sentFriendReqs.filter(req => req.id !== request)
+
+      requestUser.friendReqs = requestUser.friendReqs.filter(req => req.id !== sessionID)
+      requestUser.sentFriendReqs = requestUser.sentFriendReqs.filter(req => req.id !== sessionID)
 
       user.friends.push({ id: request })
-
       requestUser.friends.push({ id: sessionID })
 
       // Save only the changed objects.
@@ -162,11 +165,17 @@ export class FriendController {
       const request = req.friend.id
       const sessionID = req.session.user.id
       const user = await UserModel.findById(sessionID)
+      const requestUser = await UserModel.findById(request)
 
       // Remove the request from the friendReq list and save.
       user.friendReqs = user.friendReqs.filter(req => req.id !== request)
+      user.sentFriendReqs = user.sentFriendReqs.filter(req => req.id !== request)
+
+      requestUser.friendReqs = requestUser.friendReqs.filter(req => req.id !== sessionID)
+      requestUser.sentFriendReqs = requestUser.sentFriendReqs.filter(req => req.id !== sessionID)
 
       await user.save({ validateBeforeSave: false })
+      await requestUser.save({ validateBeforeSave: false })
 
       req.session.user = user
       req.session.flash = { type: 'success', text: 'The friend request was denied and removed!' }

@@ -138,6 +138,11 @@ logged-in-box {
     margin-right: 5px;
 }
 
+header .gotRequests {
+    background-color: #4cbb4c;
+    border-radius: 12px;
+}
+
 /*<-------------------------- NAVIGATION -------------------------->*/
 nav ul { /* All lists */
     list-style: none;
