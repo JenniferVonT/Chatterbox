@@ -14,9 +14,7 @@ template.innerHTML = `
 ${chatAppStyles}
 </style>
 <div id="wrapper">
-    <nickname-form></nickname-form>
-
-    <form id="chat" method="POST" class="hidden">
+    <form id="chat" method="POST">
         <div id="chatWindow"></div>
 
         <label for="message" id="showUser"></label>
@@ -37,11 +35,6 @@ customElements.define('chat-app',
      * Represents the username.
      */
     #username
-
-    /**
-     * Represents the nickname form component
-     */
-    #nicknameComp
 
     /**
      * Represents the tag that shows the username
@@ -93,17 +86,17 @@ customElements.define('chat-app',
       this.attachShadow({ mode: 'open' })
         .appendChild(template.content.cloneNode(true))
 
-      this.#nicknameComp = this.shadowRoot.querySelector('nickname-form')
       this.#chatWindow = this.shadowRoot.querySelector('#chatWindow')
       this.#usernameTag = this.shadowRoot.querySelector('#showUser')
       this.#message = this.shadowRoot.querySelector('#message')
       this.#sendMessage = this.shadowRoot.querySelector('#chat')
       this.#recievedMessage = ''
-      this.#conversation = JSON.parse(localStorage.getItem('chatlog')) || []
+      // this.#conversation = JSON.parse(localStorage.getItem('chatlog')) || []
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
+      /*
       this.#socket = new WebSocket('wss://courselab.lnu.se/message-app/socket')
 
       this.#socket.addEventListener('open', (event) => {
@@ -124,9 +117,8 @@ customElements.define('chat-app',
       this.#socket.addEventListener('error', (event) => {
         console.error('WebSocket encountered an error:', event)
       })
-
+      */
       this.#message.addEventListener('keydown', (event) => this.#handleKeyDown(event))
-      this.#nicknameComp.addEventListener('submitNickname', () => this.#handleStart())
       this.#sendMessage.addEventListener('submit', (event) => this.#sendMessages(event))
       this.emojiButton.addEventListener('click', (event) => this.#toggleEmojiDropdown(event, 'on'))
       this.emojiButton.addEventListener('blur', (event) => this.#toggleEmojiDropdown(event, 'off'))
@@ -145,7 +137,6 @@ customElements.define('chat-app',
       if (this.#storedUsername) {
         this.#usernameTag.textContent = this.#username
         this.#sendMessage.classList.remove('hidden')
-        this.#nicknameComp.classList.add('hidden')
       }
 
       this.#renderConversation()
@@ -168,22 +159,6 @@ customElements.define('chat-app',
         event.preventDefault()
         this.#sendMessages(event)
       }
-    }
-
-    /**
-     * Handles the username and switches to the chat window.
-     */
-    #handleStart () {
-      // Save the submittet username.
-      this.#username = this.#nicknameComp.nickname
-
-      localStorage.setItem('chatAppUsername', this.#username)
-
-      this.#usernameTag.textContent = this.#username
-
-      // Remove the nickname form and show the chat window instead.
-      this.#nicknameComp.classList.add('hidden')
-      this.#sendMessage.classList.remove('hidden')
     }
 
     /**

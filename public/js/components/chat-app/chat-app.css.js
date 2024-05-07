@@ -87,10 +87,6 @@ h1,
     border: 1px solid black;
 }
 
-.hidden {
-    display: none;
-}
-
 #emojiDropdown.hidden {
     display: none;
 }

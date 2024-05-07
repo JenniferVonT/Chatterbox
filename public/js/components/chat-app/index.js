@@ -1,1 +1,1 @@
-import './chat-app/'
+import './chat-app.js'

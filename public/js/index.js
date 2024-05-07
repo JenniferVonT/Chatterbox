@@ -1,5 +1,6 @@
 import './components/logged-in-box/index.js'
 import './components/settings-comps/delete-account/index.js'
+import './components/chat-app/index.js'
 import { settingsPage } from './settings.js'
 import { friendsPage } from './friends.js'
 
