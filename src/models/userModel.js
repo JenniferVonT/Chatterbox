@@ -47,7 +47,14 @@ const schema = new mongoose.Schema({
     id: String
   }],
   friends: [{
-    id: String
+    id: String,
+    chatId: {
+      type: String,
+      unique: true
+    }
+  }],
+  groups: [{
+    groupId: String
   }]
 })
 

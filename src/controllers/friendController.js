@@ -6,6 +6,7 @@
  */
 
 import { UserModel } from '../models/userModel.js'
+import randomize from 'randomatic'
 
 /**
  * Encapsulates the friend controller.
@@ -136,8 +137,11 @@ export class FriendController {
       requestUser.friendReqs = requestUser.friendReqs.filter(req => req.id !== sessionID)
       requestUser.sentFriendReqs = requestUser.sentFriendReqs.filter(req => req.id !== sessionID)
 
-      user.friends.push({ id: request })
-      requestUser.friends.push({ id: sessionID })
+      // Create a unique chat-id that represents the chatroom between the users.
+      const code = randomize('Aa0!', 20)
+
+      user.friends.push({ id: request, chatId: code })
+      requestUser.friends.push({ id: sessionID, chatId: code })
 
       // Save only the changed objects.
       await user.save({ validateBeforeSave: false })
