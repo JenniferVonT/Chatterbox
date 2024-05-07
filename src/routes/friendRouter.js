@@ -1,6 +1,6 @@
 /**
- * @file Defines the main router when the user is logged in.
- * @module mainRouter
+ * @file Defines the friend router when the user is logged in.
+ * @module friendRouter
  * @author Jennifer von Trotta-Treyden <jv222th@student.lnu.se>
  * @version 1.0.0
  */

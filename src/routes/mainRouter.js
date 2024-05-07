@@ -8,6 +8,7 @@
 import express from 'express'
 import { MainController } from '../controllers/mainController.js'
 import { router as friendRouter } from './friendRouter.js'
+import { router as chatRouter } from './chatRouter.js'
 
 export const router = express.Router()
 
@@ -19,3 +20,4 @@ router.get('/settings', (req, res, next) => controller.settings(req, res, next))
 router.get('/groups', (req, res, next) => controller.groups(req, res, next))
 
 router.use('/friends', friendRouter)
+router.use('/chat', chatRouter)

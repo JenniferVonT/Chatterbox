@@ -7,6 +7,7 @@
 
 import { UserModel } from '../models/userModel.js'
 import randomize from 'randomatic'
+import { FriendBuilder } from '../lib/buildFriends.js'
 
 /**
  * Encapsulates the friend controller.
@@ -52,6 +53,9 @@ export class FriendController {
   async friends (req, res, next) {
     try {
       const viewData = null
+      const friendBuilder = new FriendBuilder()
+
+      res.locals.user.friendReqs = await friendBuilder.getFriendReqList(req.session.user)
 
       res.render('main/friends', { viewData })
     } catch (error) {

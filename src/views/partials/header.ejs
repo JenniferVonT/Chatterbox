@@ -1,5 +1,5 @@
 <% if (locals.user) { %>
-<header class="header">
+<header class="header" userID="<%= locals.user.id %>">
   <nav class="header-nav">
     <ul>
       <li id="friendsIcon" class="nav-icons">
@@ -10,9 +10,9 @@
           <% if (locals.user.friends) { %>
             <% for (const friend of locals.user.friends) { %>
               <li>
-                <a href="./main/chat/<%= friend.id %>">
+                <a href="./main/chat/<%= friend.chatID %>">
                   <div class="dropdown-profile-img">
-                    <img src="./img/profiles/<%= friend.chatId %>" alt="profileImg">
+                    <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
                   </div>
                   <%= friend.username %>
                 </a>

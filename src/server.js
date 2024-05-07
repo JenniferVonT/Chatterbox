@@ -20,6 +20,7 @@ import { logger } from './config/winston.js'
 // import { wss } from './config/webSocketServer.js'
 import { router } from './routes/router.js'
 import { FriendBuilder } from './lib/buildFriends.js'
+const friendBuilder = new FriendBuilder()
 
 try {
   // Connect to MongoDB.
@@ -90,11 +91,8 @@ try {
 
     if (req.session.user) {
       // Build the friend and friendReq list.
-      const friendBuilder = new FriendBuilder()
-
-      req.session.user.friends = await friendBuilder.getFriendsList(req.session.user)
-      req.session.user.friendReqs = await friendBuilder.getFriendReqList(req.session.user)
       res.locals.user = req.session.user
+      res.locals.user.friends = await friendBuilder.getFriendsList(req.session.user)
     } else {
       res.locals.user = false
     }
