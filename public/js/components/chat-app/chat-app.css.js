@@ -3,6 +3,7 @@ const chatAppStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
     width: 450px;
@@ -12,9 +13,6 @@ const chatAppStyles = `
 #chatWindow {
     width: 430px;
     height: 340px;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 10px;
     margin-bottom: 15px;
     background-color: white;
     overflow-y: auto;
@@ -31,9 +29,8 @@ p {
 
 #message {
     font-size: 18px;
-    width: 425px;
+    width: 426px;
     height: 50px;
-    margin-left: 10px;
     resize: none;
 }
 

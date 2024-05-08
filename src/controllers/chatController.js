@@ -6,6 +6,9 @@
  */
 
 import { UserModel } from '../models/userModel.js'
+import { logger } from '../config/winston.js'
+import { MessageModel } from '../models/messageModel.js'
+import WebSocket from 'ws'
 
 /**
  * Encapsulates the chat controller.
@@ -39,7 +42,8 @@ export class ChatController {
       const localUserObj = {
         id: req.session.user.id,
         username: localUser.username,
-        profileImg: localUser.profileImg
+        profileImg: localUser.profileImg,
+        chatID: chatId.id
       }
 
       const otherUserObj = {
@@ -76,6 +80,57 @@ export class ChatController {
       res.render('chats/chat', { viewData })
     } catch (error) {
       next(error)
+    }
+  }
+
+  /**
+   * Handles the recieved message.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+  async connectSocket (req, res) {
+    console.log('Hello')
+  }
+
+  /**
+   * Handles the recieved message.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+  async receiveMessage (req, res) {
+    try {
+      // Send a quick response that the message is recieved.
+      res.status(200).send('Message received')
+
+      const payload = req
+      const wssServer = res.wss
+
+      logger.silly('Message recieved: ', payload)
+
+      // handle the req payload and save to the DB.
+      if (payload.type === 'message') {
+        const data = JSON.stringify({
+          data: payload.data,
+          user: payload.user,
+          key: payload.key
+        })
+
+        await MessageModel.create({
+          data: payload.data,
+          user: payload.user,
+          key: payload.key
+        })
+
+        wssServer.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(data)
+          }
+        })
+      }
+    } catch (error) {
+      logger.silly('Something went wrong with the websocket message handling: ', error)
     }
   }
 }

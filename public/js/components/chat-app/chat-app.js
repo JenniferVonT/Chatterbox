@@ -2,11 +2,10 @@
  * A component that represents a chat box.
  *
  * @author Jennifer von Trotta-Treyden <jv222th@student.lnu.se>
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import chatAppStyles from './chat-app.css.js'
-import '../nickname-form/index.js'
 
 const template = document.createElement('template')
 template.innerHTML = `
@@ -17,7 +16,6 @@ ${chatAppStyles}
     <form id="chat" method="POST">
         <div id="chatWindow"></div>
 
-        <label for="message" id="showUser"></label>
         <textarea id="message" name="message" rows="10" cols="50" placeholder="Write your message here!" autocomplete="off"></textarea>
         <input type="submit" value="Send" id="send">
         <button id="emojiButton">😊</button>
@@ -35,11 +33,6 @@ customElements.define('chat-app',
      * Represents the username.
      */
     #username
-
-    /**
-     * Represents the tag that shows the username
-     */
-    #usernameTag
 
     /**
      * Represents the window that shows the chat conversation.
@@ -67,14 +60,14 @@ customElements.define('chat-app',
     #conversation
 
     /**
+     * The unique ID for this chat conversation.
+     */
+    #chatID
+
+    /**
      * Represents the websocket.
      */
     #socket
-
-    /**
-     * Represents the stored username.
-     */
-    #storedUsername
 
     /**
      * Creates an instance of the current type.
@@ -87,17 +80,17 @@ customElements.define('chat-app',
         .appendChild(template.content.cloneNode(true))
 
       this.#chatWindow = this.shadowRoot.querySelector('#chatWindow')
-      this.#usernameTag = this.shadowRoot.querySelector('#showUser')
       this.#message = this.shadowRoot.querySelector('#message')
       this.#sendMessage = this.shadowRoot.querySelector('#chat')
       this.#recievedMessage = ''
-      // this.#conversation = JSON.parse(localStorage.getItem('chatlog')) || []
+      this.#conversation = []
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
-      /*
-      this.#socket = new WebSocket('wss://courselab.lnu.se/message-app/socket')
+      const HOST = `ws://localhost:9696/chat/socket/${this.getAttribute('chatID')}`
+
+      this.#socket = new WebSocket(`${HOST}`)
 
       this.#socket.addEventListener('open', (event) => {
         console.log('WebSocket connection opened:', event)
@@ -117,27 +110,21 @@ customElements.define('chat-app',
       this.#socket.addEventListener('error', (event) => {
         console.error('WebSocket encountered an error:', event)
       })
-      */
+
       this.#message.addEventListener('keydown', (event) => this.#handleKeyDown(event))
       this.#sendMessage.addEventListener('submit', (event) => this.#sendMessages(event))
       this.emojiButton.addEventListener('click', (event) => this.#toggleEmojiDropdown(event, 'on'))
       this.emojiButton.addEventListener('blur', (event) => this.#toggleEmojiDropdown(event, 'off'))
 
-      this.#buildEmojiList()
+      // this.#buildEmojiList()
     }
 
     /**
      * Called when the element is inserted into the DOM.
      */
     connectedCallback () {
-      // Check if the username is already stored, and if it is continue without the start screen.
-      this.#storedUsername = localStorage.getItem('chatAppUsername')
-      this.#username = this.#storedUsername || ''
-
-      if (this.#storedUsername) {
-        this.#usernameTag.textContent = this.#username
-        this.#sendMessage.classList.remove('hidden')
-      }
+      this.#chatID = this.getAttribute('chatID')
+      this.#username = this.getAttribute('user')
 
       this.#renderConversation()
     }
@@ -146,7 +133,21 @@ customElements.define('chat-app',
      * Called when the element is removed from the DOM.
      */
     disconnectedCallback () {
-      this.#socket.close()
+    }
+
+    /**
+     * Called when an attribute is changed
+     *
+     * @param {string} name - the name of the attribute to check.
+     */
+    attributeChangedCallback (name) {
+      if (name === 'user') {
+        this.#username = name
+      }
+
+      if (name === 'chatID') {
+        this.#chatID = name
+      }
     }
 
     /**
@@ -173,8 +174,8 @@ customElements.define('chat-app',
         const messageToSend = {
           type: 'message',
           data: `${this.#message.value.toString()}`,
-          username: `${this.#username}`,
-          key: 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
+          user: `${this.#username}`,
+          key: this.#chatID
         }
 
         this.#socket.send(JSON.stringify(messageToSend))

@@ -17,7 +17,7 @@ import { connectToDatabase } from './config/mongoose.js'
 import { morganLogger } from './config/morgan.js'
 import { sessionOptions } from './config/sessionOptions.js'
 import { logger } from './config/winston.js'
-// import { wss } from './config/webSocketServer.js'
+import { wss } from './config/webSocketServer.js'
 import { router } from './routes/router.js'
 import { FriendBuilder } from './lib/buildFriends.js'
 const friendBuilder = new FriendBuilder()
@@ -53,7 +53,6 @@ try {
 
   // --------------------------------------------------------------------------
   //
-  // Webhook: Parse incoming requests with JSON payloads (application/json).
   // Populates the request object with a body object (req.body).
   //
   app.use(express.json())
@@ -102,7 +101,7 @@ try {
     res.locals.resetCode = false
 
     // Pass the WebSocket server to the response object.
-    // res.wss = wss
+    res.wss = wss
 
     next()
   })
@@ -145,12 +144,11 @@ try {
     logger.info('Press Ctrl-C to terminate...')
   })
 
-  /* server.on('upgrade', (request, socket, head) => {
+  server.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, (socket) => {
       wss.emit('connection', socket, request)
     })
   })
-  */
 } catch (err) {
   logger.error(err.message, { error: err })
   process.exitCode = 1
