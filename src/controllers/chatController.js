@@ -6,6 +6,8 @@
  */
 
 import { UserModel } from '../models/userModel.js'
+import { MessageModel } from '../models/messageModel.js'
+import { logger } from '../config/winston.js'
 
 /**
  * Encapsulates the chat controller.
@@ -77,6 +79,34 @@ export class ChatController {
       res.render('chats/chat', { viewData })
     } catch (error) {
       next(error)
+    }
+  }
+
+  /**
+   * Saves the message in the db.
+   *
+   * @param {object} message - The message object containing the message, chatID and userID.
+   */
+  async saveChatMessage (message) {
+    try {
+      const chat = await MessageModel.findOne({ chatId: message.key })
+
+      // If there isn't already a collection for that chatId make one.
+      // Otherwise just insert the message and save the model.
+      if (!chat) {
+        await MessageModel.create({
+          chatId: message.key,
+          messages: [{
+            user: message.user,
+            message: message.data
+          }]
+        })
+      } else {
+        chat.messages.push({ user: message.user, message: message.data })
+        await chat.save({ validateBeforeSave: false })
+      }
+    } catch (error) {
+      logger.error(error)
     }
   }
 }

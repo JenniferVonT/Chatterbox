@@ -86,11 +86,12 @@ customElements.define('chat-app',
       this.#sendMessage = this.shadowRoot.querySelector('#chat')
       this.#recievedMessage = ''
       this.#conversation = []
+      this.#username = ''
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
-      const HOST = 'ws://localhost:9696'
+      const HOST = `ws://localhost:9696/${this.getAttribute('chatID')}`
 
       this.#socket = new WebSocket(HOST)
 
@@ -192,8 +193,15 @@ customElements.define('chat-app',
      * @param {object} message - a parsed JSON object.
      */
     #handleRecievedMessages (message) {
+      let username = ''
+
       if (message.type === 'message') {
-        const username = message.username
+        if (message.user === this.getAttribute('userID')) {
+          username = this.#username
+        } else if (message.user === this.getAttribute('secondUserID')) {
+          username = this.getAttribute('secondUser')
+        }
+
         const messageData = message.data
 
         const userMessage = {

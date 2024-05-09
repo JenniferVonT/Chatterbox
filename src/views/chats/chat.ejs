@@ -1,5 +1,5 @@
 <% if (locals.user) { %>
   <div id="chat-page">
-    <chat-app user="<%= viewData.user.username %>" userID="<%= viewData.user.id %>" chatID="<%= viewData.user.chatID %>"></chat-app>
+    <chat-app user="<%= viewData.user.username %>" userID="<%= viewData.user.id %>" secondUser="<%= viewData.otherUser.username %>" secondUserID="<%= viewData.otherUser.id %>" chatID="<%= viewData.user.chatID %>"></chat-app>
   </div>
 <% } %>

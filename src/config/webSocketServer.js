@@ -7,20 +7,29 @@
  */
 
 // Import necessary modules
-// import { ChatModel } from '../models/chatModel.js'
-import { MessageModel } from '../models/messageModel.js'
-import { UserModel } from '../models/userModel.js'
 import { logger } from './winston.js'
+import { ChatController } from '../controllers/chatController.js'
 import WebSocket, { WebSocketServer } from 'ws'
 
 export const wss = new WebSocketServer({ noServer: true })
+const chatController = new ChatController()
+
+// Create a map to store all the WebSocket connections per chat room.
+const chatRooms = new Map()
 
 // Handle WebSocket connections
 wss.on('connection', async (webSocketConnection, connectionRequest) => {
   logger.silly('WebSocket: A user connected')
 
-  // Add event listeners to the WebSocket connection
-  webSocketConnection.addEventListener('close', () => logger.silly('WebSocket: A user disconnected'))
+  // See if the chatroom is connected or not.
+  const chatID = decodeURIComponent(connectionRequest.url.slice(1))
+
+  if (!chatRooms.has(chatID)) {
+    chatRooms.set(chatID, [])
+  }
+
+  chatRooms.get(chatID).push(webSocketConnection)
+
   webSocketConnection.addEventListener('error', (error) => logger.error('WebSocket error', { error }))
   webSocketConnection.addEventListener('message', async (message) => {
     try {
@@ -31,39 +40,39 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
 
       // Check if the message is of type 'message'
       if (obj.type === 'message') {
-        const chat = await MessageModel.findOne({ chatId: obj.key })
+        const chatId = obj.key
 
-        if (!chat) {
-          await MessageModel.create({
-            chatId: obj.key,
-            messages: [{
-              user: obj.user,
-              message: obj.data
-            }]
-          })
-        } else {
-          chat.messages.push({ user: obj.user, message: obj.data })
-          await chat.save({ validateBeforeSave: false })
-        }
+        // Retrieve the WebSocket connection for the chat room
+        const connections = chatRooms.get(chatId)
 
-        // Broadcast the message to all WebSocket connections.
-        wss.clients.forEach(async (client) => {
-          if (client.readyState === 1 && WebSocket.OPEN === 1) {
-            const user = await UserModel.findById(obj.user)
-
-            client.send(JSON.stringify({
+        // Broadcast the message to all WebSocket connections in the chat room
+        connections.forEach(connection => {
+          if (connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify({
               type: 'message',
-              data: obj.data,
-              username: user.username,
-              key: obj.key
+              user: obj.user,
+              data: obj.data
             }))
           }
         })
+
+        // Save the message in a db.
+        await chatController.saveChatMessage(obj)
       }
     } catch (error) {
       logger.error('Error processing WebSocket message:', error)
       logger.silly('Something went wrong in the websocketserver: ', error)
       webSocketConnection.close()
     }
+  })
+
+  // Add event listeners to the WebSocket connection
+  webSocketConnection.addEventListener('close', () => {
+    logger.silly('WebSocket: A user disconnected')
+
+    // Remove the WebSocket connection from all chat rooms.
+    chatRooms.forEach((connections, chatId) => {
+      chatRooms.set(chatId, connections.filter((conn) => conn !== webSocketConnection))
+    })
   })
 })
