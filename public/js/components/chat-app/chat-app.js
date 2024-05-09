@@ -17,10 +17,12 @@ ${chatAppStyles}
         <div id="chatWindow"></div>
 
         <textarea id="message" name="message" rows="10" cols="50" placeholder="Write your message here!" autocomplete="off"></textarea>
-        <input type="submit" value="Send" id="send">
-        <button id="emojiButton">😊</button>
+        <div id="submit-btns"> 
+          <button type="submit" id="send" class="submit-button-user">Send</button>
+          <button id="emojiButton" class="submit-button-user">😊</button>
+        </div> 
         <div class="hidden" id="emojiDropdown"></div>
-    </form>    
+    </form>
 </div>
 `
 

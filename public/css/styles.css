@@ -35,7 +35,7 @@ body {
 }
 
 main {
-    height: calc(100vh - 120px);
+    height: 100%;
 }
 
 .hidden {
@@ -585,6 +585,23 @@ profile-selector {
 
 #friendReq-list.gotRequests {
     border: 2px solid #4cbb4c;
+}
+
+/*<-------------------------- CHAT-PAGE -------------------------->*/
+#chat-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2vh;
+    width: 100%;
+}
+
+chat-app {
+    display: block;
+    justify-content: center;
+    align-items: center;
+    border-right: 2px solid #242424;
+    border-left: 2px solid #242424;
 }
 
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/

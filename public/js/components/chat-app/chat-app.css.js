@@ -4,19 +4,32 @@ const chatAppStyles = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-family: 'Courier New', Courier, monospace;
+    margin-top: 30px;
     font-weight: bold;
-    width: 450px;
-    height: 480px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    width: 65vw;
+    height: 100%;
+}
+
+form#chat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#submit-btns {
+    display: inline-block;
+    width: 100%;
+    justify-content: left;
 }
 
 #chatWindow {
-    width: 430px;
-    height: 340px;
+    width: 60vw;
+    height: 50vh;
     margin-bottom: 15px;
-    background-color: white;
+    background-color: transparent;
     overflow-y: auto;
-    border: 1px solid black;
 }
 
 p {
@@ -24,53 +37,31 @@ p {
     margin-top: 20px;
     word-wrap: break-word;
     white-space: pre-line;
-    background-color: #d6d6d6;
 }
 
 #message {
     font-size: 18px;
-    width: 426px;
-    height: 50px;
+    width: 60vw;
+    height: 80px;
     resize: none;
+    color: #D3B1C2;
+    background-color: #474747;
 }
 
-#showUser {
-    text-align: center;
-    background-color: white;
-    border: 1px dotted black;
-    margin-left: 10px;
+button {
+    margin: 5px;
+    width: max-content;
+    height: 30px;
+    color: #D3B1C2;
+    border-radius: 5px;
+    border: 1px solid #D3B1C2;
+    background-color: #211522;
 }
 
-#send {
-    margin-left: 10px;
-}
-
-#emojiButton {
-    margin-left: 10px;
-}
-
-#connect {
-    margin-left: 180px;
-    padding: 10px;
-}
-
-h1, 
-#showUser {
-    text-align: center;
-    margin-top: 50px;
-}
-
-.emojiBtn {
-    width: 45px;
-    height: 25px;
-    text-align: center;
-    justify-content: center;
-    border: none;
-    background-color: white;
-}
-
-.emojiBtn:hover {
-    background-color: #c4e0f7;
+button:hover {
+    color: #211522;
+    border: 1px solid #211522;
+    background-color: #D3B1C2;
 }
 
 #emojiDropdown {
@@ -96,9 +87,8 @@ h1,
 
 /* Track */
 ::-webkit-scrollbar-track {
-    background: #613659; /* color of the track */
-    border-bottom-right-radius: 10px;
-    border-bottom-left-radius: 10px;
+    background: #474747; /* color of the track */
+    border-radius: 10px;
 }
 
 /* Handle */
@@ -111,7 +101,7 @@ h1,
 @-moz-document url-prefix() {
     /* Track and handle styles for Firefox */
     * {
-        scrollbar-color: #211522 #613659; /* thumb and track color */
+        scrollbar-color: #211522 #474747; /* thumb and track color */
         scrollbar-width: thin; /* width of the scrollbar */
     }
 
@@ -121,8 +111,25 @@ h1,
     }
 
     *::-moz-scrollbar-track {
-        background: #613659; /* color of the track */
+        background: #474747; /* color of the track */
         border-radius: 10px; /* roundness of the scrollbar track */
+    }
+}
+
+/*<-------------------------- MEDIA QUERIES -------------------------->*/
+
+@media (max-width: 600px) {
+    #wrapper {
+        width: 100%;
+    }
+
+    #chatWindow {
+        width: 90vw;
+        height: 40vh;
+    }
+
+    #message {
+        width: 90vw;
     }
 }
 
