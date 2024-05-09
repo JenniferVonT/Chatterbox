@@ -7,9 +7,8 @@
  */
 
 // Import necessary modules
-import { ChatModel } from '../models/chatModel.js'
+// import { ChatModel } from '../models/chatModel.js'
 import { MessageModel } from '../models/messageModel.js'
-import { router as chatRouter } from '../routes/chatRouter.js'
 import { logger } from './winston.js'
 import WebSocket, { WebSocketServer } from 'ws'
 
@@ -19,17 +18,6 @@ export const wss = new WebSocketServer({ noServer: true })
 wss.on('connection', async (webSocketConnection, connectionRequest) => {
   logger.silly('WebSocket: A user connected')
 
-  // Extract chatId from the connection request
-  const chatId = connectionRequest.headers.chatID
-
-  // Ensure chatId is valid and exists
-  const savedChat = await ChatModel.findOne({ chatId })
-
-  // If the chatId is not previously stored, store it!
-  if (!savedChat) {
-    await ChatModel.create({ chatId })
-  }
-
   // Add event listeners to the WebSocket connection
   webSocketConnection.addEventListener('close', () => logger.silly('WebSocket: A user disconnected'))
   webSocketConnection.addEventListener('error', (error) => logger.error('WebSocket error', { error }))
@@ -38,20 +26,27 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
       logger.silly(`ws - received message: ${message}`)
 
       // Parse the incoming message
-      const obj = JSON.parse(message)
+      const obj = JSON.parse(message.data)
 
       // Check if the message is of type 'message'
       if (obj.type === 'message') {
-        // Save the message to the database
-        await MessageModel.create({
-          chatId: obj.key,
-          data: obj.data,
-          user: obj.user
-        })
+        const chat = await MessageModel.findOne({ chatId: obj.key })
 
-        // Broadcast the message to all WebSocket connections with the same chatId
+        if (!chat) {
+          await MessageModel.create({
+            chatId: obj.key,
+            messages: [{
+              user: obj.user,
+              message: obj.data
+            }]
+          })
+        } else {
+          chat.messages.push({ user: obj.user, message: obj.data })
+        }
+
+        // Broadcast the message to all WebSocket connections.
         wss.clients.forEach((client) => {
-          if (client !== webSocketConnection && client.readyState === WebSocket.OPEN) {
+          if (client.readyState === 1 && WebSocket.OPEN === 1) {
             client.send(JSON.stringify({
               type: 'message',
               data: obj.data,
@@ -60,8 +55,6 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
             }))
           }
         })
-
-        chatRouter.routeMessage(obj, webSocketConnection)
       }
     } catch (error) {
       logger.error('Error processing WebSocket message:', error)

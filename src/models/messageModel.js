@@ -1,7 +1,6 @@
 /**
  * @file Defines the message model.
  * @module models/MessageModel
- * @author Mats Loock
  * @author Jennifer von Trotta-Treyden
  * @version 3.0.0
  */
@@ -18,16 +17,13 @@ const schema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  message: {
-    type: String
-  },
-  user: [{
-    type: String
+  messages: [{
+    user: String,
+    message: String
   }]
 })
 
 schema.add(BASE_SCHEMA)
-schema.index({ createdAt: 1 }, { expireAfterSeconds: 1_209_600 }) // Expire after 2 weeks.
 
 // Create a model using the schema.
 export const MessageModel = chatConnection.model('Message', schema)

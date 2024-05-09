@@ -88,9 +88,9 @@ customElements.define('chat-app',
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
-      const HOST = `ws://localhost:9696/chat/socket/${this.getAttribute('chatID')}`
+      const HOST = 'ws://localhost:9696'
 
-      this.#socket = new WebSocket(`${HOST}`)
+      this.#socket = new WebSocket(HOST)
 
       this.#socket.addEventListener('open', (event) => {
         console.log('WebSocket connection opened:', event)
@@ -136,7 +136,7 @@ customElements.define('chat-app',
     }
 
     /**
-     * Called when an attribute is changed
+     * Called when an attribute is changed.
      *
      * @param {string} name - the name of the attribute to check.
      */
@@ -174,7 +174,7 @@ customElements.define('chat-app',
         const messageToSend = {
           type: 'message',
           data: `${this.#message.value.toString()}`,
-          user: `${this.#username}`,
+          user: `${this.getAttribute('userID')}`,
           key: this.#chatID
         }
 
