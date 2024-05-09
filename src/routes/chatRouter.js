@@ -16,5 +16,3 @@ const controller = new ChatController()
 router.param('id', (req, res, next, user) => controller.loadUsers(req, res, next, user))
 
 router.get('/:id', (req, res, next) => controller.chat(req, res, next))
-router.get('/socket/:id', (req, res, next) => controller.connectSocket(req, res, next))
-router.post('/:id', (req, res, next) => controller.receiveMessage(req, res, next))

@@ -87,6 +87,45 @@ h1,
 #emojiDropdown.hidden {
     display: none;
 }
+
+/*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
+/* Width */
+::-webkit-scrollbar {
+    width: 7px; /* width of the entire scrollbar */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #613659; /* color of the track */
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #211522; /* color of the scroll thumb */
+    border-radius: 10px; /* roundness of the scroll thumb */
+}
+
+/* Firefox-specific styles */
+@-moz-document url-prefix() {
+    /* Track and handle styles for Firefox */
+    * {
+        scrollbar-color: #211522 #613659; /* thumb and track color */
+        scrollbar-width: thin; /* width of the scrollbar */
+    }
+
+    *::-moz-scrollbar-thumb {
+        background: #211522; /* color of the scroll thumb */
+        border-radius: 10px; /* roundness of the scroll thumb */
+    }
+
+    *::-moz-scrollbar-track {
+        background: #613659; /* color of the track */
+        border-radius: 10px; /* roundness of the scrollbar track */
+    }
+}
+
 `
 
 export default chatAppStyles

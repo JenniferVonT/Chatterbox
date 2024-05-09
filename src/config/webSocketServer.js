@@ -9,6 +9,7 @@
 // Import necessary modules
 // import { ChatModel } from '../models/chatModel.js'
 import { MessageModel } from '../models/messageModel.js'
+import { UserModel } from '../models/userModel.js'
 import { logger } from './winston.js'
 import WebSocket, { WebSocketServer } from 'ws'
 
@@ -42,15 +43,18 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
           })
         } else {
           chat.messages.push({ user: obj.user, message: obj.data })
+          await chat.save({ validateBeforeSave: false })
         }
 
         // Broadcast the message to all WebSocket connections.
-        wss.clients.forEach((client) => {
+        wss.clients.forEach(async (client) => {
           if (client.readyState === 1 && WebSocket.OPEN === 1) {
+            const user = await UserModel.findById(obj.user)
+
             client.send(JSON.stringify({
               type: 'message',
               data: obj.data,
-              user: obj.user,
+              username: user.username,
               key: obj.key
             }))
           }
