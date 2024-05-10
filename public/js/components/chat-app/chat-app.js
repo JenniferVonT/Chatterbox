@@ -17,11 +17,12 @@ ${chatAppStyles}
         <div id="chatWindow"></div>
 
         <textarea id="message" name="message" rows="10" cols="50" placeholder="Write your message here!" autocomplete="off"></textarea>
-        <div id="submit-btns"> 
+  
+        <div id="submit-btns">
+          <div class="hidden" id="emojiDropdown"></div>
           <button type="submit" id="send" class="submit-button-user">Send</button>
           <button id="emojiButton" class="submit-button-user">😊</button>
         </div> 
-        <div class="hidden" id="emojiDropdown"></div>
     </form>
 </div>
 `
@@ -119,7 +120,7 @@ customElements.define('chat-app',
       this.emojiButton.addEventListener('click', (event) => this.#toggleEmojiDropdown(event, 'on'))
       this.emojiButton.addEventListener('blur', (event) => this.#toggleEmojiDropdown(event, 'off'))
 
-      // this.#buildEmojiList()
+      this.#buildEmojiList()
     }
 
     /**
@@ -310,7 +311,7 @@ customElements.define('chat-app',
      */
     async #buildEmojiList () {
       // Fetch all the emojis.
-      const response = await fetch('https://emoji-api.com/emojis?access_key=48bf4f6218ef9c64ccb2929606657b42222f5d10')
+      const response = await fetch('https://emoji-api.com/emojis?access_key=69ecede85d728684b87d72b52e59f63c696b4e66')
       const emojis = await response.json()
 
       // Create a button out of every emoji and insert them when clicked.

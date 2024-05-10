@@ -48,15 +48,20 @@ try {
   // Populates the request object with a body object (req.body).
   app.use(express.urlencoded({ extended: false }))
 
-  // Set various HTTP headers to make the application little more secure (https://www.npmjs.com/package/helmet).
+  // Set various HTTP headers to make the application a little more secure (https://www.npmjs.com/package/helmet).
   app.use(helmet())
 
-  // --------------------------------------------------------------------------
-  //
   // Populates the request object with a body object (req.body).
-  //
   app.use(express.json())
-  // --------------------------------------------------------------------------
+
+  // Set the content-security policy so that API's can be used from the client.
+  app.use((req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://emoji-api.com; img-src 'self' data:; font-src 'self' data:;"
+    )
+    next()
+  })
 
   // Serve static files.
   app.use(express.static(join(directoryFullName, '..', 'public')))

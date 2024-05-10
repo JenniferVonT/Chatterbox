@@ -11,6 +11,7 @@ const chatAppStyles = `
 }
 
 form#chat {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -91,14 +92,22 @@ button:hover {
 }
 
 #emojiDropdown {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 300px;
+    position: absolute;
+    z-index: 1;
+    bottom: 130px;
+    background-color: #474747;
+    border-radius: 5px;
+    border: 1px solid #D3B1C2;
+    max-width: 308px;
     height: 150px;
-    background-color: white;
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid black;
+}
+
+#emojiDropdown button {
+    margin: 0px;
+    width: 60px;
+    height: 30px;
 }
 
 #emojiDropdown.hidden {
