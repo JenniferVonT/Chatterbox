@@ -5,7 +5,6 @@ const chatAppStyles = `
     align-items: center;
     justify-content: center;
     margin-top: 30px;
-    font-weight: bold;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     width: 65vw;
     height: 100%;
@@ -32,13 +31,6 @@ form#chat {
     overflow-y: auto;
 }
 
-p {
-    margin: 10px;
-    margin-top: 20px;
-    word-wrap: break-word;
-    white-space: pre-line;
-}
-
 #message {
     font-size: 18px;
     width: 60vw;
@@ -46,6 +38,40 @@ p {
     resize: none;
     color: #D3B1C2;
     background-color: #474747;
+    padding-left: 5px;
+}
+
+.chat-messages {
+    word-wrap: break-word;
+    white-space: pre-line;
+    border-top: 2px solid #242424;
+    margin-right: 5px;
+    margin-bottom: 30px;
+}
+
+.chat-messages > p {
+    font-size: 1rem;
+    margin: 3px;
+    margin-left: 15px;
+}
+
+.chat-messages > h4 {
+    font-weight: bold;
+    color: #C197D2;
+    font-size: 1.25rem;
+    margin: 3px;
+}
+
+.chat-messages img {
+    height: 40px;
+    width: 40px;
+    overflow: hidden;
+    border: 2px solid #D3B1C2;
+    border-radius: 10px;
+    object-fit: contain;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
 }
 
 button {

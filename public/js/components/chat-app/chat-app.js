@@ -231,15 +231,32 @@ customElements.define('chat-app',
       const length = this.#conversation.length
 
       for (let i = 0; i < length; i++) {
-        const pElement = document.createElement('p')
+        const div = document.createElement('div')
+        const username = document.createElement('h4')
+        const message = document.createElement('p')
+        const profileImg = document.createElement('img')
+        profileImg.setAttribute('alt', 'profileIMG')
 
-        const username = this.#conversation[i].username
-        const message = this.#conversation[i].message
-        const formattedMessage = `${username}:\n \u00A0 ${message}`
+        username.textContent = this.#conversation[i].username
 
-        pElement.textContent = formattedMessage
+        // Check which user the message is tied to and insert the correct img.
+        if (username.textContent === this.getAttribute('user')) {
+          const profileIMG = this.getAttribute('userImg')
+          profileImg.setAttribute('src', `./img/profiles/${profileIMG}`)
+        } else {
+          const profileIMG = this.getAttribute('secondUserImg')
+          profileImg.setAttribute('src', `./img/profiles/${profileIMG}`)
+        }
+        username.prepend(profileImg)
 
-        this.#chatWindow.prepend(pElement)
+        message.textContent = this.#conversation[i].message
+
+        div.append(username)
+        div.append(message)
+
+        div.classList.add('chat-messages')
+
+        this.#chatWindow.prepend(div)
       }
 
       if (shouldScrollToBottom) {
