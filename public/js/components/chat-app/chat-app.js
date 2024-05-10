@@ -128,14 +128,13 @@ customElements.define('chat-app',
     connectedCallback () {
       this.#chatID = this.getAttribute('chatID')
       this.#username = this.getAttribute('user')
-
-      this.#renderConversation()
     }
 
     /**
      * Called when the element is removed from the DOM.
      */
     disconnectedCallback () {
+      this.#socket.close()
     }
 
     /**
@@ -215,14 +214,16 @@ customElements.define('chat-app',
 
         localStorage.setItem('chatlog', JSON.stringify(this.#conversation))
 
-        this.#renderConversation()
+        this.#renderMessages()
+      } else {
+        this.#handleConversation(message)
       }
     }
 
     /**
      * Renders the conversation in the chat window.
      */
-    #renderConversation () {
+    #renderMessages () {
       // Check if the scrollbar should scroll to the bottom.
       const shouldScrollToBottom = this.#chatWindow.scrollTop + this.#chatWindow.clientHeight === this.#chatWindow.scrollHeight
 
@@ -244,6 +245,31 @@ customElements.define('chat-app',
       if (shouldScrollToBottom) {
         this.#chatWindow.scrollTop = this.#chatWindow.scrollHeight
       }
+    }
+
+    /**
+     * Renders the entire conversation.
+     *
+     * @param {object} messages - a parsed JSON object.
+     */
+    async #handleConversation (messages) {
+      for (const message of messages) {
+        let username = ''
+
+        if (message.user === this.getAttribute('userID')) {
+          username = this.#username
+        } else if (message.user === this.getAttribute('secondUserID')) {
+          username = this.getAttribute('secondUser')
+        }
+
+        const userMessage = {
+          username,
+          message: message.message
+        }
+
+        this.#conversation.unshift(userMessage)
+      }
+      this.#renderMessages()
     }
 
     /**

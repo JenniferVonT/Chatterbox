@@ -109,4 +109,17 @@ export class ChatController {
       logger.error(error)
     }
   }
+
+  /**
+   * Sends the saved messages in a chat to the ws connection.
+   *
+   * @param {object} webSocketConnection - The connection
+   * @param {string} chatID - The id of the chat.
+   */
+  async sendSavedChat (webSocketConnection, chatID) {
+    // Get the saved messages.
+    const convo = await MessageModel.findOne({ chatId: chatID })
+
+    webSocketConnection.send(JSON.stringify(convo.messages))
+  }
 }

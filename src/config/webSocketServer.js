@@ -24,6 +24,9 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
   // See if the chatroom is connected or not.
   const chatID = decodeURIComponent(connectionRequest.url.slice(1))
 
+  // Send all the saved messages to the connection.
+  await chatController.sendSavedChat(webSocketConnection, chatID)
+
   if (!chatRooms.has(chatID)) {
     chatRooms.set(chatID, [])
   }
