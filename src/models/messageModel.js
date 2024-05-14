@@ -19,8 +19,10 @@ const schema = new mongoose.Schema({
   },
   messages: [{
     user: String,
-    message: String
-  }]
+    iv: Object,
+    data: String
+  }],
+  encryptionKey: String
 })
 
 schema.add(BASE_SCHEMA)

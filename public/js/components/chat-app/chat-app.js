@@ -73,6 +73,16 @@ customElements.define('chat-app',
     #socket
 
     /**
+     * Represents the encryptionKey.
+     */
+    #encryptionKey
+
+    /**
+     * Represents the initializations vector for the encryption.
+     */
+    #initV
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -88,6 +98,8 @@ customElements.define('chat-app',
       this.#recievedMessage = ''
       this.#conversation = []
       this.#username = ''
+      this.#encryptionKey = ''
+      this.#initV = window.crypto.getRandomValues(new Uint8Array(16))
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
@@ -170,14 +182,20 @@ customElements.define('chat-app',
      *
      * @param {Event} event - The submit event.
      */
-    #sendMessages (event) {
+    async #sendMessages (event) {
       event.preventDefault()
+
+      const encryptedMessage = await this.#encryptMessage(this.#message.value.toString())
+
+      // Convert the message to base64 in order to send it over the socket.
+      const base64message = btoa(String.fromCharCode.apply(null, new Uint8Array(encryptedMessage)))
 
       if (this.#message.value !== '') {
         const messageToSend = {
           type: 'message',
-          data: `${this.#message.value.toString()}`,
+          data: base64message,
           user: `${this.getAttribute('userID')}`,
+          iv: this.#initV,
           key: this.#chatID
         }
 
@@ -192,32 +210,34 @@ customElements.define('chat-app',
      *
      * @param {object} message - a parsed JSON object.
      */
-    #handleRecievedMessages (message) {
+    async #handleRecievedMessages (message) {
       let username = ''
 
-      if (message.type === 'message') {
-        if (message.user === this.getAttribute('userID')) {
-          username = this.#username
-        } else if (message.user === this.getAttribute('secondUserID')) {
-          username = this.getAttribute('secondUser')
+      try {
+        if (message.type === 'message') {
+          if (message.user === this.getAttribute('userID')) {
+            username = this.#username
+          } else if (message.user === this.getAttribute('secondUserID')) {
+            username = this.getAttribute('secondUser')
+          }
+
+          const decryptedMessage = await this.#decryptMessage(message)
+
+          const userMessage = {
+            username,
+            message: decryptedMessage
+          }
+
+          this.#conversation.unshift(userMessage)
+
+          this.#conversation = this.#conversation.slice(0, 30)
+
+          this.#renderMessages()
+        } else {
+          this.#handleConversation(message)
         }
-
-        const messageData = message.data
-
-        const userMessage = {
-          username,
-          message: messageData
-        }
-
-        this.#conversation.unshift(userMessage)
-
-        this.#conversation = this.#conversation.slice(0, 30)
-
-        localStorage.setItem('chatlog', JSON.stringify(this.#conversation))
-
-        this.#renderMessages()
-      } else {
-        this.#handleConversation(message)
+      } catch (error) {
+        console.error('Could not receive message: ', error)
       }
     }
 
@@ -271,7 +291,21 @@ customElements.define('chat-app',
      * @param {object} messages - a parsed JSON object.
      */
     async #handleConversation (messages) {
-      for (const message of messages) {
+      // Get the encryption key from the server.
+      const key = messages.encryptionKey
+
+      const decodedKey = Uint8Array.from(atob(key), c => c.charCodeAt(0))
+
+      // Convert the Uint8Array encryption key to a CryptoKey
+      this.#encryptionKey = await window.crypto.subtle.importKey(
+        'raw',
+        decodedKey,
+        { name: 'AES-CBC' },
+        false,
+        ['encrypt', 'decrypt']
+      )
+
+      for (const message of messages.messages) {
         let username = ''
 
         if (message.user === this.getAttribute('userID')) {
@@ -280,14 +314,79 @@ customElements.define('chat-app',
           username = this.getAttribute('secondUser')
         }
 
+        const decryptedMessage = await this.#decryptMessage(message)
+
         const userMessage = {
           username,
-          message: message.message
+          message: decryptedMessage
         }
 
         this.#conversation.unshift(userMessage)
       }
       this.#renderMessages()
+    }
+
+    /**
+     * Decrypts the outgoing message.
+     *
+     * @param {object} message - A message object.
+     * @returns {string} - The decrypted message.
+     */
+    async #decryptMessage (message) {
+      try {
+        // Convert message to an ArrayBuffer.
+        const encryptedData = Uint8Array.from(atob(message.data), c => c.charCodeAt(0))
+
+        // Parse the IV from JSON format to Uint8Array
+        const ivValues = Object.values(message.iv)
+        const ivUint8Array = new Uint8Array(ivValues)
+
+        // Convert the Uint8Array to ArrayBuffer
+        const ivArrayBuffer = ivUint8Array.buffer
+
+        // Decrypt the message.
+        const decryptedArrayBuffer = await window.crypto.subtle.decrypt(
+          {
+            name: 'AES-CBC',
+            iv: ivArrayBuffer
+          },
+          this.#encryptionKey,
+          encryptedData
+        )
+
+        // Convert to a string and return.
+        return new TextDecoder().decode(decryptedArrayBuffer)
+      } catch (error) {
+        // If an error occurs during decryption.
+        console.error('Decryption failed:', error.message)
+      }
+    }
+
+    /**
+     * Encrypts the incoming message.
+     *
+     * @param {string} message - The message.
+     * @returns {Buffer} - The encrypted message.
+     */
+    async #encryptMessage (message) {
+      try {
+        // Prepare the message.
+        const plaintextMsg = new TextEncoder().encode(message)
+
+        // Encrypt the message.
+        const encryptedMsg = await window.crypto.subtle.encrypt(
+          {
+            name: 'AES-CBC',
+            iv: this.#initV
+          },
+          this.#encryptionKey,
+          plaintextMsg
+        )
+
+        return encryptedMsg
+      } catch (error) {
+        console.error('Could not encrypt: ', error.message)
+      }
     }
 
     /**

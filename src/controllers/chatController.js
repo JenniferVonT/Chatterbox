@@ -29,9 +29,11 @@ export class ChatController {
 
       // Get the other user id.
       let otherUserID = ''
+      let encryptionKey = ''
       for (const friend of localUser.friends) {
         if (friend.chatId === chatId.id) {
           otherUserID = friend.id
+          encryptionKey = friend.encryptionKey
           break
         }
       }
@@ -42,7 +44,8 @@ export class ChatController {
         id: req.session.user.id,
         username: localUser.username,
         profileImg: localUser.profileImg,
-        chatID: chatId.id
+        chatID: chatId.id,
+        cryptKey: encryptionKey
       }
 
       const otherUserObj = {
@@ -98,11 +101,12 @@ export class ChatController {
           chatId: message.key,
           messages: [{
             user: message.user,
-            message: message.data
+            iv: message.iv,
+            data: message.data
           }]
         })
       } else {
-        chat.messages.push({ user: message.user, message: message.data })
+        chat.messages.push({ user: message.user, iv: message.iv, data: message.data })
         await chat.save({ validateBeforeSave: false })
       }
     } catch (error) {
@@ -120,6 +124,11 @@ export class ChatController {
     // Get the saved messages.
     const convo = await MessageModel.findOne({ chatId: chatID })
 
-    webSocketConnection.send(JSON.stringify(convo.messages))
+    const dataToSend = {
+      messages: convo.messages,
+      encryptionKey: convo.encryptionKey
+    }
+
+    webSocketConnection.send(JSON.stringify(dataToSend))
   }
 }

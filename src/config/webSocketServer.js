@@ -10,6 +10,8 @@
 import { logger } from './winston.js'
 import { ChatController } from '../controllers/chatController.js'
 import WebSocket, { WebSocketServer } from 'ws'
+import { MessageModel } from '../models/messageModel.js'
+import crypto from 'crypto'
 
 export const wss = new WebSocketServer({ noServer: true })
 const chatController = new ChatController()
@@ -23,6 +25,20 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
 
   // See if the chatroom is connected or not.
   const chatID = decodeURIComponent(connectionRequest.url.slice(1))
+
+  // Find the conversation in the db.
+  const convo = await MessageModel.findOne({ chatId: chatID })
+
+  // If it doesn't exist create one and generate a new encryption key.
+  if (!convo) {
+    // Generate a random symmetric key
+    const key = crypto.randomBytes(32) // 256 bits key (32 bytes) for AES-256.
+
+    MessageModel.create({
+      chatId: chatID,
+      encryptionKey: key.toString('base64')
+    })
+  }
 
   // Send all the saved messages to the connection.
   await chatController.sendSavedChat(webSocketConnection, chatID)
@@ -53,6 +69,7 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
           if (connection.readyState === WebSocket.OPEN) {
             connection.send(JSON.stringify({
               type: 'message',
+              iv: obj.iv,
               user: obj.user,
               data: obj.data
             }))
