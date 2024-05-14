@@ -30,9 +30,10 @@ export class ChatController {
       // Get the other user id.
       let otherUserID = ''
       let encryptionKey = ''
+
       for (const friend of localUser.friends) {
         if (friend.chatId === chatId.id) {
-          otherUserID = friend.id
+          otherUserID = friend.userId
           encryptionKey = friend.encryptionKey
           break
         }

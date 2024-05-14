@@ -104,13 +104,7 @@ customElements.define('chat-app',
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
-      const currentURL = window.location.href
-      const parts = currentURL.split('/') // Split the URL by '/'
-      const result = parts.slice(0, 3).join('/')
-
-      const HOST = `wss://${result}/${this.getAttribute('chatID')}`
-
-      this.#socket = new WebSocket(HOST)
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
 
       this.#socket.addEventListener('open', (event) => {
         console.log('WebSocket connection opened:', event)
@@ -188,16 +182,16 @@ customElements.define('chat-app',
      */
     async #sendMessages (event) {
       event.preventDefault()
-
+      /*
       const encryptedMessage = await this.#encryptMessage(this.#message.value.toString())
 
       // Convert the message to base64 in order to send it over the socket.
       const base64message = btoa(String.fromCharCode.apply(null, new Uint8Array(encryptedMessage)))
-
+      */
       if (this.#message.value !== '') {
         const messageToSend = {
           type: 'message',
-          data: base64message,
+          data: this.#message.value /* base64message */,
           user: `${this.getAttribute('userID')}`,
           iv: this.#initV,
           key: this.#chatID
@@ -225,11 +219,11 @@ customElements.define('chat-app',
             username = this.getAttribute('secondUser')
           }
 
-          const decryptedMessage = await this.#decryptMessage(message)
+          // const decryptedMessage = await this.#decryptMessage(message)
 
           const userMessage = {
             username,
-            message: decryptedMessage
+            message: message.data // decryptedMessage
           }
 
           this.#conversation.unshift(userMessage)
@@ -308,6 +302,8 @@ customElements.define('chat-app',
         false,
         ['encrypt', 'decrypt']
       )
+
+      console.log(this.#encryptionKey)
 
       for (const message of messages.messages) {
         let username = ''

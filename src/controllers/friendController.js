@@ -19,7 +19,7 @@ export class FriendController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
-   * @param {string} user - The username for the account to load.
+   * @param {string} user - The user for the account to load.
    */
   async loadFriend (req, res, next, user) {
     try {
@@ -128,28 +128,27 @@ export class FriendController {
    */
   async add (req, res, next) {
     try {
-      // Get the user-id that send the request and the current session user.
-      const request = req.friend.id
+      // Get the user-id that send the friend and the current session user.
+      const friend = req.friend
       const sessionID = req.session.user.id
       const user = await UserModel.findById(sessionID)
-      const requestUser = await UserModel.findById(request)
 
-      // Remove the request from the friendReq list and add the user to the friend-list instead.
-      user.friendReqs = user.friendReqs.filter(req => req.id !== request)
-      user.sentFriendReqs = user.sentFriendReqs.filter(req => req.id !== request)
+      // Remove the friend from the friendReq list and add the user to the friend-list instead.
+      user.friendReqs = user.friendReqs.filter(req => req.id !== friend.id)
+      user.sentFriendReqs = user.sentFriendReqs.filter(req => req.id !== friend.id)
 
-      requestUser.friendReqs = requestUser.friendReqs.filter(req => req.id !== sessionID)
-      requestUser.sentFriendReqs = requestUser.sentFriendReqs.filter(req => req.id !== sessionID)
+      friend.friendReqs = friend.friendReqs.filter(req => req.id !== sessionID)
+      friend.sentFriendReqs = friend.sentFriendReqs.filter(req => req.id !== sessionID)
 
       // Create a unique chat-id that represents the chatroom between the users.
       const code = randomize('Aa0', 50)
 
-      user.friends.push({ id: request, chatId: code })
-      requestUser.friends.push({ id: sessionID, chatId: code })
+      user.friends.push({ userId: friend.id, chatId: code })
+      friend.friends.push({ userId: sessionID, chatId: code })
 
       // Save only the changed objects.
       await user.save({ validateBeforeSave: false })
-      await requestUser.save({ validateBeforeSave: false })
+      await friend.save({ validateBeforeSave: false })
 
       req.session.user = user
       req.session.flash = { type: 'success', text: 'The friend was successfully added!' }

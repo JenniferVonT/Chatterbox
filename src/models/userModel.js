@@ -49,7 +49,7 @@ const schema = new mongoose.Schema({
     id: String
   }],
   friends: [{
-    id: String,
+    userId: String,
     chatId: String
   }]
 })

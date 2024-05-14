@@ -58,7 +58,7 @@ try {
   app.use((req, res, next) => {
     res.setHeader(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://emoji-api.com; img-src 'self' data:; font-src 'self' data:;"
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox; img-src 'self' data:; font-src 'self' data:;"
     )
     next()
   })

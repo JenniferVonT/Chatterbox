@@ -24,7 +24,7 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
   logger.silly('WebSocket: A user connected')
 
   // See if the chatroom is connected or not.
-  const chatID = decodeURIComponent(connectionRequest.url.slice(1))
+  const chatID = decodeURIComponent(connectionRequest.url.split('/').pop())
 
   // Find the conversation in the db.
   const convo = await MessageModel.findOne({ chatId: chatID })

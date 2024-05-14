@@ -42,24 +42,18 @@ export class FriendBuilder {
    * @returns {object[]} - An array containing user objects.
    */
   async getFriendsList (sessionUser) {
-    // Load the friend requests for the session user
+    // Load the userModels for the session user
     const friends = []
-    for (const friendID of sessionUser.friends) {
-      const friend = await UserModel.findById(friendID.id)
-      const user = await UserModel.findById(sessionUser.id)
+    const user = await UserModel.findById(sessionUser.id)
 
-      for (const userFriend of user.friends) {
-        if (userFriend.id === friend.id) {
-          friend.chatId = userFriend.chatId
-          break
-        }
-      }
+    for (const friend of user.friends) {
+      const friendModel = await UserModel.findById(friend.userId)
 
-      if (friend) {
+      if (friendModel) {
         const friendObj = {
-          id: friend.id,
-          username: friend.username,
-          profileImg: friend.profileImg,
+          id: friendModel.id,
+          username: friendModel.username,
+          profileImg: friendModel.profileImg,
           chatID: friend.chatId
         }
 
