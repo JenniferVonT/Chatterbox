@@ -31,11 +31,11 @@ export async function transfer (user) {
       to: user.email, // Reciever
       subject: 'Reclaim account', // Subject line
       text: `Hello!\n
-            Your reset code is: ${user.resetCode}\n
+            Your reset code is: ${user.resetCode.code}\n
             If it wasn't you who requested an account reset ignore this email.\n
             Do not share this code as it is used to reset your account, it only has a one time use and expires in 30min.`,
       html: `<b>Hello, ${user.username}!</b><br>
-            <p>Your reset code is: <b>${user.resetCode}</b></p><br>
+            <p>Your reset code is: <b>${user.resetCode.code}</b></p><br>
             <i>If it wasn't you who requested an account reset ignore this email.</i><br>
             <i>Do not share this code as it is used to reset your account, it only has a one time use and expires in 30min.</i>`
     })

@@ -20,7 +20,11 @@ const schema = new mongoose.Schema({
   messages: [{
     user: String,
     iv: Object,
-    data: String
+    data: String,
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
   }],
   encryptionKey: String
 })

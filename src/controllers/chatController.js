@@ -121,14 +121,28 @@ export class ChatController {
    * @param {string} chatID - The id of the chat.
    */
   async sendSavedChat (webSocketConnection, chatID) {
-    // Get the saved messages.
-    const convo = await MessageModel.findOne({ chatId: chatID })
+    try {
+      // Calculate the date 2 weeks ago from now
+      const twoWeeksAgo = new Date()
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
 
-    const dataToSend = {
-      messages: convo.messages,
-      encryptionKey: convo.encryptionKey
+      // Find the chat document
+      const chat = await MessageModel.findOne({ chatId: chatID })
+
+      // Filter out messages older than 2 weeks and keep only the recent ones
+      chat.messages = chat.messages.filter(msg => msg.createdAt >= twoWeeksAgo)
+
+      // Save the updated chat document
+      await chat.save({ validateBeforeSave: false })
+
+      const dataToSend = {
+        messages: chat.messages,
+        encryptionKey: chat.encryptionKey
+      }
+
+      webSocketConnection.send(JSON.stringify(dataToSend))
+    } catch (error) {
+      logger.error(error)
     }
-
-    webSocketConnection.send(JSON.stringify(dataToSend))
   }
 }

@@ -158,7 +158,7 @@ export class UserController {
       const resetCode = randomize('Aa0', 6)
 
       // Save the resetCode to the user doc in the db.
-      user.resetCode = resetCode
+      user.resetCode = { code: resetCode, createdAt: new Date() }
 
       // Save only the updated field,
       await user.save({ validateBeforeSave: false })
@@ -205,7 +205,7 @@ export class UserController {
         throw error
       }
 
-      // See if there is a user...
+      // See if there is a user.
       const user = await UserModel.findOne({ email })
 
       if (!user) {
@@ -214,8 +214,25 @@ export class UserController {
         throw error
       }
 
-      // ...and if the reset code match continue.
-      if (!user.resetCode || user.resetCode !== resetCode) {
+      // Check if the resetCode is too old...
+      const oneHourAgo = new Date()
+      // oneHourAgo.setHours(oneHourAgo.getHours() - 1)
+      oneHourAgo.setMinutes(oneHourAgo.getMinutes() - 2)
+
+      const { createdAt } = user.resetCode
+
+      if (createdAt <= oneHourAgo) {
+        user.resetCode = undefined
+        user.save({ ValidateBeforeSave: false })
+
+        const error = new Error('Reset code has expired!')
+        error.status = 400
+        throw error
+      }
+
+      // ...and if the code match continue.
+      const { code } = user.resetCode
+      if (!code || code !== resetCode) {
         const error = new Error('Reset code does not match!')
         error.status = 400
         throw error
@@ -224,7 +241,7 @@ export class UserController {
       // Save the new password and set the resetCode to false.
       user.password = await bcrypt.hash(password, 10)
       user.resetCode = undefined
-      await user.save()
+      await user.save({ ValidateBeforeSave: false })
 
       req.session.flash = { type: 'success', text: 'The account was reset successfully. Please login to continue' }
       res.redirect('../')
@@ -264,6 +281,16 @@ export class UserController {
         res.locals.flash = {
           type: 'danger',
           text: 'The reset code does not match!'
+        }
+        res.locals.resetCode = true
+        res.render('home/reclaim')
+      }
+
+      // If the reset code does not match.
+      if (error.message === 'Reset code has expired!') {
+        res.locals.flash = {
+          type: 'danger',
+          text: 'Reset code has expired!'
         }
         res.locals.resetCode = true
         res.render('home/reclaim')
