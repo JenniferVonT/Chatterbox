@@ -142,7 +142,7 @@ export class FriendController {
       requestUser.sentFriendReqs = requestUser.sentFriendReqs.filter(req => req.id !== sessionID)
 
       // Create a unique chat-id that represents the chatroom between the users.
-      const code = randomize('Aa0!', 20)
+      const code = randomize('Aa0', 50)
 
       user.friends.push({ id: request, chatId: code })
       requestUser.friends.push({ id: sessionID, chatId: code })
