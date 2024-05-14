@@ -104,7 +104,11 @@ customElements.define('chat-app',
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
-      const HOST = `ws://localhost:9696/${this.getAttribute('chatID')}`
+      const currentURL = window.location.href
+      const parts = currentURL.split('/') // Split the URL by '/'
+      const result = parts.slice(0, 3).join('/')
+
+      const HOST = `wss://${result}/${this.getAttribute('chatID')}`
 
       this.#socket = new WebSocket(HOST)
 
