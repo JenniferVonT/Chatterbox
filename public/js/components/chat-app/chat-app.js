@@ -182,16 +182,16 @@ customElements.define('chat-app',
      */
     async #sendMessages (event) {
       event.preventDefault()
-      /*
+
       const encryptedMessage = await this.#encryptMessage(this.#message.value.toString())
 
       // Convert the message to base64 in order to send it over the socket.
       const base64message = btoa(String.fromCharCode.apply(null, new Uint8Array(encryptedMessage)))
-      */
+
       if (this.#message.value !== '') {
         const messageToSend = {
           type: 'message',
-          data: this.#message.value /* base64message */,
+          data: base64message,
           user: `${this.getAttribute('userID')}`,
           iv: this.#initV,
           key: this.#chatID
@@ -219,11 +219,11 @@ customElements.define('chat-app',
             username = this.getAttribute('secondUser')
           }
 
-          // const decryptedMessage = await this.#decryptMessage(message)
+          const decryptedMessage = await this.#decryptMessage(message)
 
           const userMessage = {
             username,
-            message: message.data // decryptedMessage
+            message: decryptedMessage
           }
 
           this.#conversation.unshift(userMessage)
@@ -231,7 +231,7 @@ customElements.define('chat-app',
           this.#conversation = this.#conversation.slice(0, 30)
 
           this.#renderMessages()
-        } else {
+        } else if (message.type !== 'heartbeat') {
           this.#handleConversation(message)
         }
       } catch (error) {

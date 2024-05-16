@@ -13,7 +13,7 @@ import WebSocket, { WebSocketServer } from 'ws'
 import { MessageModel } from '../models/messageModel.js'
 import crypto from 'crypto'
 
-export const wss = new WebSocketServer({ noServer: true })
+export const wss = new WebSocketServer({ port: 8010 })
 const chatController = new ChatController()
 
 // Create a map to store all the WebSocket connections per chat room.
@@ -48,6 +48,14 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
   }
 
   chatRooms.get(chatID).push(webSocketConnection)
+
+  // Set up heartbeat interval
+  const heartbeatInterval = setInterval(() => {
+    if (webSocketConnection.readyState === WebSocket.OPEN) {
+      // Send heartbeat message to the client
+      webSocketConnection.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }))
+    }
+  }, 60000) // 60 seconds
 
   webSocketConnection.addEventListener('error', (error) => logger.error('WebSocket error', { error }))
   webSocketConnection.addEventListener('message', async (message) => {
@@ -90,9 +98,12 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
   webSocketConnection.addEventListener('close', () => {
     logger.silly('WebSocket: A user disconnected')
 
-    // Remove the WebSocket connection from all chat rooms.
+    // Remove the WebSocket connection from the chat room.
     chatRooms.forEach((connections, chatId) => {
       chatRooms.set(chatId, connections.filter((conn) => conn !== webSocketConnection))
     })
+
+    // Clear heartbeat interval when the connection is closed
+    clearInterval(heartbeatInterval)
   })
 })

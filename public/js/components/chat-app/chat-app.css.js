@@ -30,6 +30,7 @@ form#chat {
     margin-bottom: 15px;
     background-color: transparent;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #message {
