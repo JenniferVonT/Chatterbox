@@ -106,17 +106,19 @@ customElements.define('chat-app',
       // Create a websocket and put the appropriate event listeners.
       this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
 
+      /*
       this.#socket.addEventListener('open', (event) => {
         console.log('WebSocket connection opened:', event)
       })
+      */
 
       this.#socket.addEventListener('message', (event) => {
         this.#recievedMessage = JSON.parse(event.data)
-        console.log('Recieved message:', this.#recievedMessage)
 
         this.#handleRecievedMessages(this.#recievedMessage)
       })
 
+      /*
       this.#socket.addEventListener('close', (event) => {
         console.log('WebSocket connection closed:', event)
       })
@@ -124,6 +126,7 @@ customElements.define('chat-app',
       this.#socket.addEventListener('error', (event) => {
         console.error('WebSocket encountered an error:', event)
       })
+      */
 
       this.#message.addEventListener('keydown', (event) => this.#handleKeyDown(event))
       this.#sendMessage.addEventListener('submit', (event) => this.#sendMessages(event))
@@ -302,8 +305,6 @@ customElements.define('chat-app',
         false,
         ['encrypt', 'decrypt']
       )
-
-      console.log(this.#encryptionKey)
 
       for (const message of messages.messages) {
         let username = ''
