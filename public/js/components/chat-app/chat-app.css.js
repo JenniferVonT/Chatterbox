@@ -157,15 +157,17 @@ button:hover {
 @media (max-width: 600px) {
     #wrapper {
         width: 100%;
+        margin-top: 0;
     }
 
     #chatWindow {
         width: 90vw;
-        height: 40vh;
+        height: 42vh;
     }
 
     #message {
         width: 90vw;
+        heigth: 50px;
     }
 }
 

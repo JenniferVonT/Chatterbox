@@ -44,9 +44,8 @@ export class FriendBuilder {
   async getFriendsList (sessionUser) {
     // Load the userModels for the session user
     const friends = []
-    const user = await UserModel.findById(sessionUser.id)
 
-    for (const friend of user.friends) {
+    for (const friend of sessionUser.friends) {
       const friendModel = await UserModel.findById(friend.userId)
 
       if (friendModel) {

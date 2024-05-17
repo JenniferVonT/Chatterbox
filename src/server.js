@@ -20,6 +20,7 @@ import { logger } from './config/winston.js'
 import { wss } from './config/webSocketServer.js'
 import { router } from './routes/router.js'
 import { FriendBuilder } from './lib/buildFriends.js'
+import { UserModel } from './models/userModel.js'
 const friendBuilder = new FriendBuilder()
 
 try {
@@ -94,9 +95,12 @@ try {
     }
 
     if (req.session.user) {
+      const user = await UserModel.findById(req.session.user.id)
       // Build the friend and friendReq list.
       res.locals.user = req.session.user
-      res.locals.user.friends = await friendBuilder.getFriendsList(req.session.user)
+
+      res.locals.user.friends = await friendBuilder.getFriendsList(user)
+      res.locals.user.friendReqs = await friendBuilder.getFriendReqList(user)
     } else {
       res.locals.user = false
     }

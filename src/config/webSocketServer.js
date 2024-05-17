@@ -13,7 +13,7 @@ import WebSocket, { WebSocketServer } from 'ws'
 import { MessageModel } from '../models/messageModel.js'
 import crypto from 'crypto'
 
-export const wss = new WebSocketServer({ port: 8010 })
+export const wss = new WebSocketServer({ noServer: true })
 const chatController = new ChatController()
 
 // Create a map to store all the WebSocket connections per chat room.

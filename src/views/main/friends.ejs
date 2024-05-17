@@ -51,6 +51,7 @@
             <thead></thead>
             <tbody>
             <% for (const result of viewData.results) { %>
+              <% if (result.id !== locals.user.id) { %>
               <tr class="search-profile">
                 <td>
                   <div class="friend-profile-img">
@@ -100,7 +101,7 @@
                   <% } %>
                 </td>
               </tr>
-            <% } %>
+            <% }} %>
             </tbody> 
           </table>
         </div>
