@@ -6,6 +6,8 @@
  */
 
 import { UserModel } from '../models/userModel.js'
+import { MessageModel } from '../models/messageModel.js'
+import { logger } from '../config/winston.js'
 
 /**
  * Encapsulates the chat controller.
@@ -27,9 +29,12 @@ export class ChatController {
 
       // Get the other user id.
       let otherUserID = ''
+      let encryptionKey = ''
+
       for (const friend of localUser.friends) {
         if (friend.chatId === chatId.id) {
-          otherUserID = friend.id
+          otherUserID = friend.userId
+          encryptionKey = friend.encryptionKey
           break
         }
       }
@@ -39,7 +44,9 @@ export class ChatController {
       const localUserObj = {
         id: req.session.user.id,
         username: localUser.username,
-        profileImg: localUser.profileImg
+        profileImg: localUser.profileImg,
+        chatID: chatId.id,
+        cryptKey: encryptionKey
       }
 
       const otherUserObj = {
@@ -76,6 +83,67 @@ export class ChatController {
       res.render('chats/chat', { viewData })
     } catch (error) {
       next(error)
+    }
+  }
+
+  /**
+   * Saves the message in the db.
+   *
+   * @param {object} message - The message object containing the message, chatID and userID.
+   */
+  async saveChatMessage (message) {
+    try {
+      const chat = await MessageModel.findOne({ chatId: message.key })
+
+      // If there isn't already a collection for that chatId make one.
+      // Otherwise just insert the message and save the model.
+      if (!chat) {
+        await MessageModel.create({
+          chatId: message.key,
+          messages: [{
+            user: message.user,
+            iv: message.iv,
+            data: message.data
+          }]
+        })
+      } else {
+        chat.messages.push({ user: message.user, iv: message.iv, data: message.data })
+        await chat.save({ validateBeforeSave: false })
+      }
+    } catch (error) {
+      logger.error(error)
+    }
+  }
+
+  /**
+   * Sends the saved messages in a chat to the ws connection.
+   *
+   * @param {object} webSocketConnection - The connection
+   * @param {string} chatID - The id of the chat.
+   */
+  async sendSavedChat (webSocketConnection, chatID) {
+    try {
+      // Calculate the date 2 weeks ago from now
+      const twoWeeksAgo = new Date()
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+
+      // Find the chat document
+      const chat = await MessageModel.findOne({ chatId: chatID })
+
+      // Filter out messages older than 2 weeks and keep only the recent ones
+      chat.messages = chat.messages.filter(msg => msg.createdAt >= twoWeeksAgo)
+
+      // Save the updated chat document
+      await chat.save({ validateBeforeSave: false })
+
+      const dataToSend = {
+        messages: chat.messages,
+        encryptionKey: chat.encryptionKey
+      }
+
+      webSocketConnection.send(JSON.stringify(dataToSend))
+    } catch (error) {
+      logger.error(error)
     }
   }
 }

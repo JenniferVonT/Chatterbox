@@ -12,6 +12,11 @@ gray scale:
 #2E2E2E
 #242424
 */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
 
 html {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
@@ -32,10 +37,11 @@ body {
         "footer footer footer";
     padding-top: 70px;
     padding-bottom: 80px;
+    min-height: 100vh;
 }
 
 main {
-    height: calc(100vh - 120px);
+    height: 100%;
 }
 
 .hidden {
@@ -230,6 +236,7 @@ foother i {
 
 /*<-------------------------- LOGGED IN BODY -------------------------->*/
 #logged-in-pages main {
+    background-color: #2E2E2E;
     grid-area: main;
     height: 100%;
     color: #D3B1C2;
@@ -241,10 +248,11 @@ foother i {
 /*<----------------------  STARTING PAGES (non-logged in user), /login, /signup and /reclaim -------------------->*/
 #starting-pages {
     background-image: url("../img/loginBackground.jpg");
-    background-size: cover 100%;
+    background-size: cover;
     background-repeat: no-repeat;
     background-position: center top;
     padding-top: 15vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -544,10 +552,25 @@ profile-selector {
     border-bottom: 2px solid #242424;
 }
 
+
 .friend-table-list {
     padding-bottom: 5px;
     margin-bottom: 5px;
     border-bottom: 2px solid #242424;
+}
+
+.friend-username > a {
+    color: #D3B1C2;
+    text-decoration: none;
+}
+
+.friend-username > a:active {
+    text-decoration: none;
+}
+
+.friend-username > a:hover {
+    color: #C197D2;
+    text-decoration: none;
 }
 
 .friend-action {
@@ -585,6 +608,29 @@ profile-selector {
 
 #friendReq-list.gotRequests {
     border: 2px solid #4cbb4c;
+}
+
+.reqTable-list:last-of-type,
+.friend-table-list:last-child,
+#search-table tr:last-of-type {
+    border-bottom: none;
+}
+
+/*<-------------------------- CHAT-PAGE -------------------------->*/
+#chat-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2vh;
+    width: 100%;
+}
+
+chat-app {
+    display: block;
+    justify-content: center;
+    align-items: center;
+    border-right: 2px solid #242424;
+    border-left: 2px solid #242424;
 }
 
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
@@ -645,7 +691,7 @@ profile-selector {
 
 @media (max-width: 600px) {
     html {
-        font-size: 80%;
+        font-size: 90%;
     }
     body {
         grid-template-columns: auto;

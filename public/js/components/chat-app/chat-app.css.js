@@ -3,93 +3,174 @@ const chatAppStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: bold;
-    width: 450px;
-    height: 480px;
+    justify-content: center;
+    margin-top: 30px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    width: 65vw;
+    height: 100%;
+}
+
+form#chat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#submit-btns {
+    display: inline-block;
+    width: 100%;
+    justify-content: left;
 }
 
 #chatWindow {
-    width: 430px;
-    height: 340px;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 10px;
+    width: 60vw;
+    height: 50vh;
     margin-bottom: 15px;
-    background-color: white;
+    background-color: transparent;
     overflow-y: auto;
-    border: 1px solid black;
-}
-
-p {
-    margin: 10px;
-    margin-top: 20px;
-    word-wrap: break-word;
-    white-space: pre-line;
-    background-color: #d6d6d6;
+    overflow-x: hidden;
 }
 
 #message {
     font-size: 18px;
-    width: 425px;
-    height: 50px;
-    margin-left: 10px;
+    width: 60vw;
+    height: 80px;
     resize: none;
+    color: #D3B1C2;
+    background-color: #474747;
+    padding-left: 5px;
 }
 
-#showUser {
-    text-align: center;
-    background-color: white;
-    border: 1px dotted black;
-    margin-left: 10px;
+.chat-messages {
+    word-wrap: break-word;
+    white-space: pre-line;
+    border-top: 2px solid #242424;
+    margin-right: 5px;
+    margin-bottom: 30px;
 }
 
-#send {
-    margin-left: 10px;
+.chat-messages > p {
+    font-size: 1rem;
+    margin: 3px;
+    margin-left: 15px;
 }
 
-#emojiButton {
-    margin-left: 10px;
+.chat-messages > h4 {
+    font-weight: bold;
+    color: #C197D2;
+    font-size: 1.25rem;
+    margin: 3px;
 }
 
-#connect {
-    margin-left: 180px;
-    padding: 10px;
+.chat-messages img {
+    height: 40px;
+    width: 40px;
+    overflow: hidden;
+    border: 2px solid #D3B1C2;
+    border-radius: 10px;
+    object-fit: contain;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
 }
 
-h1, 
-#showUser {
-    text-align: center;
-    margin-top: 50px;
+button {
+    margin: 5px;
+    width: max-content;
+    height: 30px;
+    color: #D3B1C2;
+    border-radius: 5px;
+    border: 1px solid #D3B1C2;
+    background-color: #211522;
 }
 
-.emojiBtn {
-    width: 45px;
-    height: 25px;
-    text-align: center;
-    justify-content: center;
-    border: none;
-    background-color: white;
-}
-
-.emojiBtn:hover {
-    background-color: #c4e0f7;
+button:hover {
+    color: #211522;
+    border: 1px solid #211522;
+    background-color: #D3B1C2;
 }
 
 #emojiDropdown {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 300px;
+    position: absolute;
+    z-index: 1;
+    bottom: 130px;
+    background-color: #474747;
+    border-radius: 5px;
+    border: 1px solid #D3B1C2;
+    max-width: 308px;
     height: 150px;
-    background-color: white;
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid black;
+}
+
+#emojiDropdown button {
+    margin: 0px;
+    width: 60px;
+    height: 30px;
 }
 
 #emojiDropdown.hidden {
     display: none;
 }
+
+/*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
+/* Width */
+::-webkit-scrollbar {
+    width: 7px; /* width of the entire scrollbar */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #474747; /* color of the track */
+    border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #211522; /* color of the scroll thumb */
+    border-radius: 10px; /* roundness of the scroll thumb */
+}
+
+/* Firefox-specific styles */
+@-moz-document url-prefix() {
+    /* Track and handle styles for Firefox */
+    * {
+        scrollbar-color: #211522 #474747; /* thumb and track color */
+        scrollbar-width: thin; /* width of the scrollbar */
+    }
+
+    *::-moz-scrollbar-thumb {
+        background: #211522; /* color of the scroll thumb */
+        border-radius: 10px; /* roundness of the scroll thumb */
+    }
+
+    *::-moz-scrollbar-track {
+        background: #474747; /* color of the track */
+        border-radius: 10px; /* roundness of the scrollbar track */
+    }
+}
+
+/*<-------------------------- MEDIA QUERIES -------------------------->*/
+
+@media (max-width: 600px) {
+    #wrapper {
+        width: 100%;
+        margin-top: 0;
+    }
+
+    #chatWindow {
+        width: 90vw;
+        height: 42vh;
+    }
+
+    #message {
+        width: 90vw;
+        heigth: 50px;
+    }
+}
+
 `
 
 export default chatAppStyles

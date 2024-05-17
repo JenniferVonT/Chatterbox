@@ -1,6 +1,5 @@
 <% if (locals.user) { %>
-  <h3>TESTING</h3>
-  <p><%= viewData.user.username %></p>
-  <p><%= viewData.otherUser.username %></p>
-  <chat-app></chat-app>
+  <div id="chat-page">
+    <chat-app user="<%= viewData.user.username %>" userID="<%= viewData.user.id %>" userImg="<%= viewData.user.profileImg %>" secondUser="<%= viewData.otherUser.username %>" secondUserID="<%= viewData.otherUser.id %>" chatID="<%= viewData.user.chatID %>" secondUserImg="<%= viewData.otherUser.profileImg %>"></chat-app>
+  </div>
 <% } %>

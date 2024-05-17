@@ -37,8 +37,10 @@ const schema = new mongoose.Schema({
     type: String
   },
   resetCode: {
-    type: String,
-    expireAfterSeconds: 120 // 2min, CHANGE TO 0.5HOURS LATER!
+    code: String,
+    createdAt: {
+      type: Date
+    }
   },
   sentFriendReqs: [{
     id: String
@@ -47,16 +49,12 @@ const schema = new mongoose.Schema({
     id: String
   }],
   friends: [{
-    id: String,
+    userId: String,
     chatId: String
-  }],
-  groups: [{
-    groupId: String
   }]
 })
 
 schema.add(BASE_SCHEMA)
-schema.index({ resetCode: 1 }, { expireAfterSeconds: 120 }) // CHANGE TO 0.5HOURS LATER!
 
 /**
  * Authenticates a user.

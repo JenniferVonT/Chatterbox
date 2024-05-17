@@ -2,11 +2,10 @@
  * A component that represents a chat box.
  *
  * @author Jennifer von Trotta-Treyden <jv222th@student.lnu.se>
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import chatAppStyles from './chat-app.css.js'
-import '../nickname-form/index.js'
 
 const template = document.createElement('template')
 template.innerHTML = `
@@ -17,12 +16,14 @@ ${chatAppStyles}
     <form id="chat" method="POST">
         <div id="chatWindow"></div>
 
-        <label for="message" id="showUser"></label>
         <textarea id="message" name="message" rows="10" cols="50" placeholder="Write your message here!" autocomplete="off"></textarea>
-        <input type="submit" value="Send" id="send">
-        <button id="emojiButton">😊</button>
-        <div class="hidden" id="emojiDropdown"></div>
-    </form>    
+  
+        <div id="submit-btns">
+          <div class="hidden" id="emojiDropdown"></div>
+          <button type="submit" id="send" class="submit-button-user">Send</button>
+          <button id="emojiButton" class="submit-button-user">😊</button>
+        </div> 
+    </form>
 </div>
 `
 
@@ -35,11 +36,6 @@ customElements.define('chat-app',
      * Represents the username.
      */
     #username
-
-    /**
-     * Represents the tag that shows the username
-     */
-    #usernameTag
 
     /**
      * Represents the window that shows the chat conversation.
@@ -67,14 +63,24 @@ customElements.define('chat-app',
     #conversation
 
     /**
+     * The unique ID for this chat conversation.
+     */
+    #chatID
+
+    /**
      * Represents the websocket.
      */
     #socket
 
     /**
-     * Represents the stored username.
+     * Represents the encryptionKey.
      */
-    #storedUsername
+    #encryptionKey
+
+    /**
+     * Represents the initializations vector for the encryption.
+     */
+    #initV
 
     /**
      * Creates an instance of the current type.
@@ -87,29 +93,32 @@ customElements.define('chat-app',
         .appendChild(template.content.cloneNode(true))
 
       this.#chatWindow = this.shadowRoot.querySelector('#chatWindow')
-      this.#usernameTag = this.shadowRoot.querySelector('#showUser')
       this.#message = this.shadowRoot.querySelector('#message')
       this.#sendMessage = this.shadowRoot.querySelector('#chat')
       this.#recievedMessage = ''
-      // this.#conversation = JSON.parse(localStorage.getItem('chatlog')) || []
+      this.#conversation = []
+      this.#username = ''
+      this.#encryptionKey = ''
+      this.#initV = window.crypto.getRandomValues(new Uint8Array(16))
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
-      /*
-      this.#socket = new WebSocket('wss://courselab.lnu.se/message-app/socket')
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
 
+      /*
       this.#socket.addEventListener('open', (event) => {
         console.log('WebSocket connection opened:', event)
       })
+      */
 
       this.#socket.addEventListener('message', (event) => {
         this.#recievedMessage = JSON.parse(event.data)
-        console.log('Recieved message:', this.#recievedMessage)
 
         this.#handleRecievedMessages(this.#recievedMessage)
       })
 
+      /*
       this.#socket.addEventListener('close', (event) => {
         console.log('WebSocket connection closed:', event)
       })
@@ -118,6 +127,7 @@ customElements.define('chat-app',
         console.error('WebSocket encountered an error:', event)
       })
       */
+
       this.#message.addEventListener('keydown', (event) => this.#handleKeyDown(event))
       this.#sendMessage.addEventListener('submit', (event) => this.#sendMessages(event))
       this.emojiButton.addEventListener('click', (event) => this.#toggleEmojiDropdown(event, 'on'))
@@ -130,16 +140,8 @@ customElements.define('chat-app',
      * Called when the element is inserted into the DOM.
      */
     connectedCallback () {
-      // Check if the username is already stored, and if it is continue without the start screen.
-      this.#storedUsername = localStorage.getItem('chatAppUsername')
-      this.#username = this.#storedUsername || ''
-
-      if (this.#storedUsername) {
-        this.#usernameTag.textContent = this.#username
-        this.#sendMessage.classList.remove('hidden')
-      }
-
-      this.#renderConversation()
+      this.#chatID = this.getAttribute('chatID')
+      this.#username = this.getAttribute('user')
     }
 
     /**
@@ -147,6 +149,21 @@ customElements.define('chat-app',
      */
     disconnectedCallback () {
       this.#socket.close()
+    }
+
+    /**
+     * Called when an attribute is changed.
+     *
+     * @param {string} name - the name of the attribute to check.
+     */
+    attributeChangedCallback (name) {
+      if (name === 'user') {
+        this.#username = name
+      }
+
+      if (name === 'chatID') {
+        this.#chatID = name
+      }
     }
 
     /**
@@ -166,15 +183,21 @@ customElements.define('chat-app',
      *
      * @param {Event} event - The submit event.
      */
-    #sendMessages (event) {
+    async #sendMessages (event) {
       event.preventDefault()
+
+      const encryptedMessage = await this.#encryptMessage(this.#message.value.toString())
+
+      // Convert the message to base64 in order to send it over the socket.
+      const base64message = btoa(String.fromCharCode.apply(null, new Uint8Array(encryptedMessage)))
 
       if (this.#message.value !== '') {
         const messageToSend = {
           type: 'message',
-          data: `${this.#message.value.toString()}`,
-          username: `${this.#username}`,
-          key: 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
+          data: base64message,
+          user: `${this.getAttribute('userID')}`,
+          iv: this.#initV,
+          key: this.#chatID
         }
 
         this.#socket.send(JSON.stringify(messageToSend))
@@ -188,30 +211,41 @@ customElements.define('chat-app',
      *
      * @param {object} message - a parsed JSON object.
      */
-    #handleRecievedMessages (message) {
-      if (message.type === 'message') {
-        const username = message.username
-        const messageData = message.data
+    async #handleRecievedMessages (message) {
+      let username = ''
 
-        const userMessage = {
-          username,
-          message: messageData
+      try {
+        if (message.type === 'message') {
+          if (message.user === this.getAttribute('userID')) {
+            username = this.#username
+          } else if (message.user === this.getAttribute('secondUserID')) {
+            username = this.getAttribute('secondUser')
+          }
+
+          const decryptedMessage = await this.#decryptMessage(message)
+
+          const userMessage = {
+            username,
+            message: decryptedMessage
+          }
+
+          this.#conversation.unshift(userMessage)
+
+          this.#conversation = this.#conversation.slice(0, 30)
+
+          this.#renderMessages()
+        } else if (message.type !== 'heartbeat') {
+          this.#handleConversation(message)
         }
-
-        this.#conversation.unshift(userMessage)
-
-        this.#conversation = this.#conversation.slice(0, 30)
-
-        localStorage.setItem('chatlog', JSON.stringify(this.#conversation))
-
-        this.#renderConversation()
+      } catch (error) {
+        console.error('Could not receive message: ', error)
       }
     }
 
     /**
      * Renders the conversation in the chat window.
      */
-    #renderConversation () {
+    #renderMessages () {
       // Check if the scrollbar should scroll to the bottom.
       const shouldScrollToBottom = this.#chatWindow.scrollTop + this.#chatWindow.clientHeight === this.#chatWindow.scrollHeight
 
@@ -219,19 +253,140 @@ customElements.define('chat-app',
       const length = this.#conversation.length
 
       for (let i = 0; i < length; i++) {
-        const pElement = document.createElement('p')
+        const div = document.createElement('div')
+        const username = document.createElement('h4')
+        const message = document.createElement('p')
+        const profileImg = document.createElement('img')
+        profileImg.setAttribute('alt', 'profileIMG')
 
-        const username = this.#conversation[i].username
-        const message = this.#conversation[i].message
-        const formattedMessage = `${username}:\n \u00A0 ${message}`
+        username.textContent = this.#conversation[i].username
 
-        pElement.textContent = formattedMessage
+        // Check which user the message is tied to and insert the correct img.
+        if (username.textContent === this.getAttribute('user')) {
+          const profileIMG = this.getAttribute('userImg')
+          profileImg.setAttribute('src', `./img/profiles/${profileIMG}`)
+        } else {
+          const profileIMG = this.getAttribute('secondUserImg')
+          profileImg.setAttribute('src', `./img/profiles/${profileIMG}`)
+        }
+        username.prepend(profileImg)
 
-        this.#chatWindow.prepend(pElement)
+        message.textContent = this.#conversation[i].message
+
+        div.append(username)
+        div.append(message)
+
+        div.classList.add('chat-messages')
+
+        this.#chatWindow.prepend(div)
       }
 
       if (shouldScrollToBottom) {
         this.#chatWindow.scrollTop = this.#chatWindow.scrollHeight
+      }
+    }
+
+    /**
+     * Renders the entire conversation.
+     *
+     * @param {object} messages - a parsed JSON object.
+     */
+    async #handleConversation (messages) {
+      // Get the encryption key from the server.
+      const key = messages.encryptionKey
+
+      const decodedKey = Uint8Array.from(atob(key), c => c.charCodeAt(0))
+
+      // Convert the Uint8Array encryption key to a CryptoKey
+      this.#encryptionKey = await window.crypto.subtle.importKey(
+        'raw',
+        decodedKey,
+        { name: 'AES-CBC' },
+        false,
+        ['encrypt', 'decrypt']
+      )
+
+      for (const message of messages.messages) {
+        let username = ''
+
+        if (message.user === this.getAttribute('userID')) {
+          username = this.#username
+        } else if (message.user === this.getAttribute('secondUserID')) {
+          username = this.getAttribute('secondUser')
+        }
+
+        const decryptedMessage = await this.#decryptMessage(message)
+
+        const userMessage = {
+          username,
+          message: decryptedMessage
+        }
+
+        this.#conversation.unshift(userMessage)
+      }
+      this.#renderMessages()
+    }
+
+    /**
+     * Decrypts the outgoing message.
+     *
+     * @param {object} message - A message object.
+     * @returns {string} - The decrypted message.
+     */
+    async #decryptMessage (message) {
+      try {
+        // Convert message to an ArrayBuffer.
+        const encryptedData = Uint8Array.from(atob(message.data), c => c.charCodeAt(0))
+
+        // Parse the IV from JSON format to Uint8Array
+        const ivValues = Object.values(message.iv)
+        const ivUint8Array = new Uint8Array(ivValues)
+
+        // Convert the Uint8Array to ArrayBuffer
+        const ivArrayBuffer = ivUint8Array.buffer
+
+        // Decrypt the message.
+        const decryptedArrayBuffer = await window.crypto.subtle.decrypt(
+          {
+            name: 'AES-CBC',
+            iv: ivArrayBuffer
+          },
+          this.#encryptionKey,
+          encryptedData
+        )
+
+        // Convert to a string and return.
+        return new TextDecoder().decode(decryptedArrayBuffer)
+      } catch (error) {
+        // If an error occurs during decryption.
+        console.error('Decryption failed:', error.message)
+      }
+    }
+
+    /**
+     * Encrypts the incoming message.
+     *
+     * @param {string} message - The message.
+     * @returns {Buffer} - The encrypted message.
+     */
+    async #encryptMessage (message) {
+      try {
+        // Prepare the message.
+        const plaintextMsg = new TextEncoder().encode(message)
+
+        // Encrypt the message.
+        const encryptedMsg = await window.crypto.subtle.encrypt(
+          {
+            name: 'AES-CBC',
+            iv: this.#initV
+          },
+          this.#encryptionKey,
+          plaintextMsg
+        )
+
+        return encryptedMsg
+      } catch (error) {
+        console.error('Could not encrypt: ', error.message)
       }
     }
 
@@ -256,7 +411,7 @@ customElements.define('chat-app',
      */
     async #buildEmojiList () {
       // Fetch all the emojis.
-      const response = await fetch('https://emoji-api.com/emojis?access_key=48bf4f6218ef9c64ccb2929606657b42222f5d10')
+      const response = await fetch('https://emoji-api.com/emojis?access_key=69ecede85d728684b87d72b52e59f63c696b4e66')
       const emojis = await response.json()
 
       // Create a button out of every emoji and insert them when clicked.

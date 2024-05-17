@@ -14,13 +14,16 @@
       <% for (const friend of locals.user.friends) { %>
         <tr class="friend-table-list">
           <td>
-            <div class="friend-profile-img">
-              <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
-            </div>
+            <a href="./main/chat/<%= friend.chatID %>">
+              <div class="friend-profile-img">
+                <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
+              </div>
+            </a>
           </td>
           <td class="friend-username">
-            <%= friend.username %>
+            <a href="./main/chat/<%= friend.chatID %>"><%= friend.username %></a>
           </td>
+        
           <td class="friend-action">
             <form method="POST" action="./main/friends/remove/<%= friend.id %>" class="submit-button-user">
               <button type="submit">Remove</button>
@@ -51,6 +54,7 @@
             <thead></thead>
             <tbody>
             <% for (const result of viewData.results) { %>
+              <% if (result.id !== locals.user.id) { %>
               <tr class="search-profile">
                 <td>
                   <div class="friend-profile-img">
@@ -100,7 +104,7 @@
                   <% } %>
                 </td>
               </tr>
-            <% } %>
+            <% }} %>
             </tbody> 
           </table>
         </div>
@@ -120,7 +124,7 @@
             <tr>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="req-table-body">
           <% if (locals.user.friendReqs) { %> 
           <% for (const friend of locals.user.friendReqs) { %>
             <tr class="reqTable-list">

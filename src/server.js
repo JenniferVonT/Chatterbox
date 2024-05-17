@@ -17,9 +17,10 @@ import { connectToDatabase } from './config/mongoose.js'
 import { morganLogger } from './config/morgan.js'
 import { sessionOptions } from './config/sessionOptions.js'
 import { logger } from './config/winston.js'
-// import { wss } from './config/webSocketServer.js'
+import { wss } from './config/webSocketServer.js'
 import { router } from './routes/router.js'
 import { FriendBuilder } from './lib/buildFriends.js'
+import { UserModel } from './models/userModel.js'
 const friendBuilder = new FriendBuilder()
 
 try {
@@ -48,16 +49,20 @@ try {
   // Populates the request object with a body object (req.body).
   app.use(express.urlencoded({ extended: false }))
 
-  // Set various HTTP headers to make the application little more secure (https://www.npmjs.com/package/helmet).
+  // Set various HTTP headers to make the application a little more secure (https://www.npmjs.com/package/helmet).
   app.use(helmet())
 
-  // --------------------------------------------------------------------------
-  //
-  // Webhook: Parse incoming requests with JSON payloads (application/json).
   // Populates the request object with a body object (req.body).
-  //
   app.use(express.json())
-  // --------------------------------------------------------------------------
+
+  // Set the content-security policy so that API's can be used from the client.
+  app.use((req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox; img-src 'self' data:; font-src 'self' data:;"
+    )
+    next()
+  })
 
   // Serve static files.
   app.use(express.static(join(directoryFullName, '..', 'public')))
@@ -90,9 +95,12 @@ try {
     }
 
     if (req.session.user) {
+      const user = await UserModel.findById(req.session.user.id)
       // Build the friend and friendReq list.
       res.locals.user = req.session.user
-      res.locals.user.friends = await friendBuilder.getFriendsList(req.session.user)
+
+      res.locals.user.friends = await friendBuilder.getFriendsList(user)
+      res.locals.user.friendReqs = await friendBuilder.getFriendReqList(user)
     } else {
       res.locals.user = false
     }
@@ -102,7 +110,7 @@ try {
     res.locals.resetCode = false
 
     // Pass the WebSocket server to the response object.
-    // res.wss = wss
+    res.wss = wss
 
     next()
   })
@@ -145,12 +153,11 @@ try {
     logger.info('Press Ctrl-C to terminate...')
   })
 
-  /* server.on('upgrade', (request, socket, head) => {
+  server.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, (socket) => {
       wss.emit('connection', socket, request)
     })
   })
-  */
 } catch (err) {
   logger.error(err.message, { error: err })
   process.exitCode = 1
