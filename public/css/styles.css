@@ -552,10 +552,25 @@ profile-selector {
     border-bottom: 2px solid #242424;
 }
 
+
 .friend-table-list {
     padding-bottom: 5px;
     margin-bottom: 5px;
     border-bottom: 2px solid #242424;
+}
+
+.friend-username > a {
+    color: #D3B1C2;
+    text-decoration: none;
+}
+
+.friend-username > a:active {
+    text-decoration: none;
+}
+
+.friend-username > a:hover {
+    color: #C197D2;
+    text-decoration: none;
 }
 
 .friend-action {
@@ -593,6 +608,12 @@ profile-selector {
 
 #friendReq-list.gotRequests {
     border: 2px solid #4cbb4c;
+}
+
+.reqTable-list:last-of-type,
+.friend-table-list:last-child,
+#search-table tr:last-of-type {
+    border-bottom: none;
 }
 
 /*<-------------------------- CHAT-PAGE -------------------------->*/

@@ -14,13 +14,16 @@
       <% for (const friend of locals.user.friends) { %>
         <tr class="friend-table-list">
           <td>
-            <div class="friend-profile-img">
-              <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
-            </div>
+            <a href="./main/chat/<%= friend.chatID %>">
+              <div class="friend-profile-img">
+                <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
+              </div>
+            </a>
           </td>
           <td class="friend-username">
-            <%= friend.username %>
+            <a href="./main/chat/<%= friend.chatID %>"><%= friend.username %></a>
           </td>
+        
           <td class="friend-action">
             <form method="POST" action="./main/friends/remove/<%= friend.id %>" class="submit-button-user">
               <button type="submit">Remove</button>
@@ -121,7 +124,7 @@
             <tr>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="req-table-body">
           <% if (locals.user.friendReqs) { %> 
           <% for (const friend of locals.user.friendReqs) { %>
             <tr class="reqTable-list">
