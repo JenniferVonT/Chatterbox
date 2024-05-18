@@ -4,7 +4,6 @@ const chatAppStyles = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 30px;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     width: 65vw;
     height: 100%;
@@ -19,15 +18,17 @@ form#chat {
 }
 
 #submit-btns {
-    display: inline-block;
+    display: flex;
+    flex-direction: row;
     width: 100%;
     justify-content: left;
+    align-items: center;
 }
 
 #chatWindow {
     width: 60vw;
-    height: 50vh;
-    margin-bottom: 15px;
+    height: 60vh;
+    margin-bottom: 10px;
     background-color: transparent;
     overflow-y: auto;
     overflow-x: hidden;
@@ -49,6 +50,10 @@ form#chat {
     border-top: 2px solid #242424;
     margin-right: 5px;
     margin-bottom: 30px;
+}
+
+.chat-messages:first-of-type {
+    border-top: none;
 }
 
 .chat-messages > p {
@@ -113,6 +118,23 @@ button:hover {
 
 #emojiDropdown.hidden {
     display: none;
+}
+
+#videoCall,
+#phoneCall {
+    display: flex;
+    width: min-content;
+    align-items: center;
+    justify-content: center;
+}
+
+#videoCall > img,
+#phoneCall > img {
+    display: flex;
+    object-fit: contain;
+    height: 85%;
+    align-items: center;
+    justify-content: center;
 }
 
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/

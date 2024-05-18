@@ -22,6 +22,8 @@ ${chatAppStyles}
           <div class="hidden" id="emojiDropdown"></div>
           <button type="submit" id="send" class="submit-button-user">Send</button>
           <button id="emojiButton" class="submit-button-user">😊</button>
+          <button id="phoneCall" class="submit-button-user"><img src="./img/telephone-icon.svg" alt="Call"></button>
+          <button id="videoCall" class="submit-button-user"><img src="./img/videocall-icon.svg" alt="Video"></button>
         </div> 
     </form>
 </div>
@@ -105,6 +107,7 @@ customElements.define('chat-app',
 
       // Create a websocket and put the appropriate event listeners.
       this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
+      // USE THIS WHEN WORKING LOCALLY: this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`)
 
       /*
       this.#socket.addEventListener('open', (event) => {

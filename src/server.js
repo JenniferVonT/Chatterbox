@@ -26,7 +26,6 @@ const friendBuilder = new FriendBuilder()
 try {
   // Connect to MongoDB.
   await connectToDatabase(process.env.USER_DB)
-  // await connectToDatabase(process.env.MESSAGE_DB)
 
   // Creates an Express application.
   const app = express()
