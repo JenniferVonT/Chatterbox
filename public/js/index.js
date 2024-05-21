@@ -1,6 +1,7 @@
 import './components/settings-comps/delete-account/index.js'
 import { settingsPage } from './settings.js'
 import { friendsPage } from './friends.js'
+import { chatPage } from './chat.js'
 
 /**
  * Determine what page is loaded and run the corresponding js file.
@@ -22,6 +23,9 @@ function determinePage () {
       break
     case 'friends-page':
       friendsPage()
+      break
+    case 'chat-page':
+      chatPage()
       break
     default:
       console.error('Unknown page:', currentPage)

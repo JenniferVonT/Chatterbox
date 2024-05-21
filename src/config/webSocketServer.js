@@ -86,6 +86,18 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
 
         // Save the message in a db.
         await chatController.saveChatMessage(obj)
+      } else if (obj.type === 'call') {
+        const chatId = obj.key
+
+        // Retrieve the WebSocket connection for the chat room
+        const connections = chatRooms.get(chatId)
+
+        // Broadcast the message to all WebSocket connections in the chat room
+        connections.forEach(connection => {
+          if (connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify(obj))
+          }
+        })
       }
     } catch (error) {
       logger.error('Error processing WebSocket message:', error)

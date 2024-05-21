@@ -85,6 +85,16 @@ customElements.define('chat-app',
     #initV
 
     /**
+     * Represents the video chat button.
+     */
+    #videoBtn
+
+    /**
+     * Represents the phone chat button.
+     */
+    #phoneBtn
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -102,12 +112,16 @@ customElements.define('chat-app',
       this.#username = ''
       this.#encryptionKey = ''
       this.#initV = window.crypto.getRandomValues(new Uint8Array(16))
+      this.#phoneBtn = this.shadowRoot.querySelector('#phoneCall')
+      this.#videoBtn = this.shadowRoot.querySelector('#videoCall')
+      this.#chatID = this.getAttribute('chatID')
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
 
       // Create a websocket and put the appropriate event listeners.
-      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
-      // USE THIS WHEN WORKING LOCALLY: this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`)
+      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
+      // USE THIS WHEN WORKING LOCALLY:
+      this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`)
 
       /*
       this.#socket.addEventListener('open', (event) => {
@@ -143,8 +157,29 @@ customElements.define('chat-app',
      * Called when the element is inserted into the DOM.
      */
     connectedCallback () {
-      this.#chatID = this.getAttribute('chatID')
       this.#username = this.getAttribute('user')
+
+      this.#phoneBtn.addEventListener('click', () => {
+        const message = {
+          type: 'call',
+          callType: 'audio',
+          caller: this.#username,
+          callerID: this.getAttribute('userID'),
+          key: this.#chatID
+        }
+        this.#socket.send(JSON.stringify(message))
+      })
+
+      this.#videoBtn.addEventListener('click', () => {
+        const message = {
+          type: 'call',
+          callType: 'video',
+          caller: this.#username,
+          callerID: this.getAttribute('userID'),
+          key: this.#chatID
+        }
+        this.#socket.send(JSON.stringify(message))
+      })
     }
 
     /**
@@ -237,6 +272,14 @@ customElements.define('chat-app',
           this.#conversation = this.#conversation.slice(0, 30)
 
           this.#renderMessages()
+        } else if (message.type === 'call') {
+          if (message.caller === this.getAttribute('secondUser')) {
+            this.dispatchEvent(new CustomEvent(`${message.callType}Call`, {
+              bubbles: true,
+              composed: true,
+              detail: { caller: message.caller, callerID: message.callerID, chatID: message.key }
+            }))
+          }
         } else if (message.type !== 'heartbeat') {
           this.#handleConversation(message)
         }
