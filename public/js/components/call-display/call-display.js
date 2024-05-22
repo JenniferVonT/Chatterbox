@@ -5,15 +5,22 @@
  * @version 1.0.0
  */
 
+import styles from './call-display.css.js'
+
 const template = document.createElement('template')
 template.innerHTML = `
 <style>
+  ${styles}
 </style>
-<div>
-  <h1>HELLO!</h1>
-  <p id=username></p>
-  <p id=userID></p>
-  <p id=callType></p>
+<div id="call-display-content">
+  <h1><b id=username></b> is calling!</h1>
+
+  <div id="submit-btns">
+    <button id="phoneCall" class="submit-button-user"><img src="./img/telephone-icon.svg" alt="Call">ACCEPT</button>
+    <button id="videoCall" class="submit-button-user"><img src="./img/videocall-icon.svg" alt="Video">ACCEPT</button>
+    <button id="denyCall">DENY</button>
+  </div>
+
 </div>
 `
 customElements.define('call-display',
@@ -21,6 +28,21 @@ customElements.define('call-display',
    * Represents a call-display element.
    */
   class extends HTMLElement {
+    /**
+     * Represents the accept audio button.
+     */
+    #acceptAudio
+
+    /**
+     * Represents the accept video button.
+     */
+    #acceptVideo
+
+    /**
+     * Represents the deny call button.
+     */
+    #denyCall
+
     /**
      * Creates an instance of the current type.
      */
@@ -33,8 +55,44 @@ customElements.define('call-display',
       this.username = ''
       this.userID = ''
       this.callType = ''
+      this.#acceptAudio = this.shadowRoot.querySelector('#phoneCall')
+      this.#acceptVideo = this.shadowRoot.querySelector('#videoCall')
+      this.#denyCall = this.shadowRoot.querySelector('#denyCall')
+    }
 
-      this.#insertData()
+    /**
+     * Called when the element is inserted into the DOM.
+     */
+    connectedCallback () {
+      this.#acceptAudio.addEventListener('click', () => this.#handleCall('audio'))
+      this.#acceptVideo.addEventListener('click', () => this.#handleCall('video'))
+      this.#denyCall.addEventListener('click', () => this.#handleCall('denied'))
+    }
+
+    /**
+     * Handles when the call is either accepted or denied.
+     *
+     * @param {string} type - The type of call, audio, video or denied.
+     */
+    #handleCall (type) {
+      if (type === 'audio') {
+        this.dispatchEvent(new CustomEvent('audioCallAccepted', {
+          bubbles: true,
+          composed: true,
+          detail: { caller: this.username, callerID: this.userID }
+        }))
+      } else if (type === 'video') {
+        this.dispatchEvent(new CustomEvent('videoCallAccepted', {
+          bubbles: true,
+          composed: true,
+          detail: { caller: this.username, callerID: this.userID }
+        }))
+      } else {
+        this.dispatchEvent(new CustomEvent('callDenied', {
+          bubbles: true,
+          composed: true
+        }))
+      }
     }
 
     /**
@@ -50,8 +108,6 @@ customElements.define('call-display',
       if (callType === 'video') {
         this.callType = 'video'
       }
-
-      this.#insertData()
     }
 
     /**
@@ -64,20 +120,16 @@ customElements.define('call-display',
       this.username = username
       this.userID = userID
 
-      this.#insertData()
+      this.#insertUser()
     }
 
     /**
-     * Inserts the data into the component.
+     * Inserts the user data into the component.
      */
-    #insertData () {
+    #insertUser () {
       const user = this.shadowRoot.querySelector('#username')
-      const id = this.shadowRoot.querySelector('#userID')
-      const callType = this.shadowRoot.querySelector('#callType')
 
       user.textContent = this.username
-      id.textContent = this.userID
-      callType.textContent = this.callType
     }
   }
 )

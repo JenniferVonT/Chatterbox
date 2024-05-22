@@ -12,6 +12,7 @@ gray scale:
 #2E2E2E
 #242424
 */
+
 html, body {
     height: 100%;
     margin: 0;
@@ -618,6 +619,7 @@ profile-selector {
 
 /*<-------------------------- CHAT-PAGE -------------------------->*/
 #chat-page {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -631,6 +633,7 @@ chat-app {
     align-items: center;
     border-right: 2px solid #242424;
     border-left: 2px solid #242424;
+    position: relative;
 }
 
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/

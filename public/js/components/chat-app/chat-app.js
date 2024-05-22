@@ -273,13 +273,15 @@ customElements.define('chat-app',
 
           this.#renderMessages()
         } else if (message.type === 'call') {
-          if (message.caller === this.getAttribute('secondUser')) {
+          if (message.caller !== this.getAttribute('user')) {
             this.dispatchEvent(new CustomEvent(`${message.callType}Call`, {
               bubbles: true,
               composed: true,
               detail: { caller: message.caller, callerID: message.callerID, chatID: message.key }
             }))
           }
+        } else if (message.type === 'confirmation') {
+          console.log(message)
         } else if (message.type !== 'heartbeat') {
           this.#handleConversation(message)
         }
@@ -479,5 +481,20 @@ customElements.define('chat-app',
 
         this.emojiDropdown.append(emojiButton)
       })
+    }
+
+    /**
+     * Sends a confirmation to the other user.
+     *
+     * @param {string} type - send confirmation to the other user, audio, video or denied.
+     */
+    sendConfirmation (type) {
+      const message = {
+        type: 'confirmation',
+        caller: this.getAttribute('secondUser'),
+        callerID: this.getAttribute('secondUserID'),
+        state: type
+      }
+      this.#socket.send(JSON.stringify(message))
     }
   })

@@ -42,6 +42,8 @@ form#chat {
     color: #D3B1C2;
     background-color: #474747;
     padding-left: 5px;
+    border: 2px solid #242424;
+    border-radius: 10px;
 }
 
 .chat-messages {
