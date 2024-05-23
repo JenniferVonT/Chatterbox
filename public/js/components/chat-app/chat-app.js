@@ -95,6 +95,11 @@ customElements.define('chat-app',
     #phoneBtn
 
     /**
+     * Represents the ringing tune.
+     */
+    #ringingAudio
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -117,6 +122,10 @@ customElements.define('chat-app',
       this.#chatID = this.getAttribute('chatID')
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
+
+      // Create audio element.
+      this.#ringingAudio = new Audio('./sound/call-tone.mp3')
+      this.#ringingAudio.loop = true
 
       // Create a websocket and put the appropriate event listeners.
       // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
@@ -159,27 +168,8 @@ customElements.define('chat-app',
     connectedCallback () {
       this.#username = this.getAttribute('user')
 
-      this.#phoneBtn.addEventListener('click', () => {
-        const message = {
-          type: 'call',
-          callType: 'audio',
-          caller: this.#username,
-          callerID: this.getAttribute('userID'),
-          key: this.#chatID
-        }
-        this.#socket.send(JSON.stringify(message))
-      })
-
-      this.#videoBtn.addEventListener('click', () => {
-        const message = {
-          type: 'call',
-          callType: 'video',
-          caller: this.#username,
-          callerID: this.getAttribute('userID'),
-          key: this.#chatID
-        }
-        this.#socket.send(JSON.stringify(message))
-      })
+      this.#phoneBtn.addEventListener('click', () => this.#sendCallMessage('audio'))
+      this.#videoBtn.addEventListener('click', () => this.#sendCallMessage('video'))
     }
 
     /**
@@ -187,6 +177,33 @@ customElements.define('chat-app',
      */
     disconnectedCallback () {
       this.#socket.close()
+    }
+
+    /**
+     * Sends a message through the websocket that an audio or video call is requested.
+     *
+     * @param {string} type - video or audio.
+     */
+    #sendCallMessage (type) {
+      const message = {
+        type: 'call',
+        callType: type,
+        caller: this.#username,
+        callerID: this.getAttribute('userID'),
+        key: this.#chatID
+      }
+      this.#socket.send(JSON.stringify(message))
+
+      // Disable the call buttons for 20sec.
+      this.toggleCallBtns()
+      setTimeout(() => this.toggleCallBtns(), 20_000)
+
+      // Play a tune for 20 sec and then disable it.
+      this.#ringingAudio.play()
+      setTimeout(() => {
+        this.#ringingAudio.pause()
+        this.#ringingAudio.currentTime = 0
+      }, 20_000)
     }
 
     /**
@@ -496,5 +513,13 @@ customElements.define('chat-app',
         state: type
       }
       this.#socket.send(JSON.stringify(message))
+    }
+
+    /**
+     * Toggles the call buttons from off to on.
+     */
+    toggleCallBtns () {
+      this.#phoneBtn.toggleAttribute('disabled')
+      this.#videoBtn.toggleAttribute('disabled')
     }
   })

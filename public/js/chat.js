@@ -9,17 +9,6 @@ export const chatPage = function () {
 }
 
 /**
- * Called to switch the chat-app component for the video-audio-chat component.
- *
- * @param {Event} event - The Event object.
- */
-/*
-function switchToAudioVideo (event) {
-
-}
-*/
-
-/**
  * Inserts a call display when someone is calling.
  *
  * @param {string} callType - The type of call, audio or video.
@@ -36,8 +25,20 @@ function calling (callType, caller, callerID) {
   callDisplay.addEventListener('videoCallAccepted', () => handleCall('video'))
   callDisplay.addEventListener('callDenied', () => handleCall('denied'))
 
+  const chatApp = document.querySelector('chat-app')
+
+  // Disable the call buttons for 20sec.
+  chatApp.toggleCallBtns()
+  setTimeout(() => chatApp.toggleCallBtns(), 20_000)
+
   const documentBody = document.querySelector('#chat-page')
   documentBody.prepend(callDisplay)
+
+  setTimeout(() => {
+    if (documentBody.contains(callDisplay)) {
+      documentBody.removeChild(callDisplay)
+    }
+  }, 20_000)
 }
 
 /**
