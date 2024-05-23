@@ -44,6 +44,11 @@ customElements.define('call-display',
     #denyCall
 
     /**
+     * Represents the tone that is played when the notification is present.
+     */
+    #ringingAudio
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -58,6 +63,10 @@ customElements.define('call-display',
       this.#acceptAudio = this.shadowRoot.querySelector('#phoneCall')
       this.#acceptVideo = this.shadowRoot.querySelector('#videoCall')
       this.#denyCall = this.shadowRoot.querySelector('#denyCall')
+
+      // Create audio element.
+      this.#ringingAudio = new Audio('./sound/call-tone.mp3')
+      this.#ringingAudio.loop = true
     }
 
     /**
@@ -67,6 +76,18 @@ customElements.define('call-display',
       this.#acceptAudio.addEventListener('click', () => this.#handleCall('audio'))
       this.#acceptVideo.addEventListener('click', () => this.#handleCall('video'))
       this.#denyCall.addEventListener('click', () => this.#handleCall('denied'))
+
+      // Plays the audio.
+      this.#ringingAudio.play()
+    }
+
+    /**
+     * Called when the element is removed from the DOM.
+     */
+    disconnectedCallback () {
+      // Stop the audio.
+      this.#ringingAudio.pause()
+      this.#ringingAudio.currentTime = 0
     }
 
     /**
