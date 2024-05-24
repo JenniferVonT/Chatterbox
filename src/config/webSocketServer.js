@@ -86,7 +86,7 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
 
         // Save the message in a db.
         await chatController.saveChatMessage(obj)
-      } else if (obj.type === 'call') {
+      } else if (obj.type === 'call') { /* Handle when a user is calling */
         const chatId = obj.key
 
         // Retrieve the WebSocket connection for the chat room
@@ -95,6 +95,16 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
         // Broadcast the message to all WebSocket connections in the chat room
         connections.forEach(connection => {
           if (connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify(obj))
+          }
+        })
+      } else if (['offer', 'answer', 'ice-candidate'].includes(obj.type)) { /* Handle when the user answers and a webRTX connection opens */
+        const chatID = obj.key
+        const connections = chatRooms.get(chatID)
+
+        // Relay the signal to other peers in the chat room.
+        connections.forEach(connection => {
+          if (connection.readyState === WebSocket.OPEN && connection !== webSocketConnection) {
             connection.send(JSON.stringify(obj))
           }
         })

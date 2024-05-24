@@ -53,7 +53,6 @@ function handleCall (type) {
 
   if (type === 'audio' || type === 'video') {
     chatApp.sendConfirmation(type)
-    chatApp.classList.add('hidden')
 
     const audioChat = document.createElement('video-audio-chat')
     audioChat.setType(type)
@@ -63,6 +62,8 @@ function handleCall (type) {
       audioChat.setAttribute(attr.name, attr.value)
     }
 
+    // Insert the video-audio-chat
+    chatApp.classList.add('hidden')
     documentBody.prepend(audioChat)
   }
 }
