@@ -6,6 +6,7 @@ export const chatPage = function () {
 
   chatApp.addEventListener('audioCall', (event) => calling('voice', event.detail.caller, event.detail.callerID))
   chatApp.addEventListener('videoCall', (event) => calling('video', event.detail.caller, event.detail.callerID))
+  chatApp.addEventListener('confirmation', (event) => handleCall(event.detail.state))
 }
 
 /**
@@ -47,24 +48,25 @@ function calling (callType, caller, callerID) {
  * @param {string} type - Type of call (audio or video) or denied call.
  */
 function handleCall (type) {
-  const chatApp = document.querySelector('chat-app')
-  const documentBody = document.querySelector('#chat-page')
   removeCallDisplay()
 
   if (type === 'audio' || type === 'video') {
+    const chatApp = document.querySelector('chat-app')
+    const documentBody = document.querySelector('#chat-page')
     chatApp.sendConfirmation(type)
 
-    const audioChat = document.createElement('video-audio-chat')
-    audioChat.setType(type)
+    const audioVideoChat = document.createElement('video-audio-chat')
+    audioVideoChat.setType(type)
+    audioVideoChat.addEventListener('endCall', () => revertToTextChat())
 
     // Set all the same attributes from the chatApp onto the audio chat.
     for (const attr of chatApp.attributes) {
-      audioChat.setAttribute(attr.name, attr.value)
+      audioVideoChat.setAttribute(attr.name, attr.value)
     }
 
     // Insert the video-audio-chat
-    chatApp.classList.add('hidden')
-    documentBody.prepend(audioChat)
+    documentBody.prepend(audioVideoChat)
+    documentBody.removeChild(chatApp)
   }
 }
 
@@ -74,5 +76,25 @@ function handleCall (type) {
 function removeCallDisplay () {
   const callDisplay = document.querySelector('call-display')
   const documentBody = document.querySelector('#chat-page')
-  documentBody.removeChild(callDisplay)
+
+  if (callDisplay) {
+    documentBody.removeChild(callDisplay)
+  }
+}
+
+/**
+ * Removes the audio/video chat and brings back the text chat.
+ */
+function revertToTextChat () {
+  const audioVideoChat = document.querySelector('video-audio-chat')
+  const chatApp = document.createElement('chat-app')
+
+  // Set all the same attributes from the audio chat onto the chatApp.
+  for (const attr of audioVideoChat.attributes) {
+    chatApp.setAttribute(attr.name, attr.value)
+  }
+
+  const documentBody = document.querySelector('#chat-page')
+  documentBody.prepend(chatApp)
+  documentBody.removeChild(audioVideoChat)
 }

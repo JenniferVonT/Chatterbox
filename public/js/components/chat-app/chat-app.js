@@ -139,6 +139,7 @@ customElements.define('chat-app',
       */
 
       this.#socket.addEventListener('message', (event) => {
+        console.log(event)
         this.#recievedMessage = JSON.parse(event.data)
 
         this.#handleRecievedMessages(this.#recievedMessage)
@@ -298,7 +299,11 @@ customElements.define('chat-app',
             }))
           }
         } else if (message.type === 'confirmation') {
-          console.log(message)
+          this.dispatchEvent(new CustomEvent('confirmation', {
+            bubbles: true,
+            composed: true,
+            detail: { state: message.state }
+          }))
         } else if (message.type !== 'heartbeat') {
           this.#handleConversation(message)
         }
@@ -508,9 +513,8 @@ customElements.define('chat-app',
     sendConfirmation (type) {
       const message = {
         type: 'confirmation',
-        caller: this.getAttribute('secondUser'),
-        callerID: this.getAttribute('secondUserID'),
-        state: type
+        state: type,
+        key: this.#chatID
       }
       this.#socket.send(JSON.stringify(message))
     }

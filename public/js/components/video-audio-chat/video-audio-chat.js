@@ -57,6 +57,11 @@ customElements.define('video-audio-chat',
     #mediaConstraints
 
     /**
+     * Represents the end call button.
+     */
+    #endCallBtn
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -65,7 +70,12 @@ customElements.define('video-audio-chat',
       // Attach a shadow DOM tree to this element.
       this.attachShadow({ mode: 'open' })
         .appendChild(template.content.cloneNode(true))
+    }
 
+    /**
+     * Called when the element is inserted into the DOM.
+     */
+    connectedCallback () {
       this.#chatID = this.getAttribute('chatID')
 
       // Create a websocket and put the appropriate event listeners.
@@ -85,20 +95,41 @@ customElements.define('video-audio-chat',
         console.error('WebSocket encountered an error:', event)
       })
 
-      this.#socket.addEventListener('message', this.#handleSignal.bind(this))
+      this.#socket.addEventListener('message', (event) => {
+        // If the message coming in is ending the call handle it, otherwise handle the connection as usual.
+        const message = JSON.parse(event.data)
+        if (message && message.type === 'endCall') {
+          this.#endCall()
+        } else if (message.type !== 'heartbeat') {
+          this.#handleSignal.bind(this)
+        }
+      })
 
       // Bind the end call button event
-      this.shadowRoot.getElementById('endCallBtn').addEventListener('click', this.#endCall.bind(this))
-    }
+      this.#endCallBtn = this.shadowRoot.querySelector('#endCallBtn')
+      this.#endCallBtn.addEventListener('click', () => {
+        const message = {
+          type: 'endCall',
+          key: this.#chatID
+        }
+        this.#socket.send(JSON.stringify(message))
+      })
 
-    /**
-     * Called when the element is inserted into the DOM.
-     */
-    connectedCallback () {
       // Start local stream based on the set constraints.
       if (this.#mediaConstraints) {
         this.#startLocalStream()
       }
+    }
+
+    /**
+     * Called when the element is removed from the DOM.
+     */
+    disconnectedCallback () {
+      this.#peerConnection.close()
+      this.#localStream.getTracks().forEach(track => track.stop())
+      this.shadowRoot.getElementById('incomingVideo').srcObject = null
+      this.shadowRoot.getElementById('outgoingVideo').srcObject = null
+      this.#socket.close()
     }
 
     /**
@@ -229,11 +260,10 @@ customElements.define('video-audio-chat',
      * End the call and clean up resources.
      */
     #endCall () {
-      this.#peerConnection.close()
-      this.#localStream.getTracks().forEach(track => track.stop())
-      this.shadowRoot.getElementById('incomingVideo').srcObject = null
-      this.shadowRoot.getElementById('outgoingVideo').srcObject = null
-      this.#socket.close()
+      this.dispatchEvent(new CustomEvent('endCall', {
+        bubbles: true,
+        composed: true
+      }))
     }
   }
 )

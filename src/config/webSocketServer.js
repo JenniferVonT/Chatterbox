@@ -98,6 +98,15 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
             connection.send(JSON.stringify(obj))
           }
         })
+      } else if (obj.type === 'endCall' || obj.type === 'confirmation') { /* If a user wants to end or accept the call. */
+        const connections = chatRooms.get(obj.key)
+
+        // Broadcast the message to all WebSocket connections in the chat room
+        connections.forEach(connection => {
+          if (connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify(obj))
+          }
+        })
       } else if (['offer', 'answer', 'ice-candidate'].includes(obj.type)) { /* Handle when the user answers and a webRTX connection opens */
         const chatID = obj.key
         const connections = chatRooms.get(chatID)
