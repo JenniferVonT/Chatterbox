@@ -4,32 +4,28 @@
 export const chatPage = function () {
   const chatApp = document.querySelector('chat-app')
 
-  chatApp.addEventListener('audioCall', (event) => calling('voice', event.detail.caller, event.detail.callerID))
-  chatApp.addEventListener('videoCall', (event) => calling('video', event.detail.caller, event.detail.callerID))
-  chatApp.addEventListener('confirmation', (event) => handleCall(event.detail.state))
+  chatApp.addEventListener('calling', (event) => calling(event.detail.caller, event.detail.callerID))
+  chatApp.addEventListener('confirmation', () => handleCall('confirmation'))
 }
 
 /**
  * Inserts a call display when someone is calling.
  *
- * @param {string} callType - The type of call, audio or video.
  * @param {string} caller - The callers username.
  * @param {string} callerID - The callers id.
  */
-function calling (callType, caller, callerID) {
+function calling (caller, callerID) {
   const callDisplay = document.createElement('call-display')
 
   callDisplay.setCaller(caller, callerID)
-  callDisplay.setCallType(callType)
 
-  callDisplay.addEventListener('audioCallAccepted', () => handleCall('audio'))
-  callDisplay.addEventListener('videoCallAccepted', () => handleCall('video'))
+  callDisplay.addEventListener('callAccepted', () => handleCall('accepted'))
   callDisplay.addEventListener('callDenied', () => handleCall('denied'))
 
   const chatApp = document.querySelector('chat-app')
 
-  // Disable the call buttons for 20sec.
-  chatApp.toggleCallBtns()
+  // Disable the call button for 20sec.
+  chatApp.toggleCallBtn()
   setTimeout(() => chatApp.toggleCallBtns(), 20_000)
 
   const documentBody = document.querySelector('#chat-page')
@@ -45,28 +41,20 @@ function calling (callType, caller, callerID) {
 /**
  * Handles the calls.
  *
- * @param {string} type - Type of call (audio or video) or denied call.
+ * @param {string} confirmed - If the call is accepted, denied or if it is a confirmation from the receiver.
  */
-function handleCall (type) {
+function handleCall (confirmed) {
   removeCallDisplay()
 
-  if (type === 'audio' || type === 'video') {
+  if (confirmed === 'accepted' || confirmed === 'confirmation') {
     const chatApp = document.querySelector('chat-app')
-    const documentBody = document.querySelector('#chat-page')
-    chatApp.sendConfirmation(type)
 
-    const audioVideoChat = document.createElement('video-audio-chat')
-    audioVideoChat.setType(type)
-    audioVideoChat.addEventListener('endCall', () => revertToTextChat())
-
-    // Set all the same attributes from the chatApp onto the audio chat.
-    for (const attr of chatApp.attributes) {
-      audioVideoChat.setAttribute(attr.name, attr.value)
+    if (confirmed !== 'confirmation') {
+      chatApp.sendConfirmation()
     }
 
-    // Insert the video-audio-chat
-    documentBody.prepend(audioVideoChat)
-    documentBody.removeChild(chatApp)
+    // Redirect to the video page.
+    window.location.href = `./main/chat/video/${chatApp.getAttribute('chatID')}`
   }
 }
 
@@ -80,21 +68,4 @@ function removeCallDisplay () {
   if (callDisplay) {
     documentBody.removeChild(callDisplay)
   }
-}
-
-/**
- * Removes the audio/video chat and brings back the text chat.
- */
-function revertToTextChat () {
-  const audioVideoChat = document.querySelector('video-audio-chat')
-  const chatApp = document.createElement('chat-app')
-
-  // Set all the same attributes from the audio chat onto the chatApp.
-  for (const attr of audioVideoChat.attributes) {
-    chatApp.setAttribute(attr.name, attr.value)
-  }
-
-  const documentBody = document.querySelector('#chat-page')
-  documentBody.prepend(chatApp)
-  documentBody.removeChild(audioVideoChat)
 }

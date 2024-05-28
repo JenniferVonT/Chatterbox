@@ -17,7 +17,6 @@ template.innerHTML = `
 
   <div id="submit-btns">
     <button id="phoneCall" class="submit-button-user"><img src="./img/telephone-icon.svg" alt="Call">ACCEPT</button>
-    <button id="videoCall" class="submit-button-user"><img src="./img/videocall-icon.svg" alt="Video">ACCEPT</button>
     <button id="denyCall">DENY</button>
   </div>
 
@@ -59,9 +58,7 @@ customElements.define('call-display',
 
       this.username = ''
       this.userID = ''
-      this.callType = ''
       this.#acceptAudio = this.shadowRoot.querySelector('#phoneCall')
-      this.#acceptVideo = this.shadowRoot.querySelector('#videoCall')
       this.#denyCall = this.shadowRoot.querySelector('#denyCall')
 
       // Create audio element.
@@ -73,8 +70,7 @@ customElements.define('call-display',
      * Called when the element is inserted into the DOM.
      */
     connectedCallback () {
-      this.#acceptAudio.addEventListener('click', () => this.#handleCall('audio'))
-      this.#acceptVideo.addEventListener('click', () => this.#handleCall('video'))
+      this.#acceptAudio.addEventListener('click', () => this.#handleCall('accept'))
       this.#denyCall.addEventListener('click', () => this.#handleCall('denied'))
 
       // Plays the audio.
@@ -93,17 +89,11 @@ customElements.define('call-display',
     /**
      * Handles when the call is either accepted or denied.
      *
-     * @param {string} type - The type of call, audio, video or denied.
+     * @param {string} type - If the call is denied.
      */
     #handleCall (type) {
-      if (type === 'audio') {
-        this.dispatchEvent(new CustomEvent('audioCallAccepted', {
-          bubbles: true,
-          composed: true,
-          detail: { caller: this.username, callerID: this.userID }
-        }))
-      } else if (type === 'video') {
-        this.dispatchEvent(new CustomEvent('videoCallAccepted', {
+      if (type === 'accept') {
+        this.dispatchEvent(new CustomEvent('callAccepted', {
           bubbles: true,
           composed: true,
           detail: { caller: this.username, callerID: this.userID }
@@ -113,21 +103,6 @@ customElements.define('call-display',
           bubbles: true,
           composed: true
         }))
-      }
-    }
-
-    /**
-     * Set the call type to either 'audio' or 'video'.
-     *
-     * @param {string} callType - The call type.
-     */
-    setCallType (callType) {
-      if (callType === 'audio') {
-        this.callType = 'audio'
-      }
-
-      if (callType === 'video') {
-        this.callType = 'video'
       }
     }
 

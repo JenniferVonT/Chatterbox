@@ -15,4 +15,6 @@ const controller = new ChatController()
 // Recieve the user objects for the chat.
 router.param('id', (req, res, next, user) => controller.loadUsers(req, res, next, user))
 
+router.get('/video/:id', (req, res, next) => controller.video(req, res, next))
+
 router.get('/:id', (req, res, next) => controller.chat(req, res, next))

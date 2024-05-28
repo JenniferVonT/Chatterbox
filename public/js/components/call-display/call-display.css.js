@@ -50,14 +50,12 @@ button:hover {
   background-color: #ff161e;
 }
 
-#videoCall:hover,
 #phoneCall:hover {
   color: #211522;
   border: 1px solid #211522;
   background-color: #92ff93;
 }
 
-#videoCall,
 #phoneCall {
   display: flex;
   width: min-content;
@@ -67,7 +65,6 @@ button:hover {
   border-color: #211522;
 }
 
-#videoCall > img,
 #phoneCall > img {
   display: flex;
   object-fit: contain;

@@ -107,7 +107,7 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
             connection.send(JSON.stringify(obj))
           }
         })
-      } else if (['offer', 'answer', 'ice-candidate'].includes(obj.type)) { /* Handle when the user answers and a webRTX connection opens */
+      } else if (['offer', 'answer', 'ice-candidate', 'activateCamera', 'deactivateCamera'].includes(obj.type)) { /* Handle when the user answers and a webRTC connection opens */
         const chatID = obj.key
         const connections = chatRooms.get(chatID)
 

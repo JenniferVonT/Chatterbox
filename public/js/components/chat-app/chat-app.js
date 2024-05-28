@@ -23,7 +23,6 @@ ${chatAppStyles}
           <button type="submit" id="send" class="submit-button-user">Send</button>
           <button id="emojiButton" class="submit-button-user">😊</button>
           <button id="phoneCall" class="submit-button-user"><img src="./img/telephone-icon.svg" alt="Call"></button>
-          <button id="videoCall" class="submit-button-user"><img src="./img/videocall-icon.svg" alt="Video"></button>
         </div> 
     </form>
 </div>
@@ -118,7 +117,6 @@ customElements.define('chat-app',
       this.#encryptionKey = ''
       this.#initV = window.crypto.getRandomValues(new Uint8Array(16))
       this.#phoneBtn = this.shadowRoot.querySelector('#phoneCall')
-      this.#videoBtn = this.shadowRoot.querySelector('#videoCall')
       this.#chatID = this.getAttribute('chatID')
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
@@ -159,6 +157,7 @@ customElements.define('chat-app',
       this.#sendMessage.addEventListener('submit', (event) => this.#sendMessages(event))
       this.emojiButton.addEventListener('click', (event) => this.#toggleEmojiDropdown(event, 'on'))
       this.emojiButton.addEventListener('blur', (event) => this.#toggleEmojiDropdown(event, 'off'))
+      this.#phoneBtn.addEventListener('click', () => this.#sendCallMessage())
 
       this.#buildEmojiList()
     }
@@ -168,9 +167,6 @@ customElements.define('chat-app',
      */
     connectedCallback () {
       this.#username = this.getAttribute('user')
-
-      this.#phoneBtn.addEventListener('click', () => this.#sendCallMessage('audio'))
-      this.#videoBtn.addEventListener('click', () => this.#sendCallMessage('video'))
     }
 
     /**
@@ -183,21 +179,18 @@ customElements.define('chat-app',
     /**
      * Sends a message through the websocket that an audio or video call is requested.
      *
-     * @param {string} type - video or audio.
      */
-    #sendCallMessage (type) {
+    #sendCallMessage () {
       const message = {
         type: 'call',
-        callType: type,
         caller: this.#username,
         callerID: this.getAttribute('userID'),
         key: this.#chatID
       }
       this.#socket.send(JSON.stringify(message))
 
-      // Disable the call buttons for 20sec.
-      this.toggleCallBtns()
-      setTimeout(() => this.toggleCallBtns(), 20_000)
+      // Disable the call button for 20sec.
+      setTimeout(() => this.toggleCallBtn(), 20_000)
 
       // Play a tune for 20 sec and then disable it.
       this.#ringingAudio.play()
@@ -292,7 +285,7 @@ customElements.define('chat-app',
           this.#renderMessages()
         } else if (message.type === 'call') {
           if (message.caller !== this.getAttribute('user')) {
-            this.dispatchEvent(new CustomEvent(`${message.callType}Call`, {
+            this.dispatchEvent(new CustomEvent('calling', {
               bubbles: true,
               composed: true,
               detail: { caller: message.caller, callerID: message.callerID, chatID: message.key }
@@ -302,7 +295,7 @@ customElements.define('chat-app',
           this.dispatchEvent(new CustomEvent('confirmation', {
             bubbles: true,
             composed: true,
-            detail: { state: message.state }
+            detail: { caller: message.caller, receiver: message.receiver }
           }))
         } else if (message.type !== 'heartbeat') {
           this.#handleConversation(message)
@@ -506,24 +499,20 @@ customElements.define('chat-app',
     }
 
     /**
-     * Sends a confirmation to the other user.
-     *
-     * @param {string} type - send confirmation to the other user, audio, video or denied.
+     * Sends a confirmation to the other user that the call is accepted.
      */
-    sendConfirmation (type) {
+    sendConfirmation () {
       const message = {
         type: 'confirmation',
-        state: type,
         key: this.#chatID
       }
       this.#socket.send(JSON.stringify(message))
     }
 
     /**
-     * Toggles the call buttons from off to on.
+     * Toggles the call button from off to on.
      */
-    toggleCallBtns () {
+    toggleCallBtn () {
       this.#phoneBtn.toggleAttribute('disabled')
-      this.#videoBtn.toggleAttribute('disabled')
     }
   })

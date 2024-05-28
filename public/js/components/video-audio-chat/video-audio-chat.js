@@ -14,10 +14,12 @@ template.innerHTML = `
 </style>
 
 <div id="wrapper">
-  <div id="placeholder" class="placeholder">Audio only</div>
-  <video id="incomingVideo" autoplay playsinline></video>
-  <video id="outgoingVideo" autoplay playsinline muted></video>
-  <button id="endCallBtn" class="submit-button-user">End Call</button>
+  <div id="placeholder">Audio</div>
+  <video id="incomingVideo" class="hidden" autoplay playsinline></video>
+  <video id="outgoingVideo" class="hidden" autoplay playsinline muted></video>
+  <button id="endCallBtn">End Call</button>
+  <button id="activateCameraBtn"><img src="./img/videocall-icon.svg" alt="Video">Activate Camera</button>
+  <button id="deactivateCameraBtn" class="hidden"><img src="./img/videocall-icon.svg" alt="Video">Camera Off</button>
 </div>
 `
 
@@ -54,12 +56,25 @@ customElements.define('video-audio-chat',
     /**
      * Represents the media constraints.
      */
-    #mediaConstraints
+    #mediaConstraints = {
+      incoming: { video: false, audio: true },
+      outgoing: { video: false, audio: true }
+    }
 
     /**
      * Represents the end call button.
      */
     #endCallBtn
+
+    /**
+     * Represents the button that activates the camera.
+     */
+    #activateCameraBtn
+
+    /**
+     * Represents the button that de-activates the camera.
+     */
+    #deactivateCameraBtn
 
     /**
      * Creates an instance of the current type.
@@ -68,57 +83,32 @@ customElements.define('video-audio-chat',
       super()
 
       // Attach a shadow DOM tree to this element.
-      this.attachShadow({ mode: 'open' })
-        .appendChild(template.content.cloneNode(true))
-    }
+      this.attachShadow({ mode: 'open' }).appendChild(template.content.cloneNode(true))
 
-    /**
-     * Called when the element is inserted into the DOM.
-     */
-    connectedCallback () {
+      // Initialize private fields.
       this.#chatID = this.getAttribute('chatID')
+      this.#activateCameraBtn = this.shadowRoot.querySelector('#activateCameraBtn')
+      this.#deactivateCameraBtn = this.shadowRoot.querySelector('#deactivateCameraBtn')
 
-      // Create a websocket and put the appropriate event listeners.
-      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
-      // USE THIS WHEN WORKING LOCALLY:
+      // Create a WebSocket connection.
       this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`)
-
-      this.#socket.addEventListener('open', (event) => {
-        console.log('WebSocket connection opened:', event)
-      })
-
-      this.#socket.addEventListener('close', (event) => {
-        console.log('WebSocket connection closed:', event)
-      })
-
-      this.#socket.addEventListener('error', (event) => {
-        console.error('WebSocket encountered an error:', event)
-      })
-
+      this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened:', event))
+      this.#socket.addEventListener('close', (event) => console.log('WebSocket connection closed:', event))
+      this.#socket.addEventListener('error', (event) => console.error('WebSocket encountered an error:', event))
       this.#socket.addEventListener('message', (event) => {
-        // If the message coming in is ending the call handle it, otherwise handle the connection as usual.
-        const message = JSON.parse(event.data)
-        if (message && message.type === 'endCall') {
-          this.#endCall()
-        } else if (message.type !== 'heartbeat') {
-          this.#handleSignal.bind(this)
-        }
+        const data = JSON.parse(event.data)
+        this.#handleSignal(data)
       })
 
-      // Bind the end call button event
+      // Bind the end call button event.
       this.#endCallBtn = this.shadowRoot.querySelector('#endCallBtn')
-      this.#endCallBtn.addEventListener('click', () => {
-        const message = {
-          type: 'endCall',
-          key: this.#chatID
-        }
-        this.#socket.send(JSON.stringify(message))
-      })
+      this.#endCallBtn.addEventListener('click', () => this.#sendEndCall())
 
-      // Start local stream based on the set constraints.
-      if (this.#mediaConstraints) {
-        this.#startLocalStream()
-      }
+      this.#activateCameraBtn.addEventListener('click', () => this.#activateCamera())
+      this.#deactivateCameraBtn.addEventListener('click', () => this.#deactivateCamera())
+
+      // Start the local stream.
+      this.#startLocalStream()
     }
 
     /**
@@ -126,46 +116,22 @@ customElements.define('video-audio-chat',
      */
     disconnectedCallback () {
       this.#peerConnection.close()
-      this.#localStream.getTracks().forEach(track => track.stop())
-      this.shadowRoot.getElementById('incomingVideo').srcObject = null
-      this.shadowRoot.getElementById('outgoingVideo').srcObject = null
+      this.stopStreams()
+      this.shadowRoot.querySelector('#incomingVideo').srcObject = null
+      this.shadowRoot.querySelector('#outgoingVideo').srcObject = null
       this.#socket.close()
     }
 
     /**
-     * Sets the type of chat. Video/audio or just audio.
-     *
-     * @param {string} type - the type: 'video' or 'audio'.
-     */
-    setType (type) {
-      const incomingVideo = this.shadowRoot.getElementById('incomingVideo')
-      const outgoingVideo = this.shadowRoot.getElementById('outgoingVideo')
-      const placeholder = this.shadowRoot.getElementById('placeholder')
-
-      if (type === 'video') {
-        this.#mediaConstraints = { video: true, audio: true }
-        incomingVideo.style.display = 'block'
-        outgoingVideo.style.display = 'block'
-        placeholder.style.display = 'none'
-      } else if (type === 'audio') {
-        this.#mediaConstraints = { video: false, audio: true }
-        incomingVideo.style.display = 'none'
-        outgoingVideo.style.display = 'none'
-        placeholder.style.display = 'block'
-      } else {
-        throw new Error('Invalid chat type. Use "video" or "audio".')
-      }
-    }
-
-    /**
-     * Initialize local media stream.
+     * Starts the stream with only audio.
      */
     async #startLocalStream () {
       try {
-        this.#localStream = await navigator.mediaDevices.getUserMedia(this.#mediaConstraints)
-        const outgoingVideo = this.shadowRoot.getElementById('outgoingVideo')
-        outgoingVideo.srcObject = this.#localStream
-
+        this.#localStream = await navigator.mediaDevices.getUserMedia(this.#mediaConstraints.outgoing)
+        const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
+        if (this.#mediaConstraints.outgoing.video) {
+          outgoingVideo.srcObject = this.#localStream
+        }
         this.#startCall()
       } catch (error) {
         console.error('Error accessing media devices.', error)
@@ -173,9 +139,134 @@ customElements.define('video-audio-chat',
     }
 
     /**
-     * Initialize WebRTC connection and start the call.
+     * Initialize the webbRTC connection and start the call.
      */
     async #startCall () {
+      this.#initializePeerConnection()
+      this.#localStream.getTracks().forEach(track => this.#peerConnection.addTrack(track, this.#localStream))
+      const offer = await this.#peerConnection.createOffer()
+      await this.#peerConnection.setLocalDescription(offer)
+      this.#sendSignal({ type: 'offer', key: this.#chatID, offer })
+    }
+
+    /**
+     * Handle incoming messages.
+     *
+     * @param {JSON} data - The incoming event object.
+     */
+    async #handleSignal (data) {
+      try {
+        if (!this.#peerConnection) {
+          this.#initializePeerConnection()
+        }
+
+        if (data.type === 'offer') {
+          await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
+          const answer = await this.#peerConnection.createAnswer()
+          await this.#peerConnection.setLocalDescription(answer)
+          this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
+        } else if (data.type === 'answer') {
+          await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer))
+        } else if (data.type === 'ice-candidate') {
+          if (data.candidate) {
+            await this.#peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
+          }
+        } else if (data.type === 'deactivateCamera' && data.userID !== this.getAttribute('user')) {
+          // Update UI on the receiving end when sender deactivates camera
+          const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
+          const placeholder = this.shadowRoot.querySelector('#placeholder')
+          incomingVideo.classList.add('hidden')
+          placeholder.classList.remove('hidden')
+          // Remove video tracks
+          this.#remoteStream.getVideoTracks().forEach(track => {
+            this.#remoteStream.removeTrack(track)
+            track.stop()
+          })
+        } else if (data.type === 'activateCamera' && data.userID !== this.getAttribute('user')) {
+          // Update UI on the receiving end when sender reactivates camera
+          const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
+          const placeholder = this.shadowRoot.querySelector('#placeholder')
+          incomingVideo.classList.remove('hidden')
+          placeholder.classList.add('hidden')
+        }
+      } catch (error) {
+        console.error('Error handling signal:', error)
+      }
+    }
+
+    /**
+     * Activates the camera byt sending a signal to the other user and establishing a video stream via the websocket.
+     */
+    async #activateCamera () {
+      try {
+        // Get a new local media stream with video enabled
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+
+        // Update UI to show outgoing video stream
+        const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
+        outgoingVideo.srcObject = newVideoStream
+        outgoingVideo.classList.remove('hidden')
+        this.#activateCameraBtn.classList.add('hidden')
+        this.#deactivateCameraBtn.classList.remove('hidden')
+        this.#mediaConstraints.outgoing.video = true
+
+        // Add the new video tracks to the peer connection and remove the previous video tracks
+        this.#localStream.getVideoTracks().forEach(track => {
+          this.#peerConnection.removeTrack(this.#peerConnection.getSenders().find(sender => sender.track === track))
+          track.stop() // Stop the previous video tracks
+        })
+        newVideoStream.getTracks().forEach(track => {
+          this.#peerConnection.addTrack(track, newVideoStream) // Add the new video tracks
+        })
+
+        // Create an offer and set local description
+        const offer = await this.#peerConnection.createOffer()
+        await this.#peerConnection.setLocalDescription(offer)
+
+        // Send offer to the other peer
+        this.#sendSignal({ type: 'offer', key: this.#chatID, offer })
+      } catch (error) {
+        console.error('Error accessing media devices or activating camera:', error)
+      }
+    }
+
+    /**
+     * Deactivates the camera.
+     */
+    async #deactivateCamera () {
+      try {
+        // Stop the video tracks in the local stream.
+        this.#localStream.getVideoTracks().forEach(track => track.stop())
+
+        // Update the media constraints
+        this.#mediaConstraints.outgoing.video = false
+
+        // Update the UI
+        const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
+        outgoingVideo.classList.add('hidden')
+        this.#activateCameraBtn.classList.remove('hidden')
+        this.#deactivateCameraBtn.classList.add('hidden')
+
+        // Remove video tracks from the peer connection
+        this.#peerConnection.getSenders().forEach(sender => {
+          if (sender.track && sender.track.kind === 'video') {
+            this.#peerConnection.removeTrack(sender)
+          }
+        })
+
+        // Signal the change to the remote peer
+        const offer = await this.#peerConnection.createOffer()
+        await this.#peerConnection.setLocalDescription(offer)
+        this.#sendSignal({ type: 'deactivateCamera', key: this.#chatID, userID: this.getAttribute('user'), offer })
+      } catch (error) {
+        console.error('Error deactivating camera.', error)
+      }
+    }
+
+    /**
+     * Initialize the WebRTC peer connection.
+     */
+    #initializePeerConnection () {
       this.#peerConnection = new RTCPeerConnection({
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' }
@@ -183,83 +274,64 @@ customElements.define('video-audio-chat',
       })
 
       /**
-       * Handles the peer connection.
+       * Set up ice-candidate.
        *
        * @param {Event} event - the event object.
        */
       this.#peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
-          this.#sendSignal({
-            type: 'ice-candidate',
-            candidate: event.candidate
-          })
+          this.#sendSignal({ type: 'ice-candidate', key: this.#chatID, candidate: event.candidate })
         }
       }
 
       /**
-       * Handles the peer connection.
+       * Set up the incomingVideo.
        *
        * @param {Event} event - the event object.
        */
       this.#peerConnection.ontrack = (event) => {
-        const incomingVideo = this.shadowRoot.getElementById('incomingVideo')
+        const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
+        const placeholder = this.shadowRoot.querySelector('#placeholder')
+
         if (!this.#remoteStream) {
           this.#remoteStream = new MediaStream()
           incomingVideo.srcObject = this.#remoteStream
         }
         this.#remoteStream.addTrack(event.track)
-      }
 
-      this.#localStream.getTracks().forEach(track => {
-        this.#peerConnection.addTrack(track, this.#localStream)
-      })
-
-      const offer = await this.#peerConnection.createOffer()
-      await this.#peerConnection.setLocalDescription(offer)
-      this.#sendSignal({
-        type: 'offer',
-        offer
-      })
-    }
-
-    /**
-     * Handle incoming WebSocket signaling messages.
-     *
-     * @param {MessageEvent} event - The event object.
-     */
-    async #handleSignal (event) {
-      const data = JSON.parse(event.data)
-      if (data.type === 'offer') {
-        await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
-        const answer = await this.#peerConnection.createAnswer()
-        await this.#peerConnection.setLocalDescription(answer)
-        this.#sendSignal({
-          type: 'answer',
-          answer
-        })
-      } else if (data.type === 'answer') {
-        await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer))
-      } else if (data.type === 'ice-candidate') {
-        if (data.candidate) {
-          await this.#peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
+        // If the incoming track is a video track, update the UI accordingly
+        if (event.track.kind === 'video') {
+          incomingVideo.classList.remove('hidden')
+          placeholder.classList.add('hidden')
         }
       }
     }
 
     /**
-     * Send a signaling message through the WebSocket.
+     * Send signaling data through the WebSocket connection.
      *
-     * @param {object} message - The message being sent.
+     * @param {JSON} data - the data object to send.
      */
-    #sendSignal (message) {
-      message.key = this.#chatID
-      this.#socket.send(JSON.stringify(message))
+    #sendSignal (data) {
+      this.#socket.send(JSON.stringify(data))
     }
 
     /**
-     * End the call and clean up resources.
+     * Stop all media tracks.
      */
-    #endCall () {
+    stopStreams () {
+      if (this.#localStream) {
+        this.#localStream.getTracks().forEach(track => track.stop())
+      }
+      if (this.#remoteStream) {
+        this.#remoteStream.getTracks().forEach(track => track.stop())
+      }
+    }
+
+    /**
+     * Send an endCall signal though the Websocket connection.
+     */
+    #sendEndCall () {
       this.dispatchEvent(new CustomEvent('endCall', {
         bubbles: true,
         composed: true

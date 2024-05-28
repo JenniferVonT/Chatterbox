@@ -618,7 +618,8 @@ profile-selector {
 }
 
 /*<-------------------------- CHAT-PAGE -------------------------->*/
-#chat-page {
+#chat-page,
+#video-page {
     position: relative;
     display: flex;
     flex-direction: column;
