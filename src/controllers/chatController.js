@@ -87,6 +87,26 @@ export class ChatController {
   }
 
   /**
+   * Render the video/audio chat view.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async video (req, res, next) {
+    try {
+      const viewData = {
+        user: req.localUser,
+        otherUser: req.otherUser
+      }
+
+      res.render('chats/video', { viewData })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
    * Saves the message in the db.
    *
    * @param {object} message - The message object containing the message, chatID and userID.

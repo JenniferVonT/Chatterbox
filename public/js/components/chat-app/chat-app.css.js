@@ -3,31 +3,31 @@ const chatAppStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     width: 65vw;
     height: 100%;
+    padding-top: 10px;
 }
 
 form#chat {
-    position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 #submit-btns {
     display: flex;
     flex-direction: row;
     width: 100%;
-    justify-content: left;
+    justify-content: flex-start;
     align-items: center;
 }
 
 #chatWindow {
+    height: 55vh;
     width: 60vw;
-    height: 60vh;
     margin-bottom: 10px;
     background-color: transparent;
     overflow-y: auto;
@@ -42,6 +42,8 @@ form#chat {
     color: #D3B1C2;
     background-color: #474747;
     padding-left: 5px;
+    border: 2px solid #242424;
+    border-radius: 10px;
 }
 
 .chat-messages {
@@ -184,15 +186,14 @@ button:hover {
 
     #chatWindow {
         width: 90vw;
-        height: 42vh;
+        height: 50vh;
     }
 
     #message {
         width: 90vw;
-        heigth: 50px;
+        height: 50px;
     }
 }
-
 `
 
 export default chatAppStyles

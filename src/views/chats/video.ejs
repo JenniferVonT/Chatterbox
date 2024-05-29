@@ -1,0 +1,5 @@
+<% if (locals.user) { %>
+  <div id="video-page">
+    <video-audio-chat user="<%= viewData.user.username %>" userID="<%= viewData.user.id %>" userImg="<%= viewData.user.profileImg %>" secondUser="<%= viewData.otherUser.username %>" secondUserID="<%= viewData.otherUser.id %>" chatID="<%= viewData.user.chatID %>" secondUserImg="<%= viewData.otherUser.profileImg %>"></video-audio-chat>
+  </div>
+<% } %>

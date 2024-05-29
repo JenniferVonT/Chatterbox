@@ -65,13 +65,13 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
       // Parse the incoming message
       const obj = JSON.parse(message.data)
 
-      // Check if the message is of type 'message'
+      const chatId = obj.key
+
+      // Retrieve the WebSocket connection for the chat rooms.
+      const connections = chatRooms.get(chatId)
+
+      // Handle when a message in the chat is sent.
       if (obj.type === 'message') {
-        const chatId = obj.key
-
-        // Retrieve the WebSocket connection for the chat room
-        const connections = chatRooms.get(chatId)
-
         // Broadcast the message to all WebSocket connections in the chat room
         connections.forEach(connection => {
           if (connection.readyState === WebSocket.OPEN) {
@@ -86,6 +86,26 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
 
         // Save the message in a db.
         await chatController.saveChatMessage(obj)
+      } else if (obj.type === 'call') { // Handle when a user is calling
+        connections.forEach(connection => {
+          if (connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify(obj))
+          }
+        })
+      } else if (obj.type === 'endCall' || obj.type === 'confirmation' || obj.type === 'deniedCall') { // Handle when a user either accepts/denies a call or ends an ongoing call.
+        // Broadcast the message to all WebSocket connections in the chat room
+        connections.forEach(connection => {
+          if (connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify(obj))
+          }
+        })
+      } else if (['offer', 'answer', 'ice-candidate', 'activateCamera', 'deactivateCamera'].includes(obj.type)) { // Handle when the user answers a voice call and a webRTC connection opens.
+        // Relay the signal to other peers in the chat room.
+        connections.forEach(connection => {
+          if (connection.readyState === WebSocket.OPEN && connection !== webSocketConnection) {
+            connection.send(JSON.stringify(obj))
+          }
+        })
       }
     } catch (error) {
       logger.error('Error processing WebSocket message:', error)

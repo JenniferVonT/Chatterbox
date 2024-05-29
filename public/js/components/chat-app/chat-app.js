@@ -23,7 +23,6 @@ ${chatAppStyles}
           <button type="submit" id="send" class="submit-button-user">Send</button>
           <button id="emojiButton" class="submit-button-user">😊</button>
           <button id="phoneCall" class="submit-button-user"><img src="./img/telephone-icon.svg" alt="Call"></button>
-          <button id="videoCall" class="submit-button-user"><img src="./img/videocall-icon.svg" alt="Video"></button>
         </div> 
     </form>
 </div>
@@ -85,6 +84,21 @@ customElements.define('chat-app',
     #initV
 
     /**
+     * Represents the phone chat button.
+     */
+    #phoneBtn
+
+    /**
+     * Represents the ringing tune.
+     */
+    #ringingAudio
+
+    /**
+     * Represents the audio when a call is denied.
+     */
+    #hangUpAudio
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -102,12 +116,23 @@ customElements.define('chat-app',
       this.#username = ''
       this.#encryptionKey = ''
       this.#initV = window.crypto.getRandomValues(new Uint8Array(16))
+      this.#phoneBtn = this.shadowRoot.querySelector('#phoneCall')
+      this.#chatID = this.getAttribute('chatID')
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
+      this.callTimeout = null
+
+      // Create audio elements.
+      this.#ringingAudio = new Audio('./sound/call-tone.mp3')
+      this.#ringingAudio.loop = true
+
+      this.#hangUpAudio = new Audio('./sound/hung-up.wav')
+      this.#hangUpAudio.loop = false
 
       // Create a websocket and put the appropriate event listeners.
-      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
-      // USE THIS WHEN WORKING LOCALLY: this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`)
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
+      // USE THIS WHEN WORKING LOCALLY:
+      // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`)
 
       /*
       this.#socket.addEventListener('open', (event) => {
@@ -116,6 +141,7 @@ customElements.define('chat-app',
       */
 
       this.#socket.addEventListener('message', (event) => {
+        console.log(event)
         this.#recievedMessage = JSON.parse(event.data)
 
         this.#handleRecievedMessages(this.#recievedMessage)
@@ -135,6 +161,7 @@ customElements.define('chat-app',
       this.#sendMessage.addEventListener('submit', (event) => this.#sendMessages(event))
       this.emojiButton.addEventListener('click', (event) => this.#toggleEmojiDropdown(event, 'on'))
       this.emojiButton.addEventListener('blur', (event) => this.#toggleEmojiDropdown(event, 'off'))
+      this.#phoneBtn.addEventListener('click', () => this.#sendCallMessage())
 
       this.#buildEmojiList()
     }
@@ -143,7 +170,6 @@ customElements.define('chat-app',
      * Called when the element is inserted into the DOM.
      */
     connectedCallback () {
-      this.#chatID = this.getAttribute('chatID')
       this.#username = this.getAttribute('user')
     }
 
@@ -152,6 +178,32 @@ customElements.define('chat-app',
      */
     disconnectedCallback () {
       this.#socket.close()
+    }
+
+    /**
+     * Sends a message through the websocket that an audio or video call is requested.
+     *
+     */
+    #sendCallMessage () {
+      const message = {
+        type: 'call',
+        caller: this.#username,
+        callerID: this.getAttribute('userID'),
+        key: this.#chatID
+      }
+      this.#socket.send(JSON.stringify(message))
+
+      // Disable the call button for 15sec.
+      this.toggleCallBtn()
+      setTimeout(() => this.toggleCallBtn(), 15_000)
+
+      // Play a tune for 15 sec and then disable it.
+      this.#ringingAudio.play()
+      this.callTimeout = setTimeout(() => {
+        this.#ringingAudio.pause()
+        this.#ringingAudio.currentTime = 0
+        this.#hangUpAudio.play()
+      }, 15_000)
     }
 
     /**
@@ -237,6 +289,30 @@ customElements.define('chat-app',
           this.#conversation = this.#conversation.slice(0, 30)
 
           this.#renderMessages()
+        } else if (message.type === 'call') {
+          if (message.caller !== this.getAttribute('user')) {
+            this.dispatchEvent(new CustomEvent('calling', {
+              bubbles: true,
+              composed: true,
+              detail: { caller: message.caller, callerID: message.callerID, chatID: message.key }
+            }))
+          }
+        } else if (message.type === 'confirmation') {
+          this.dispatchEvent(new CustomEvent('confirmation', {
+            bubbles: true,
+            composed: true,
+            detail: { caller: message.caller, receiver: message.receiver }
+          }))
+        } else if (message.type === 'deniedCall') {
+          // Clear the timeout that will happen on its own.
+          if (this.callTimeout) {
+            clearTimeout(this.callTimeout)
+            this.callTimeout = null
+          }
+
+          this.#ringingAudio.pause()
+          this.#ringingAudio.currentTime = 0
+          this.#hangUpAudio.play()
         } else if (message.type !== 'heartbeat') {
           this.#handleConversation(message)
         }
@@ -436,5 +512,37 @@ customElements.define('chat-app',
 
         this.emojiDropdown.append(emojiButton)
       })
+    }
+
+    /**
+     * Sends a confirmation to the other user that the call is accepted.
+     *
+     * @param {string} type - The type of confirmation, 'denied' or 'accept'.
+     */
+    sendConfirmation (type) {
+      let message
+
+      if (type === 'accept') {
+        message = {
+          type: 'confirmation',
+          key: this.#chatID
+        }
+      }
+
+      if (type === 'denied') {
+        message = {
+          type: 'deniedCall',
+          key: this.#chatID
+        }
+      }
+
+      this.#socket.send(JSON.stringify(message))
+    }
+
+    /**
+     * Toggles the call button from off to on.
+     */
+    toggleCallBtn () {
+      this.#phoneBtn.toggleAttribute('disabled')
     }
   })
