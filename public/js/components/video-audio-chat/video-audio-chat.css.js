@@ -1,7 +1,6 @@
 const styles = `
 :host {
   width: 100%;
-  height: 40vh;
 }
 
 #wrapper {
@@ -82,6 +81,18 @@ button:hover {
 
 .hidden {
   display: none !important;
+}
+
+/*<-------------------------- MEDIA QUERIES -------------------------->*/
+
+@media (max-width: 600px) {
+  #incomingVideo, #placeholder {
+    height: 50vh;
+  }
+
+  #outgoingVideo {
+    width: 15%;
+  }
 }
 `
 

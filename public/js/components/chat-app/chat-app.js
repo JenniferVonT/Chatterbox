@@ -84,11 +84,6 @@ customElements.define('chat-app',
     #initV
 
     /**
-     * Represents the video chat button.
-     */
-    #videoBtn
-
-    /**
      * Represents the phone chat button.
      */
     #phoneBtn
@@ -97,6 +92,11 @@ customElements.define('chat-app',
      * Represents the ringing tune.
      */
     #ringingAudio
+
+    /**
+     * Represents the audio when a call is denied.
+     */
+    #hangUpAudio
 
     /**
      * Creates an instance of the current type.
@@ -120,15 +120,19 @@ customElements.define('chat-app',
       this.#chatID = this.getAttribute('chatID')
       this.emojiDropdown = this.shadowRoot.querySelector('#emojiDropdown')
       this.emojiButton = this.shadowRoot.querySelector('#emojiButton')
+      this.callTimeout = null
 
-      // Create audio element.
+      // Create audio elements.
       this.#ringingAudio = new Audio('./sound/call-tone.mp3')
       this.#ringingAudio.loop = true
 
+      this.#hangUpAudio = new Audio('./sound/hung-up.wav')
+      this.#hangUpAudio.loop = false
+
       // Create a websocket and put the appropriate event listeners.
-      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
       // USE THIS WHEN WORKING LOCALLY:
-      this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`)
+      // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`)
 
       /*
       this.#socket.addEventListener('open', (event) => {
@@ -189,15 +193,17 @@ customElements.define('chat-app',
       }
       this.#socket.send(JSON.stringify(message))
 
-      // Disable the call button for 20sec.
-      setTimeout(() => this.toggleCallBtn(), 20_000)
+      // Disable the call button for 15sec.
+      this.toggleCallBtn()
+      setTimeout(() => this.toggleCallBtn(), 15_000)
 
-      // Play a tune for 20 sec and then disable it.
+      // Play a tune for 15 sec and then disable it.
       this.#ringingAudio.play()
-      setTimeout(() => {
+      this.callTimeout = setTimeout(() => {
         this.#ringingAudio.pause()
         this.#ringingAudio.currentTime = 0
-      }, 20_000)
+        this.#hangUpAudio.play()
+      }, 15_000)
     }
 
     /**
@@ -297,6 +303,16 @@ customElements.define('chat-app',
             composed: true,
             detail: { caller: message.caller, receiver: message.receiver }
           }))
+        } else if (message.type === 'deniedCall') {
+          // Clear the timeout that will happen on its own.
+          if (this.callTimeout) {
+            clearTimeout(this.callTimeout)
+            this.callTimeout = null
+          }
+
+          this.#ringingAudio.pause()
+          this.#ringingAudio.currentTime = 0
+          this.#hangUpAudio.play()
         } else if (message.type !== 'heartbeat') {
           this.#handleConversation(message)
         }
@@ -500,12 +516,26 @@ customElements.define('chat-app',
 
     /**
      * Sends a confirmation to the other user that the call is accepted.
+     *
+     * @param {string} type - The type of confirmation, 'denied' or 'accept'.
      */
-    sendConfirmation () {
-      const message = {
-        type: 'confirmation',
-        key: this.#chatID
+    sendConfirmation (type) {
+      let message
+
+      if (type === 'accept') {
+        message = {
+          type: 'confirmation',
+          key: this.#chatID
+        }
       }
+
+      if (type === 'denied') {
+        message = {
+          type: 'deniedCall',
+          key: this.#chatID
+        }
+      }
+
       this.#socket.send(JSON.stringify(message))
     }
 

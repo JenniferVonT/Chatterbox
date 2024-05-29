@@ -33,11 +33,6 @@ customElements.define('call-display',
     #acceptAudio
 
     /**
-     * Represents the accept video button.
-     */
-    #acceptVideo
-
-    /**
      * Represents the deny call button.
      */
     #denyCall
@@ -98,7 +93,9 @@ customElements.define('call-display',
           composed: true,
           detail: { caller: this.username, callerID: this.userID }
         }))
-      } else {
+      }
+
+      if (type === 'denied') {
         this.dispatchEvent(new CustomEvent('callDenied', {
           bubbles: true,
           composed: true

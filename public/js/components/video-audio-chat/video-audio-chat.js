@@ -77,6 +77,16 @@ customElements.define('video-audio-chat',
     #deactivateCameraBtn
 
     /**
+     * Represents a queue for the ice-candidate signals.
+     */
+    #iceCandidatesQueue
+
+    /**
+     * Represents if the remote description is set or not.
+     */
+    #remoteDescriptionSet
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -89,9 +99,12 @@ customElements.define('video-audio-chat',
       this.#chatID = this.getAttribute('chatID')
       this.#activateCameraBtn = this.shadowRoot.querySelector('#activateCameraBtn')
       this.#deactivateCameraBtn = this.shadowRoot.querySelector('#deactivateCameraBtn')
+      this.#iceCandidatesQueue = []
+      this.#remoteDescriptionSet = false
 
       // Create a WebSocket connection.
-      this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`)
+      // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`) /* USE WHEN WORKING LOCALLY */
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
       this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened:', event))
       this.#socket.addEventListener('close', (event) => console.log('WebSocket connection closed:', event))
       this.#socket.addEventListener('error', (event) => console.error('WebSocket encountered an error:', event))
@@ -144,7 +157,9 @@ customElements.define('video-audio-chat',
     async #startCall () {
       this.#initializePeerConnection()
       this.#localStream.getTracks().forEach(track => this.#peerConnection.addTrack(track, this.#localStream))
+
       const offer = await this.#peerConnection.createOffer()
+
       await this.#peerConnection.setLocalDescription(offer)
       this.#sendSignal({ type: 'offer', key: this.#chatID, offer })
     }
@@ -160,39 +175,82 @@ customElements.define('video-audio-chat',
           this.#initializePeerConnection()
         }
 
-        if (data.type === 'offer') {
-          await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
-          const answer = await this.#peerConnection.createAnswer()
-          await this.#peerConnection.setLocalDescription(answer)
-          this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
-        } else if (data.type === 'answer') {
-          await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer))
-        } else if (data.type === 'ice-candidate') {
-          if (data.candidate) {
-            await this.#peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
-          }
-        } else if (data.type === 'deactivateCamera' && data.userID !== this.getAttribute('user')) {
-          // Update UI on the receiving end when sender deactivates camera
-          const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
-          const placeholder = this.shadowRoot.querySelector('#placeholder')
-          incomingVideo.classList.add('hidden')
-          placeholder.classList.remove('hidden')
-          // Remove video tracks
-          this.#remoteStream.getVideoTracks().forEach(track => {
-            this.#remoteStream.removeTrack(track)
-            track.stop()
-          })
-        } else if (data.type === 'activateCamera' && data.userID !== this.getAttribute('user')) {
-          // Update UI on the receiving end when sender reactivates camera
-          const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
-          const placeholder = this.shadowRoot.querySelector('#placeholder')
-          incomingVideo.classList.remove('hidden')
-          placeholder.classList.add('hidden')
-        } else if (data.type === 'endCall') {
-          this.dispatchEvent(new CustomEvent('endCall', {
-            bubbles: true,
-            composed: true
-          }))
+        switch (data.type) {
+          case 'offer':
+            if (this.#peerConnection.signalingState === 'stable' || this.#peerConnection.signalingState === 'have-local-offer') {
+              await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
+              const answer = await this.#peerConnection.createAnswer()
+              await this.#peerConnection.setLocalDescription(answer)
+              this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
+              this.#remoteDescriptionSet = true
+              // Process any queued ICE candidates
+              this.#iceCandidatesQueue.forEach(async candidate => {
+                await this.#peerConnection.addIceCandidate(candidate).catch(e => {
+                  console.error('Error adding queued ICE candidate', e)
+                })
+              })
+              this.#iceCandidatesQueue = []
+            }
+            break
+
+          case 'answer':
+            if (this.#peerConnection.signalingState === 'have-local-offer') {
+              await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer))
+              this.#remoteDescriptionSet = true
+              // Process any queued ICE candidates
+              this.#iceCandidatesQueue.forEach(async candidate => {
+                await this.#peerConnection.addIceCandidate(candidate).catch(e => {
+                  console.error('Error adding queued ICE candidate', e)
+                })
+              })
+              this.#iceCandidatesQueue = []
+            }
+            break
+
+          case 'ice-candidate':
+            if (data.candidate) {
+              const candidate = new RTCIceCandidate(data.candidate)
+              if (this.#remoteDescriptionSet) {
+                await this.#peerConnection.addIceCandidate(candidate).catch(e => {
+                  console.error('Error adding received ICE candidate', e)
+                })
+              } else {
+                this.#iceCandidatesQueue.push(candidate)
+              }
+            }
+            break
+
+          case 'deactivateCamera':
+            if (data.userID !== this.getAttribute('user')) {
+              // Update UI on the receiving end when sender deactivates camera
+              const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
+              const placeholder = this.shadowRoot.querySelector('#placeholder')
+              incomingVideo.classList.add('hidden')
+              placeholder.classList.remove('hidden')
+              // Remove video tracks
+              this.#remoteStream.getVideoTracks().forEach(track => {
+                this.#remoteStream.removeTrack(track)
+                track.stop()
+              })
+            }
+            break
+
+          case 'activateCamera':
+            if (data.userID !== this.getAttribute('user')) {
+              // Update UI on the receiving end when sender reactivates camera
+              const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
+              const placeholder = this.shadowRoot.querySelector('#placeholder')
+              incomingVideo.classList.remove('hidden')
+              placeholder.classList.add('hidden')
+            }
+            break
+
+          case 'endCall':
+            this.dispatchEvent(new CustomEvent('endCall', {
+              bubbles: true,
+              composed: true
+            }))
+            break
         }
       } catch (error) {
         console.error('Error handling signal:', error)

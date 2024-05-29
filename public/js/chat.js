@@ -45,16 +45,19 @@ function calling (caller, callerID) {
  */
 function handleCall (confirmed) {
   removeCallDisplay()
+  const chatApp = document.querySelector('chat-app')
 
   if (confirmed === 'accepted' || confirmed === 'confirmation') {
-    const chatApp = document.querySelector('chat-app')
-
     if (confirmed !== 'confirmation') {
-      chatApp.sendConfirmation()
+      chatApp.sendConfirmation('accept')
     }
 
     // Redirect to the video page.
     window.location.href = `./main/chat/video/${chatApp.getAttribute('chatID')}`
+  }
+
+  if (confirmed === 'denied') {
+    chatApp.sendConfirmation('denied')
   }
 }
 
