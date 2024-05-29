@@ -14,8 +14,3 @@ A simple custom component that helps the user to delete an account.
 ### `deleteAccount`
 
 Is called when the user wants to delete their account after several confirmations.
-
-## Example
-
-<!--- ![Example](insert example img) --->
-<!--- ![Example](insert example gif) --->

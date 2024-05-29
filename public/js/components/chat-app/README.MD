@@ -25,7 +25,7 @@ message = {
 
 Happens a user is being called (the other user has clicked the phone button):
 
-![voiceBtn]('./img/voiceBtn.png')
+![voiceBtn](./img/voiceBtn.png)
 
 ```javascript
 detail = {
