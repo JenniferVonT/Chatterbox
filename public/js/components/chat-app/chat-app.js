@@ -130,31 +130,19 @@ customElements.define('chat-app',
       this.#hangUpAudio.loop = false
 
       // Create a websocket and put the appropriate event listeners.
-      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
-      // USE THIS WHEN WORKING LOCALLY:
-      // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`)
-
-      /*
-      this.#socket.addEventListener('open', (event) => {
-        console.log('WebSocket connection opened:', event)
-      })
-      */
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
+      // USE THIS WHEN WORKING LOCALLY: this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`)
 
       this.#socket.addEventListener('message', (event) => {
-        console.log(event)
         this.#recievedMessage = JSON.parse(event.data)
 
         this.#handleRecievedMessages(this.#recievedMessage)
       })
 
       /*
-      this.#socket.addEventListener('close', (event) => {
-        console.log('WebSocket connection closed:', event)
-      })
-
-      this.#socket.addEventListener('error', (event) => {
-        console.error('WebSocket encountered an error:', event)
-      })
+      this.#socket.addEventListener('open', (event) => { console.log('WebSocket connection opened:', event) })
+      this.#socket.addEventListener('close', (event) => { console.log('WebSocket connection closed:', event) })
+      this.#socket.addEventListener('error', (event) => { console.error('WebSocket encountered an error:', event) })
       */
 
       this.#message.addEventListener('keydown', (event) => this.#handleKeyDown(event))

@@ -1,30 +1,30 @@
 # &lt;call-display&gt;
 
+A simple component that shows the user a call being made and to accept or deny that call.
+
 ## Methods
 
-### `setCallType()`
+### `setCaller(username, ID)`
 
-Sets the type of call.
+Sets the callers username and ID.
 
 #### Arguments
 
-- `video`
-- `audio`
-
-### `setCaller()`
-
-Sets the callers username.
+ - First parameter is a string representing the callers username.
+ - Second parameter is a string representing the callers unique ID.
 
 ## Custom Events
 
-### `acceptCall`
+### `callAccepted`
 
-Triggered when the user accepts the call.
+Triggers when the user accepts the call.
 
-### `denyCall`
+### `callDenied`
 
 Triggers when the user denies the call.
 
 ## Example
 
-![Example]()
+![Example](./img/callDisplayGIF.gif)
+
+Also plays a tune when calling and a different audio when the call is denied.

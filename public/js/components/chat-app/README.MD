@@ -2,24 +2,49 @@
 
 A web component representing a chat window where you chat with a random student.
 
+## Methods
+
+### `sendConfirmation()`
+
+Sends a confirmation to the other user via the websocket if the audio call is accepted or denied.
+
+#### payload
+
+The message being sent to the other user have this syntax:
+
+```javascript
+message = {
+  type: 'confirmation' || 'deniedCall',
+  key: chatID
+}
+```
+
 ## Custom Events
 
-### `voiceCall`
+### `calling`
 
-Called when a user clicks the button with the phone logo:
-
-- details: `chatID`
+Happens a user is being called (the other user has clicked the phone button):
 
 ![voiceBtn]('./img/voiceBtn.png')
 
-### `videoCall`
+```javascript
+detail = {
+  caller: callers username,
+  callerID: callers id,
+  chatID: the chats id
+}
+```
 
-Called when a user clicks the button with the camcorder:
+### `confirmation`
 
-- details: `chatID`
+Called when the user that you call has accepted it.
 
-![videoBtn]('./img/videoBtn.png')
-
+```javascript
+detail = {
+  caller: callerID,
+  receiver: theCalledUserID
+}
+```
 
 ## WebSocket Configuration
 
