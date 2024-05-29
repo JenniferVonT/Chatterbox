@@ -31,4 +31,4 @@ The WebSocket connections are established with the following server address wher
 
 ## Example
 
-![Example]('./img/videoExamplePhoto.jpg')
+![Example]('/img/videoExamplePhoto.jpg')
