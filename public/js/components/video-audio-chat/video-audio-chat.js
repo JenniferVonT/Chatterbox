@@ -188,6 +188,11 @@ customElements.define('video-audio-chat',
           const placeholder = this.shadowRoot.querySelector('#placeholder')
           incomingVideo.classList.remove('hidden')
           placeholder.classList.add('hidden')
+        } else if (data.type === 'endCall') {
+          this.dispatchEvent(new CustomEvent('endCall', {
+            bubbles: true,
+            composed: true
+          }))
         }
       } catch (error) {
         console.error('Error handling signal:', error)
@@ -332,10 +337,13 @@ customElements.define('video-audio-chat',
      * Send an endCall signal though the Websocket connection.
      */
     #sendEndCall () {
-      this.dispatchEvent(new CustomEvent('endCall', {
-        bubbles: true,
-        composed: true
-      }))
+      const message = {
+        type: 'endCall',
+        key: this.#chatID
+      }
+
+      // Send a signal to the other user to close down the call.
+      this.#sendSignal(message)
     }
   }
 )
