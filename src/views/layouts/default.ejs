@@ -6,14 +6,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chatterbox</title>
   <base href="<%= locals.baseURL %>" />
-  <link rel="icon" href="./favicon.ico" />
-  <link rel="stylesheet" href="./css/styles.css" />
-  <script type="module" src="./js/index.js"></script>
-  <script type="module" src="./js/components/settings-comps/profile-selector/index.js"></script>
-  <script type="module" src="./js/components/logged-in-box/index.js"></script>
-  <script type="module" src="./js/components/chat-app/index.js"></script>
-  <script type="module" src="./js/components/call-display/index.js"></script>
-  <script type="module" src="./js/components/video-audio-chat/index.js"></script>
+  <link rel="icon" href=".main/favicon.ico" />
+  <link rel="stylesheet" href="./main/css/styles.css" />
+  <script type="module" src="./main/js/index.js"></script>
+  <script type="module" src="./main/js/components/logged-in-box/index.js"></script>
+
+  <% if (locals.view === 'settings') { %>
+    <link rel="stylesheet" href="./settingsView/css/settingsStyles.css" />
+    <script type="module" src="./settingsView/js/components/settings-comps/profile-selector/index.js"></script>
+    <script type="module" src="./settingsView/js/components/settings-comps/delete-account/index.js"></script>
+  <% } %>
+
+  <% if (locals.view === 'friends') { %>
+    <link rel="stylesheet" href="./friendView/css/friendsStyles.css" />
+  <% } %>
+
+  <% if (locals.view === 'chat') { %>
+    <link rel="stylesheet" href="./chatView/css/chatStyles.css" />
+    <script type="module" src="./chatView/js/components/chat-app/index.js"></script>
+    <script type="module" src="./chatView/js/components/call-display/index.js"></script>
+    <script type="module" src="./chatView/js/components/video-audio-chat/index.js"></script>
+  <% } %>
+
   <%- defineContent('style') %>
   <%- defineContent('script') %>
 </head>

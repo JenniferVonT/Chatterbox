@@ -18,8 +18,8 @@ template.innerHTML = `
   <video id="incomingVideo" class="hidden" autoplay playsinline></video>
   <video id="outgoingVideo" class="hidden" autoplay playsinline muted></video>
   <button id="endCallBtn">End Call</button>
-  <button id="activateCameraBtn"><img src="./img/videocall-icon.svg" alt="Video">Activate Camera</button>
-  <button id="deactivateCameraBtn" class="hidden"><img src="./img/videocall-icon.svg" alt="Video">Camera Off</button>
+  <button id="activateCameraBtn"><img src="./chatView/img/videocall-icon.svg" alt="Video">Activate Camera</button>
+  <button id="deactivateCameraBtn" class="hidden"><img src="./chatView/img/videocall-icon.svg" alt="Video">Camera Off</button>
 </div>
 `
 
@@ -103,8 +103,8 @@ customElements.define('video-audio-chat',
       this.#remoteDescriptionSet = false
 
       // Create a WebSocket connection.
-      // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`) /* USE WHEN WORKING LOCALLY */
-      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
+      this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`) /* USE WHEN WORKING LOCALLY */
+      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
 
       /*
       this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened:', event))

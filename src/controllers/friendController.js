@@ -56,6 +56,7 @@ export class FriendController {
       const friendBuilder = new FriendBuilder()
 
       res.locals.user.friendReqs = await friendBuilder.getFriendReqList(req.session.user)
+      res.locals.view = 'friends'
 
       res.render('main/friends', { viewData })
     } catch (error) {
@@ -83,6 +84,7 @@ export class FriendController {
         { username: 1, id: 1, profileImg: 1 }
       )
 
+      res.locals.view = 'friends'
       res.render('main/friends', { viewData: { results: searchResults } })
     } catch (error) {
 

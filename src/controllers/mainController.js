@@ -60,6 +60,7 @@ export class MainController {
    * @param {Function} next - Express next middleware function.
    */
   async settings (req, res, next) {
+    res.locals.view = 'settings'
     res.render('main/settings')
   }
 

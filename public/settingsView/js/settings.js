@@ -20,7 +20,7 @@ export const settingsPage = function () {
   // Handle the profile img being changed:
   const profileSelector = document.querySelector('profile-selector')
   const profileURI = profileSelector.getAttribute('current-img')
-  const currentImage = profileSelector.querySelector(`img[src="./img/profiles/${profileURI}"]`)
+  const currentImage = profileSelector.querySelector(`img[src="../profiles/${profileURI}"]`)
   currentImage.setAttribute('current', '')
 
   profileSelector.addEventListener('profileImageChanged', (event) => handleProfileChange(event))

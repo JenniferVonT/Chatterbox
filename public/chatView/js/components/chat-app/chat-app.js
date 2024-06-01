@@ -22,7 +22,7 @@ ${chatAppStyles}
           <div class="hidden" id="emojiDropdown"></div>
           <button type="submit" id="send" class="submit-button-user">Send</button>
           <button id="emojiButton" class="submit-button-user">😊</button>
-          <button id="phoneCall" class="submit-button-user"><img src="./img/telephone-icon.svg" alt="Call"></button>
+          <button id="phoneCall" class="submit-button-user"><img src="./chatView/img/telephone-icon.svg" alt="Call"></button>
         </div> 
     </form>
 </div>
@@ -123,15 +123,15 @@ customElements.define('chat-app',
       this.callTimeout = null
 
       // Create audio elements.
-      this.#ringingAudio = new Audio('./sound/call-tone.mp3')
+      this.#ringingAudio = new Audio('./chatView/sound/call-tone.mp3')
       this.#ringingAudio.loop = true
 
-      this.#hangUpAudio = new Audio('./sound/hung-up.wav')
+      this.#hangUpAudio = new Audio('./chatView/sound/hung-up.wav')
       this.#hangUpAudio.loop = false
 
       // Create a websocket and put the appropriate event listeners.
-      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
-      // USE THIS WHEN WORKING LOCALLY: this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`)
+      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
+      this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`) /* USE WHEN WORKING LOCALLY */
 
       this.#socket.addEventListener('message', (event) => {
         this.#recievedMessage = JSON.parse(event.data)
@@ -331,10 +331,10 @@ customElements.define('chat-app',
         // Check which user the message is tied to and insert the correct img.
         if (username.textContent === this.getAttribute('user')) {
           const profileIMG = this.getAttribute('userImg')
-          profileImg.setAttribute('src', `./img/profiles/${profileIMG}`)
+          profileImg.setAttribute('src', `./profiles/${profileIMG}`)
         } else {
           const profileIMG = this.getAttribute('secondUserImg')
-          profileImg.setAttribute('src', `./img/profiles/${profileIMG}`)
+          profileImg.setAttribute('src', `./profiles/${profileIMG}`)
         }
         username.prepend(profileImg)
 

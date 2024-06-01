@@ -1,16 +1,16 @@
 <% if (locals.user) { %>
-  <div id="settings">
+  <div id="settings-page">
     <profile-selector current-img="<%= locals.user.profileImg %>">
-      <img slot="profile1" src="./img/profiles/profile1.jpg" alt="img">
-      <img slot="profile2" src="./img/profiles/profile2.jpg" alt="img">
-      <img slot="profile3" src="./img/profiles/profile3.jpg" alt="img">
-      <img slot="profile4" src="./img/profiles/profile4.jpg" alt="img">
-      <img slot="profile5" src="./img/profiles/profile5.jpg" alt="img">
+      <img slot="profile1" src="../profiles/profile1.jpg" alt="img">
+      <img slot="profile2" src="../profiles/profile2.jpg" alt="img">
+      <img slot="profile3" src="../profiles/profile3.jpg" alt="img">
+      <img slot="profile4" src="../profiles/profile4.jpg" alt="img">
+      <img slot="profile5" src="../profiles/profile5.jpg" alt="img">
     </profile-selector>
   
     <div id="settings-container">
       <div class="settings-components" id="changeEmailContainer">
-        <h3>Change e-mail: <img src="./img/rollDownIcon.svg" alt="down"></h3>
+        <h3>Change e-mail:</h3>
         <form method="POST" action="./updateEmail" class="changing-forms hiddenVis">
           <input autocomplete="off" type="password" class="form-control" id="ch-email-password" minlength="10" maxlength="256" name="password" placeholder="Enter your password" required />
           <input autocomplete="off" type="email" class="form-control" id="ch-email-old" name="oldEmail" placeholder="Old e-mail" required autofocus />
@@ -22,7 +22,7 @@
       </div>
   
       <div class="settings-components" id="changePasswordContainer">
-        <h3>Change password: <img src="./img/rollDownIcon.svg" alt="down"></h3>
+        <h3>Change password:</h3>
         <form method="POST" action="./updatePassword" class="changing-forms hiddenVis">
           <input autocomplete="off" type="password" class="form-control" id="old-password" minlength="10" maxlength="256" name="oldPassword" placeholder="Old password" required />
           <input autocomplete="off" type="password" class="form-control" id="new-password" minlength="10" maxlength="256" name="newPassword" placeholder="New password" required />
@@ -34,7 +34,7 @@
       </div>
   
       <div class="settings-components" id="deleteAcc">
-        <h3>Delete account: <img src="./img/rollDownIcon.svg" alt="down"></h3>
+        <h3>Delete account:</h3>
         <delete-account class="hiddenVis"></delete-account>
       </div>
     </div>

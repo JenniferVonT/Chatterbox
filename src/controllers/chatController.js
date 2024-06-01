@@ -80,6 +80,7 @@ export class ChatController {
         otherUser: req.otherUser
       }
 
+      res.locals.view = 'chat'
       res.render('chats/chat', { viewData })
     } catch (error) {
       next(error)
@@ -100,6 +101,7 @@ export class ChatController {
         otherUser: req.otherUser
       }
 
+      res.locals.view = 'chat'
       res.render('chats/video', { viewData })
     } catch (error) {
       next(error)

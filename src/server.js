@@ -65,6 +65,9 @@ try {
 
   // Serve static files.
   app.use(express.static(join(directoryFullName, '..', 'public')))
+  app.use(express.static(join(directoryFullName, '..', 'publicImages'), {
+    maxAge: '604800' // 1 week.
+  }))
 
   // Setup and use session middleware (https://github.com/expressjs/session)
   if (process.env.NODE_ENV === 'production') {
@@ -98,6 +101,7 @@ try {
       // Build the friend and friendReq list.
       res.locals.user = req.session.user
 
+      res.locals.view = ''
       res.locals.user.friends = await friendBuilder.getFriendsList(user)
       res.locals.user.friendReqs = await friendBuilder.getFriendReqList(user)
     } else {

@@ -15,6 +15,7 @@ form#chat {
     flex-direction: column;
     width: 100%;
     height: 100%;
+    align-items: center;
 }
 
 #submit-btns {
@@ -23,6 +24,7 @@ form#chat {
     width: 100%;
     justify-content: flex-start;
     align-items: center;
+    padding-left: 60px;
 }
 
 #chatWindow {
@@ -192,6 +194,10 @@ button:hover {
     #message {
         width: 90vw;
         height: 50px;
+    }
+
+    #submit-btns {
+        padding-left: 0;
     }
 }
 `

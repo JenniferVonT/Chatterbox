@@ -16,7 +16,7 @@ template.innerHTML = `
   <h1><b id=username></b> is calling!</h1>
 
   <div id="submit-btns">
-    <button id="phoneCall" class="submit-button-user"><img src="./img/telephone-icon.svg" alt="Call">ACCEPT</button>
+    <button id="phoneCall" class="submit-button-user"><img src="./chatView/img/telephone-icon.svg" alt="Call">ACCEPT</button>
     <button id="denyCall">DENY</button>
   </div>
 
@@ -57,7 +57,7 @@ customElements.define('call-display',
       this.#denyCall = this.shadowRoot.querySelector('#denyCall')
 
       // Create audio element.
-      this.#ringingAudio = new Audio('./sound/call-tone.mp3')
+      this.#ringingAudio = new Audio('./chatView/sound/call-tone.mp3')
       this.#ringingAudio.loop = true
     }
 

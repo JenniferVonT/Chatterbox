@@ -3,7 +3,7 @@
   <nav class="header-nav">
     <ul>
       <li id="friendsIcon" class="nav-icons">
-        <a href="./main/friends"><img src="./img/friend-icon.svg" alt="Friends" id="friend-icon" <%= locals.user.friendReqs.length ? 'class=gotRequests' : '' %>></a>
+        <a href="./main/friends"><img src="./friend-icon.svg" alt="Friends" id="friend-icon" <%= locals.user.friendReqs.length ? 'class=gotRequests' : '' %>></a>
         <ul id="collapsible-friend-list">
           <li><a href="./main/friends">+ add friend</a></li>
           <!--- APPEND ALL FRIENDS -->
@@ -12,9 +12,9 @@
               <li>
                 <a href="./main/chat/<%= friend.chatID %>">
                   <div class="dropdown-profile-img">
-                    <img src="./img/profiles/<%= friend.profileImg %>" alt="profileImg">
+                    <img src="./profiles/<%= friend.profileImg %>" alt="profileImg">
                   </div>
-                  <%= friend.username %>
+                  <p><%= friend.username %></p>
                 </a>
               </li>
             <% } %>
@@ -22,23 +22,23 @@
         </ul>
       </li>
       <li id="groupIcon" class="nav-icons">
-        <a href="./main/groups"><img src="./img/group-icon.svg" alt="Groups" id="group-icon"></a>
+        <a href="./main/groups"><img src="./group-icon.svg" alt="Groups" id="group-icon"></a>
         <ul id="collapsible-group-list">
           <li><a href="./main/groups/add">+ create group</a></li>
           <!--- APPEND ALL GROUPS -->
         </ul>
       </li>
       <li id="settingsIcon" class="nav-icons">
-        <a href="./main/settings"><img src="./img/settings-icon.svg" alt="Settings" id="settings-icon"></a></li>
+        <a href="./main/settings"><img src="./settings-icon.svg" alt="Settings" id="settings-icon"></a></li>
     </ul>
   </nav>
 
   <logged-in-box name="<%= locals.user.username %>">
-    <img slot="profile" src="./img/profiles/<%= locals.user.profileImg %>" alt="profile">
+    <img slot="profile" src="./profiles/<%= locals.user.profileImg %>" alt="profile">
   </logged-in-box>
 
   <form class="logout-form" action="./logout" method="POST">
-    <button class="logout-btn" type="submit"><img src="./img/logout-btn.svg" alt="Logout"></button>
+    <button class="logout-btn" type="submit"><img src="./logout-btn.svg" alt="Logout"></button>
   </form>
 </header>
 <% } %>
