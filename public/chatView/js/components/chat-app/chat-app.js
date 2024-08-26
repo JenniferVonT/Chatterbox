@@ -130,8 +130,8 @@ customElements.define('chat-app',
       this.#hangUpAudio.loop = false
 
       // Create a websocket and put the appropriate event listeners.
-      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
-      this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`) /* USE WHEN WORKING LOCALLY */
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}`)
+      // this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}`) /* USE WHEN WORKING LOCALLY */
 
       this.#socket.addEventListener('message', (event) => {
         this.#recievedMessage = JSON.parse(event.data)

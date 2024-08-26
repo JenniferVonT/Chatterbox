@@ -103,8 +103,8 @@ customElements.define('video-audio-chat',
       this.#remoteDescriptionSet = false
 
       // Create a WebSocket connection.
-      this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`) /* USE WHEN WORKING LOCALLY */
-      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
+      // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`) /* USE WHEN WORKING LOCALLY */
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
 
       /*
       this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened:', event))

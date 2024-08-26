@@ -58,16 +58,14 @@ try {
   app.use((req, res, next) => {
     res.setHeader(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox ws://localhost:9696/; img-src 'self' data:; font-src 'self' data:;"
+      "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox ws://localhost:9696/; img-src 'self' data:; font-src 'self' data:;"
     )
     next()
   })
 
   // Serve static files.
   app.use(express.static(join(directoryFullName, '..', 'public')))
-  app.use(express.static(join(directoryFullName, '..', 'publicImages'), {
-    maxAge: '604800' // 1 week.
-  }))
+  app.use(express.static(join(directoryFullName, '..', 'publicImages'), { maxAge: '604800' })) // 1 week.
 
   // Setup and use session middleware (https://github.com/expressjs/session)
   if (process.env.NODE_ENV === 'production') {

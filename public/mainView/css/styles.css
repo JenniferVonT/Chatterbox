@@ -89,7 +89,7 @@ main {
 
 /*<-------------------------- HEADER -------------------------->*/
 header {
-    background-image: url('../../loginBackground.jpg');
+    background-image: url("../../loginBackground.jpg");
     background-color: #211522;
     color: #D3B1C2;
     grid-area: nav;
