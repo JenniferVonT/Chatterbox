@@ -7,7 +7,7 @@
 
 const template = document.createElement('template')
 template.innerHTML = `
-<style>
+<style nonce="brdS0E4VftZB/fVvwQYczJwsdsspXTLV0EV5DRnxwtE=">
   :host {
     display: flex;
     flex-direction: column;

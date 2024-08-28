@@ -7,7 +7,7 @@
 
 const template = document.createElement('template')
 template.innerHTML = `
-<style>
+<style nonce="brdS0E4VftZB/fVvwQYczJwsdsspXTLV0EV5DRnxwtE=">
   :host {
     display: inline-block;
     color: #D3B1C2;
@@ -78,6 +78,7 @@ customElements.define('logged-in-box',
 
       this.component = this.shadowRoot.querySelector('#container')
       this.username = this.shadowRoot.querySelector('#username')
+      this.styleElement = this.shadowRoot.querySelector('style')
     }
 
     /**
@@ -86,17 +87,19 @@ customElements.define('logged-in-box',
      * @returns {string[]} - an array representing the attribute.
      */
     static get observedAttributes () {
-      return ['name']
+      return ['name', 'nonce']
     }
 
     /**
      * Calls the handleName method if the name attribute is being added to the component.
      *
-     * @param {string} name - the name of the attribute.
+     * @param {string} name - The name of the attribute.
      */
     attributeChangedCallback (name) {
       if (name === 'name') {
         this.#handleName()
+      } else if (name === 'nonce') {
+        this.#handleNonce()
       }
     }
 
@@ -117,6 +120,17 @@ customElements.define('logged-in-box',
         this.username.textContent = this.getAttribute('name')
       } else {
         this.username.textContent = 'undefined'
+      }
+    }
+
+    /**
+     * Sets the unique nonce attribute on the style element.
+     */
+    #handleNonce () {
+      const nonce = this.getAttribute('nonce')
+
+      if (nonce !== null) {
+        this.styleElement.setAttribute('nonce', nonce)
       }
     }
   })

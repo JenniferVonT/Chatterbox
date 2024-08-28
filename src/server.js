@@ -10,6 +10,7 @@ import express from 'express'
 import expressLayouts from 'express-ejs-layouts'
 import session from 'express-session'
 import helmet from 'helmet'
+import crypto from 'crypto'
 import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -54,15 +55,6 @@ try {
   // Populates the request object with a body object (req.body).
   app.use(express.json())
 
-  // Set the content-security policy so that API's can be used from the client.
-  app.use((req, res, next) => {
-    res.setHeader(
-      'Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox ws://localhost:9696/; img-src 'self' data:; font-src 'self' data:;"
-    )
-    next()
-  })
-
   // Serve static files.
   app.use(express.static(join(directoryFullName, '..', 'public')))
   app.use(express.static(join(directoryFullName, '..', 'publicImages'), { maxAge: '604800' })) // 1 week.
@@ -88,6 +80,16 @@ try {
     req.requestUuid = randomUUID()
     httpContext.set('request', req)
 
+    // Create a nonce to send with each request in order to run inline style rules of custom components despite the CSP.
+    const nonce = 'brdS0E4VftZB/fVvwQYczJwsdsspXTLV0EV5DRnxwtE=' // crypto.randomBytes(32).toString('base64')
+    console.log('nonce: ', nonce)
+
+    // Set the CSP header for the application.
+    res.setHeader(
+      'Content-Security-Policy',
+      `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; style-src-elem 'self' 'nonce-${nonce}'; style-src-attr 'self' 'nonce-${nonce}'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox ws://localhost:9696/; img-src 'self' data:; font-src 'self' data:;`
+    )
+
     // Flash messages - survives only a round trip.
     if (req.session.flash) {
       res.locals.flash = req.session.flash
@@ -106,9 +108,10 @@ try {
       res.locals.user = false
     }
 
-    // Pass the base URL to the views.
+    // Pass the base URL to the views and the neccessary variables.
     res.locals.baseURL = baseURL
     res.locals.resetCode = false
+    res.locals.nonce = nonce
 
     // Pass the WebSocket server to the response object.
     res.wss = wss

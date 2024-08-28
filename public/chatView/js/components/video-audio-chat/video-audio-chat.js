@@ -9,7 +9,7 @@ import styles from './video-audio-chat.css.js'
 
 const template = document.createElement('template')
 template.innerHTML = `
-<style>
+<style nonce="brdS0E4VftZB/fVvwQYczJwsdsspXTLV0EV5DRnxwtE=">
   ${styles}
 </style>
 
