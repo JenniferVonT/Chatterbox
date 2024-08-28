@@ -19,9 +19,6 @@ export const settingsPage = function () {
 
   // Handle the profile img being changed:
   const profileSelector = document.querySelector('profile-selector')
-  const profileURI = profileSelector.getAttribute('current-img')
-  const currentImage = profileSelector.querySelector(`img[src="../profiles/${profileURI}"]`)
-  currentImage.setAttribute('current', '')
 
   profileSelector.addEventListener('profileImageChanged', (event) => handleProfileChange(event))
 
@@ -49,7 +46,8 @@ export const settingsPage = function () {
         throw new Error('post request failed!')
       }
 
-      currentImage.setAttribute('current', '')
+      profileSelector.removeAttribute('current-img')
+      profileSelector.setAttribute('current-img', `./profile/${imageURI}`)
 
       location.replace(location.href)
     } catch (error) {

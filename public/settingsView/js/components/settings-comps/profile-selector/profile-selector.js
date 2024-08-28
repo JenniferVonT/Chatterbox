@@ -266,7 +266,7 @@ customElements.define('profile-selector',
 
       // Find the element with the current attribute and insert it into the current image container.
       for (const img of this.images) {
-        if (img.hasAttribute('current')) {
+        if (img.getAttribute('src') === this.getAttribute('current-img')) {
           const currentImg = img.cloneNode(true)
           this.currentImgCont.append(currentImg)
         }
