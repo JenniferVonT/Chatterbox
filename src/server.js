@@ -10,7 +10,6 @@ import express from 'express'
 import expressLayouts from 'express-ejs-layouts'
 import session from 'express-session'
 import helmet from 'helmet'
-import crypto from 'crypto'
 import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -81,8 +80,7 @@ try {
     httpContext.set('request', req)
 
     // Create a nonce to send with each request in order to run inline style rules of custom components despite the CSP.
-    const nonce = 'brdS0E4VftZB/fVvwQYczJwsdsspXTLV0EV5DRnxwtE=' // crypto.randomBytes(32).toString('base64')
-    console.log('nonce: ', nonce)
+    const nonce = 'brdS0E4VftZB/fVvwQYczJwsdsspXTLV0EV5DRnxwtE=' // dynamically create a nonce, but wont work when inserting into components as of yet: crypto.randomBytes(32).toString('base64')
 
     // Set the CSP header for the application.
     res.setHeader(
