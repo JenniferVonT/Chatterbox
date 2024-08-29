@@ -297,6 +297,11 @@ foother i {
     color: #613659;
 }
 
+#keepMeLogged {
+    padding: 2px;
+    font-size: smaller;
+}
+
 /*<-------------------------- SCROLL-BAR CUSTOMIZATION -------------------------->*/
 /* Width */
 ::-webkit-scrollbar {

@@ -36,9 +36,14 @@ export class UserController {
    */
   async loginUser (req, res, next) {
     try {
-      const { username, password } = req.body
+      const { username, password, stayLoggedIn } = req.body
 
       const user = await UserModel.authenticate(username, password)
+
+      // If the user wants to stay logged in update the session cookie maxAge.
+      if (stayLoggedIn !== null && stayLoggedIn === 'on') {
+        req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 14 // 14 days.
+      }
 
       // Set the user in the session.
       req.session.user = user
