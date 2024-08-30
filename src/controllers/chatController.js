@@ -125,11 +125,12 @@ export class ChatController {
           messages: [{
             user: message.user,
             iv: message.iv,
-            data: message.data
+            data: message.data,
+            read: false
           }]
         })
       } else {
-        chat.messages.push({ user: message.user, iv: message.iv, data: message.data })
+        chat.messages.push({ user: message.user, iv: message.iv, data: message.data, read: false })
         await chat.save({ validateBeforeSave: false })
       }
     } catch (error) {
@@ -142,8 +143,9 @@ export class ChatController {
    *
    * @param {object} webSocketConnection - The connection
    * @param {string} chatID - The id of the chat.
+   * @param {string} userID - The id of the user being sent the chat.
    */
-  async sendSavedChat (webSocketConnection, chatID) {
+  async sendSavedChat (webSocketConnection, chatID, userID) {
     try {
       // Calculate the date 2 weeks ago from now
       const twoWeeksAgo = new Date()
@@ -152,8 +154,20 @@ export class ChatController {
       // Find the chat document
       const chat = await MessageModel.findOne({ chatId: chatID })
 
+      // If there is no chat found just return nothing.
+      if (!chat) {
+        return
+      }
+
       // Filter out messages older than 2 weeks and keep only the recent ones
       chat.messages = chat.messages.filter(msg => msg.createdAt >= twoWeeksAgo)
+
+      // Update the read status if the message being sent doesn't match the user id that is recieving the msg.
+      chat.messages.forEach(msg => {
+        if (msg.user !== userID) {
+          msg.read = true
+        }
+      })
 
       // Save the updated chat document
       await chat.save({ validateBeforeSave: false })

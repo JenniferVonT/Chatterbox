@@ -11,6 +11,10 @@
   <script type="module" src="./mainView/js/index.js"></script>
   <script type="module" src="./mainView/js/components/logged-in-box/index.js"></script>
 
+  <% if (locals.user) { %>
+    <script type="module" src="./mainView/js/webSocket.js"></script>
+  <% } %>
+
   <% if (locals.view === 'settings') { %>
     <link rel="stylesheet" href="./settingsView/css/settingsStyles.css" />
     <script type="module" src="./settingsView/js/components/settings-comps/profile-selector/index.js"></script>

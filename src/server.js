@@ -85,7 +85,7 @@ try {
     // Set the CSP header for the application.
     res.setHeader(
       'Content-Security-Policy',
-      `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; style-src-elem 'self' 'nonce-${nonce}'; style-src-attr 'self' 'nonce-${nonce}'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox ws://localhost:9696/; img-src 'self' data:; font-src 'self' data:;`
+      `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; style-src-elem 'self' 'nonce-${nonce}'; style-src-attr 'self' 'nonce-${nonce}'; connect-src 'self' https://emoji-api.com wss://cscloud6-191.lnu.se/chatterbox/ ws://localhost:9696/; img-src 'self' data:; font-src 'self' data:;`
     )
 
     // Flash messages - survives only a round trip.

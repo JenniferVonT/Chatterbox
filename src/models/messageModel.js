@@ -21,6 +21,7 @@ const schema = new mongoose.Schema({
     user: String,
     iv: Object,
     data: String,
+    read: Boolean,
     createdAt: {
       type: Date,
       default: Date.now

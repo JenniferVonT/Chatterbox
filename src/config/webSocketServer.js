@@ -1,7 +1,6 @@
 /**
  * @file This module contains the setup of the WebSocket server.
  * @module config/webSocketServer
- * @author Mats Loock
  * @author Jennifer von Trotta-Treyden
  * @version 1.0.0
  */
@@ -11,43 +10,38 @@ import { logger } from './winston.js'
 import { ChatController } from '../controllers/chatController.js'
 import WebSocket, { WebSocketServer } from 'ws'
 import { MessageModel } from '../models/messageModel.js'
+import { UserModel } from '../models/userModel.js'
 import crypto from 'crypto'
 
 export const wss = new WebSocketServer({ noServer: true })
 const chatController = new ChatController()
 
-// Create a map to store all the WebSocket connections per chat room.
+// Create two maps to store all the WebSocket connections per chat room and for all the users.
 const chatRooms = new Map()
+const users = new Map()
 
 // Handle WebSocket connections
 wss.on('connection', async (webSocketConnection, connectionRequest) => {
   logger.silly('WebSocket: A user connected')
 
-  // See if the chatroom is connected or not.
-  const chatID = decodeURIComponent(connectionRequest.url.split('/').pop())
+  // Decide if it is a chat room connection or a user profile connection.
+  const decodeURL = decodeURIComponent(connectionRequest.url)
+  const urlParts = decodeURL.split('/')
 
-  // Find the conversation in the db.
-  const convo = await MessageModel.findOne({ chatId: chatID })
+  const userID = urlParts.pop()
+  let chatID = urlParts.pop()
 
-  // If it doesn't exist create one and generate a new encryption key.
-  if (!convo) {
-    // Generate a random symmetric key
-    const key = crypto.randomBytes(32) // 256 bits key (32 bytes) for AES-256.
-
-    MessageModel.create({
-      chatId: chatID,
-      encryptionKey: key.toString('base64')
-    })
+  if (chatID === '') {
+    chatID = null
   }
 
-  // Send all the saved messages to the connection.
-  await chatController.sendSavedChat(webSocketConnection, chatID)
-
-  if (!chatRooms.has(chatID)) {
-    chatRooms.set(chatID, [])
+  if ((userID !== null) && (chatID !== null)) {
+    // Handles the connection when it's a chat room.
+    chatroomHandler(webSocketConnection, chatID, userID)
+  } else if (userID !== null) {
+    // Handles the connection when it's a single user connection, when logging in.
+    userConnectionHandler(webSocketConnection, userID)
   }
-
-  chatRooms.get(chatID).push(webSocketConnection)
 
   // Set up heartbeat interval
   const heartbeatInterval = setInterval(() => {
@@ -118,12 +112,96 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
   webSocketConnection.addEventListener('close', () => {
     logger.silly('WebSocket: A user disconnected')
 
-    // Remove the WebSocket connection from the chat room.
-    chatRooms.forEach((connections, chatId) => {
-      chatRooms.set(chatId, connections.filter((conn) => conn !== webSocketConnection))
-    })
+    // Remove the WebSocket connection from the chat room or connected user.
+    if (chatID !== null) {
+      chatRooms.forEach((connections, chatId) => {
+        chatRooms.set(chatId, connections.filter((conn) => conn !== webSocketConnection))
+      })
+    } else {
+      users.forEach((connections, userId) => {
+        users.set(userId, connections.filter((conn) => conn !== webSocketConnection))
+      })
+    }
 
     // Clear heartbeat interval when the connection is closed
     clearInterval(heartbeatInterval)
   })
 })
+
+/**
+ * Handles the connection to a chat room.
+ *
+ * @param {object} webSocketConnection - the connection object for the websocket.
+ * @param {string} chatID - The chat rooms id.
+ * @param {string} userID - The id of the current user.
+ */
+async function chatroomHandler (webSocketConnection, chatID, userID) {
+  // Find the conversation in the db.
+  const convo = await MessageModel.findOne({ chatId: chatID })
+
+  // If it doesn't exist create one and generate a new encryption key.
+  if (!convo) {
+    // Generate a random symmetric key
+    const key = crypto.randomBytes(32) // 256 bits key (32 bytes) for AES-256.
+
+    MessageModel.create({
+      chatId: chatID,
+      encryptionKey: key.toString('base64')
+    })
+  }
+
+  // Send all the saved messages to the connection.
+  await chatController.sendSavedChat(webSocketConnection, chatID, userID)
+
+  if (!chatRooms.has(chatID)) {
+    chatRooms.set(chatID, [])
+  }
+
+  chatRooms.get(chatID).push(webSocketConnection)
+}
+
+/**
+ * Handles when a user logs in or connects to the application.
+ *
+ * @param {object} webSocketConnection - The websocket connection object.
+ * @param {string} userID - The id of the user.
+ */
+async function userConnectionHandler (webSocketConnection, userID) {
+  // Insert the user into the connected users map.
+  if (!users.has(userID)) {
+    users.set(userID, [])
+  }
+
+  users.get(userID).push(webSocketConnection)
+
+  // Find all the chat rooms connected to the user.
+  const user = await UserModel.findById(userID)
+  const chatIDs = []
+
+  user.friends.forEach(friend => chatIDs.push(friend.chatId))
+
+  const unreadMessages = []
+
+  // Check if any of the chatrooms have any unread messages.
+  for (const chat of chatIDs) {
+    const convo = await MessageModel.findOne({ chatId: chat })
+
+    // If there is a chat with that ID check all the messages.
+    if (convo) {
+      for (const msg of convo.messages) {
+        if (msg.read === false && msg.user !== userID) {
+          const message = {
+            chatID: chat,
+            from: msg.user
+          }
+          unreadMessages.push(message)
+        }
+      }
+    }
+  }
+
+  // Send a notification about unread messages to the user.
+  if (unreadMessages.length > 0) {
+    webSocketConnection.send(JSON.stringify({ type: 'notification - msg', data: unreadMessages }))
+  }
+}

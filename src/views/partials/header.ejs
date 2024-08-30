@@ -3,16 +3,27 @@
   <nav class="header-nav">
     <ul>
       <li id="friendsIcon" class="nav-icons">
-        <a href="./main/friends"><img src="./friend-icon.svg" alt="Friends" id="friend-icon" <%= locals.user.friendReqs.length ? 'class=gotRequests' : '' %>></a>
+        <a href="./main/friends">
+          <div id="friendContainer">
+            <img src="./friend-icon.svg" alt="Friends" id="friend-icon" <%= locals.user.friendReqs.length ? 'class=gotRequests' : '' %>>
+            <span id="notification-badge" class="notification-badge"></span>
+          </div>
+        </a>
         <ul id="collapsible-friend-list">
-          <li><a href="./main/friends">+ add friend</a></li>
+          <li>
+            <a href="./main/friends">+ add friend</a>
+            <span id="friendReq-badge" <%= locals.user.friendReqs.length ? 'class=gotRequestsBadge' : '' %>>
+              <%= locals.user.friendReqs.length %>
+            </span>
+          </li>
           <!--- APPEND ALL FRIENDS -->
           <% if (locals.user.friends) { %>
             <% for (const friend of locals.user.friends) { %>
-              <li>
+              <li chatList="<%= friend.chatID %>">
                 <a href="./main/chat/<%= friend.chatID %>">
                   <div class="dropdown-profile-img">
                     <img src="./profiles/<%= friend.profileImg %>" alt="profileImg">
+                    <span class="chat-notification"></span>
                   </div>
                   <p><%= friend.username %></p>
                 </a>
