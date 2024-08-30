@@ -6,6 +6,24 @@ export const chatPage = function () {
 
   chatApp.addEventListener('calling', (event) => calling(event.detail.caller, event.detail.callerID))
   chatApp.addEventListener('confirmation', () => handleCall('confirmation'))
+
+  // Remove the notifications for the current chat.
+  const chatID = chatApp.getAttribute('chatID')
+  const globalNotifications = document.querySelector('#notification-badge')
+  const lokalNotifications = document.querySelector(`[chatlist=${chatID}] .chat-notification`)
+
+  const amountToRemove = parseInt(lokalNotifications.textContent)
+
+  // If there is any notifications to remove, remove them from both the global and individual notifications.
+  if (amountToRemove) {
+    const total = parseInt(globalNotifications.textContent) - amountToRemove
+    globalNotifications.textContent = total
+    if (total === 0) {
+      globalNotifications.style.display = 'none'
+    }
+    lokalNotifications.textContent = ''
+    lokalNotifications.style.display = 'none'
+  }
 }
 
 /**

@@ -112,8 +112,9 @@ export class ChatController {
    * Saves the message in the db.
    *
    * @param {object} message - The message object containing the message, chatID and userID.
+   * @param {boolean} readState - If the message has been read (true) or not (false).
    */
-  async saveChatMessage (message) {
+  async saveChatMessage (message, readState) {
     try {
       const chat = await MessageModel.findOne({ chatId: message.key })
 
@@ -126,11 +127,11 @@ export class ChatController {
             user: message.user,
             iv: message.iv,
             data: message.data,
-            read: false
+            read: readState
           }]
         })
       } else {
-        chat.messages.push({ user: message.user, iv: message.iv, data: message.data, read: false })
+        chat.messages.push({ user: message.user, iv: message.iv, data: message.data, read: readState })
         await chat.save({ validateBeforeSave: false })
       }
     } catch (error) {

@@ -35,7 +35,7 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
     chatID = null
   }
 
-  if ((userID !== null) && (chatID !== null)) {
+  if ((chatID !== null)) {
     // Handles the connection when it's a chat room.
     chatroomHandler(webSocketConnection, chatID, userID)
   } else if (userID !== null) {
@@ -64,9 +64,31 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
       // Retrieve the WebSocket connection for the chat rooms.
       const connections = chatRooms.get(chatId)
 
-      // Handle when a message in the chat is sent.
       if (obj.type === 'message') {
-        // Broadcast the message to all WebSocket connections in the chat room
+        // Handle when a message in the chat is sent and only one user is connected.
+        if (connections.length === 1) {
+          // Find the user sending the message.
+          const sender = await UserModel.findById(obj.user)
+          let receiverID = ''
+
+          // Find the friend that matches the chat id.
+          for (const friend of sender.friends) {
+            if (friend.chatId === chatId) {
+              receiverID = friend.userId
+              break
+            }
+          }
+
+          // Check if the receiver has an active WebSocket connection and send the notifications.
+          const receiver = users.get(receiverID)
+
+          // Save the message in a db.
+          await chatController.saveChatMessage(obj, false)
+
+          userConnectionHandler(receiver[0], receiverID)
+        }
+
+        // Broadcast the message to all WebSocket connections in the chat room.
         connections.forEach(connection => {
           if (connection.readyState === WebSocket.OPEN) {
             connection.send(JSON.stringify({
@@ -79,7 +101,7 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
         })
 
         // Save the message in a db.
-        await chatController.saveChatMessage(obj)
+        await chatController.saveChatMessage(obj, true)
       } else if (obj.type === 'call') { // Handle when a user is calling
         connections.forEach(connection => {
           if (connection.readyState === WebSocket.OPEN) {
@@ -172,7 +194,11 @@ async function userConnectionHandler (webSocketConnection, userID) {
     users.set(userID, [])
   }
 
-  users.get(userID).push(webSocketConnection)
+  const userConnection = users.get(userID)
+
+  if (userConnection.length === 0) {
+    userConnection.push(webSocketConnection)
+  }
 
   // Find all the chat rooms connected to the user.
   const user = await UserModel.findById(userID)
