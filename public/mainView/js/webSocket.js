@@ -1,5 +1,5 @@
-// const socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${document.querySelector('header').getAttribute('userID')}`)
-const socket = new WebSocket(`ws://localhost:9696/${document.querySelector('header').getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
+const socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${document.querySelector('header').getAttribute('userID')}`)
+// const socket = new WebSocket(`ws://localhost:9696/${document.querySelector('header').getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
 
 // ----------------------------------------------------------------------------
 // Event handlers.

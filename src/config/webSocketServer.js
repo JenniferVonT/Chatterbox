@@ -49,7 +49,7 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
       // Send heartbeat message to the client
       webSocketConnection.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }))
     }
-  }, 60000) // 60 seconds
+  }, 30000) // 30 seconds
 
   webSocketConnection.addEventListener('error', (error) => logger.error('WebSocket error', { error }))
   webSocketConnection.addEventListener('message', async (message) => {
@@ -79,29 +79,40 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
             }
           }
 
-          // Check if the receiver has an active WebSocket connection and send the notifications.
+          // Find the receivers WS connection and if it's active send a notification.
           const receiver = users.get(receiverID)
 
-          // Save the message in a db.
+          if (receiver !== undefined && receiver.length !== 0) {
+            // Send the notifications to the receiver.
+            userConnectionHandler(receiver[0], receiverID)
+          }
+
+          // Save the message in a db as unread.
           await chatController.saveChatMessage(obj, false)
 
-          userConnectionHandler(receiver[0], receiverID)
+          // Send the message to the sender.
+          connections[0].send(JSON.stringify({
+            type: 'message',
+            iv: obj.iv,
+            user: obj.user,
+            data: obj.data
+          }))
+        } else {
+          // Broadcast the message to all WebSocket connections in the chat room.
+          connections.forEach(connection => {
+            if (connection.readyState === WebSocket.OPEN) {
+              connection.send(JSON.stringify({
+                type: 'message',
+                iv: obj.iv,
+                user: obj.user,
+                data: obj.data
+              }))
+            }
+          })
+
+          // Save the message in a db as read.
+          await chatController.saveChatMessage(obj, true)
         }
-
-        // Broadcast the message to all WebSocket connections in the chat room.
-        connections.forEach(connection => {
-          if (connection.readyState === WebSocket.OPEN) {
-            connection.send(JSON.stringify({
-              type: 'message',
-              iv: obj.iv,
-              user: obj.user,
-              data: obj.data
-            }))
-          }
-        })
-
-        // Save the message in a db.
-        await chatController.saveChatMessage(obj, true)
       } else if (obj.type === 'call') { // Handle when a user is calling
         connections.forEach(connection => {
           if (connection.readyState === WebSocket.OPEN) {
