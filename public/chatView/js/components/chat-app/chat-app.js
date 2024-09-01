@@ -16,7 +16,7 @@ ${chatAppStyles}
     <form id="chat" method="POST">
         <div id="chatWindow"></div>
 
-        <textarea id="message" name="message" rows="10" cols="50" placeholder="Write your message here!" autocomplete="off"></textarea>
+        <textarea id="message" name="message" rows="10" cols="50" autocomplete="off"></textarea>
   
         <div id="submit-btns">
           <div class="hidden" id="emojiDropdown"></div>
@@ -159,6 +159,7 @@ customElements.define('chat-app',
      */
     connectedCallback () {
       this.#username = this.getAttribute('user')
+      this.#message.setAttribute('placeholder', `Write to ${this.getAttribute('secondUser')}!`)
     }
 
     /**
