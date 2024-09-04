@@ -113,14 +113,36 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
           // Save the message in a db as read.
           await chatController.saveChatMessage(obj, true)
         }
-      } else if (obj.type === 'call') { // Handle when a user is calling
+      } else if (obj.type === 'call' && connections.length > 1) { // Handle when a user is calling and there is more than one person connected in the chatroom.
         connections.forEach(connection => {
           if (connection.readyState === WebSocket.OPEN) {
             connection.send(JSON.stringify(obj))
           }
         })
+      } else if (obj.type === 'call' && connections.length === 1) { // Handle when a user is calling and there is only one connected.
+        // First find the user being called.
+        const sender = await UserModel.findById(obj.callerID)
+        let callReceiverID = ''
+
+        // Find the friend that matches the chat id.
+        for (const friend of sender.friends) {
+          if (friend.chatId === chatId) {
+            callReceiverID = friend.userId
+            break
+          }
+        }
+
+        // Get the receivers' private ws connection.
+        const callReceiver = users.get(callReceiverID)
+
+        if (callReceiver !== undefined && callReceiver.length !== 0) {
+          // Send the call notification to the receiver if they are connected.
+          if (callReceiver[0].readyState === WebSocket.OPEN) {
+            callReceiver[0].send(JSON.stringify(obj))
+          }
+        }
       } else if (obj.type === 'endCall' || obj.type === 'confirmation' || obj.type === 'deniedCall') { // Handle when a user either accepts/denies a call or ends an ongoing call.
-        // Broadcast the message to all WebSocket connections in the chat room
+        // Broadcast the message to all WebSocket connections in the chat room.
         connections.forEach(connection => {
           if (connection.readyState === WebSocket.OPEN) {
             connection.send(JSON.stringify(obj))

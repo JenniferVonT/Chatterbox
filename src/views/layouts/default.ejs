@@ -13,6 +13,7 @@
 
   <% if (locals.user) { %>
     <script type="module" src="./mainView/js/webSocket.js"></script>
+    <script type="module" src="./mainView/js/components/call-display/index.js"></script>
   <% } %>
 
   <% if (locals.view === 'settings') { %>
@@ -28,7 +29,6 @@
   <% if (locals.view === 'chat') { %>
     <link rel="stylesheet" href="./chatView/css/chatStyles.css" />
     <script type="module" src="./chatView/js/components/chat-app/index.js"></script>
-    <script type="module" src="./chatView/js/components/call-display/index.js"></script>
     <script type="module" src="./chatView/js/components/video-audio-chat/index.js"></script>
   <% } %>
 

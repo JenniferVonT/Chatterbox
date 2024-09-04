@@ -130,8 +130,8 @@ customElements.define('chat-app',
       this.#hangUpAudio.loop = false
 
       // Create a websocket and put the appropriate event listeners.
-      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}/${this.getAttribute('userID')}`)
-      // this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}/${this.getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
+      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.getAttribute('chatID')}/${this.getAttribute('userID')}`)
+      this.#socket = new WebSocket(`ws://localhost:9696/${this.getAttribute('chatID')}/${this.getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
 
       this.#socket.addEventListener('message', (event) => {
         this.#recievedMessage = JSON.parse(event.data)
@@ -290,7 +290,7 @@ customElements.define('chat-app',
           this.dispatchEvent(new CustomEvent('confirmation', {
             bubbles: true,
             composed: true,
-            detail: { caller: message.caller, receiver: message.receiver }
+            detail: { caller: message.caller, receiver: message.receiver, chatID: message.key }
           }))
         } else if (message.type === 'deniedCall') {
           // Clear the timeout that will happen on its own.

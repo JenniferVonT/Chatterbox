@@ -1,5 +1,7 @@
-const socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${document.querySelector('header').getAttribute('userID')}`)
-// const socket = new WebSocket(`ws://localhost:9696/${document.querySelector('header').getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
+import { calling } from '../../chatView/js/chat.js'
+
+// export const socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${document.querySelector('header').getAttribute('userID')}`)
+export const socket = new WebSocket(`ws://localhost:9696/${document.querySelector('header').getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
 
 // ----------------------------------------------------------------------------
 // Event handlers.
@@ -18,6 +20,7 @@ socket.addEventListener('error', (event) => {
 // Listen for messages.
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data)
+  const page = window.location.pathname
 
   console.log('message', event)
 
@@ -79,8 +82,9 @@ socket.addEventListener('message', (event) => {
         badge.style.display = 'flex'
       }
     }
-  } else if (data.type === 'notification - call') {
+  } else if (data.type === 'call' && !page.includes(data.key)) {
     // Show the call notification.
+    calling(data.caller, data.callerID, data.key)
   }
 })
 
