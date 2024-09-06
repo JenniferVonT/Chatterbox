@@ -99,7 +99,7 @@ function handleCall (confirmed, chatID) {
     }
 
     // Redirect to the video page.
-    window.location.href = `./main/chat/video/${chatID}`
+    window.location.assign(`./main/chat/video/${chatID}`)
   }
 
   // Do the same when the call is denied as the confirmation.

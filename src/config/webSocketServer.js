@@ -22,165 +22,170 @@ const users = new Map()
 
 // Handle WebSocket connections
 wss.on('connection', async (webSocketConnection, connectionRequest) => {
-  logger.silly('WebSocket: A user connected')
+  try {
+    logger.silly('WebSocket: A user connected')
 
-  // Decide if it is a chat room connection or a user profile connection.
-  const decodeURL = decodeURIComponent(connectionRequest.url)
-  const urlParts = decodeURL.split('/')
+    // Decide if it is a chat room connection or a user profile connection.
+    const decodeURL = decodeURIComponent(connectionRequest.url)
+    const urlParts = decodeURL.split('/')
 
-  const userID = urlParts.pop()
-  let chatID = urlParts.pop()
+    const userID = urlParts.pop()
+    let chatID = urlParts.pop()
 
-  if (chatID === '') {
-    chatID = null
-  }
-
-  if ((chatID !== null)) {
-    // Handles the connection when it's a chat room.
-    chatroomHandler(webSocketConnection, chatID, userID)
-  } else if (userID !== null) {
-    // Handles the connection when it's a single user connection, when logging in.
-    userConnectionHandler(webSocketConnection, userID)
-  }
-
-  // Set up heartbeat interval
-  const heartbeatInterval = setInterval(() => {
-    if (webSocketConnection.readyState === WebSocket.OPEN) {
-      // Send heartbeat message to the client
-      webSocketConnection.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }))
+    if (chatID === '') {
+      chatID = null
     }
-  }, 30000) // 30 seconds
 
-  webSocketConnection.addEventListener('error', (error) => logger.error('WebSocket error', { error }))
-  webSocketConnection.addEventListener('message', async (message) => {
-    try {
-      logger.silly(`ws - received message: ${message}`)
+    if ((chatID !== null)) {
+    // Handles the connection when it's a chat room.
+      chatroomHandler(webSocketConnection, chatID, userID)
+    } else if (userID !== null) {
+    // Handles the connection when it's a single user connection, when logging in.
+      userConnectionHandler(webSocketConnection, userID)
+    }
 
-      // Parse the incoming message
-      const obj = JSON.parse(message.data)
+    // Set up heartbeat interval
+    const heartbeatInterval = setInterval(() => {
+      if (webSocketConnection.readyState === WebSocket.OPEN) {
+      // Send heartbeat message to the client
+        webSocketConnection.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }))
+      }
+    }, 30000) // 30 seconds
 
-      const chatId = obj.key
+    webSocketConnection.addEventListener('error', (error) => logger.error('WebSocket error', { error }))
+    webSocketConnection.addEventListener('message', async (message) => {
+      try {
+        logger.silly(`ws - received message: ${message}`)
 
-      // Retrieve the WebSocket connection for the chat rooms.
-      const connections = chatRooms.get(chatId)
+        // Parse the incoming message
+        const obj = JSON.parse(message.data)
 
-      if (obj.type === 'message') {
+        const chatId = obj.key
+
+        // Retrieve the WebSocket connection for the chat rooms.
+        const connections = chatRooms.get(chatId)
+
+        if (obj.type === 'message') {
         // Handle when a message in the chat is sent and only one user is connected.
-        if (connections.length === 1) {
+          if (connections.length === 1) {
           // Find the user sending the message.
-          const sender = await UserModel.findById(obj.user)
-          let receiverID = ''
+            const sender = await UserModel.findById(obj.user)
+            let receiverID = ''
+
+            // Find the friend that matches the chat id.
+            for (const friend of sender.friends) {
+              if (friend.chatId === chatId) {
+                receiverID = friend.userId
+                break
+              }
+            }
+
+            // Find the receivers WS connection and if it's active send a notification.
+            const receiver = users.get(receiverID)
+
+            if (receiver !== undefined && receiver.length !== 0) {
+            // Send the notifications to the receiver.
+              userConnectionHandler(receiver[0], receiverID)
+            }
+
+            // Save the message in a db as unread.
+            await chatController.saveChatMessage(obj, false)
+
+            // Send the message to the sender.
+            connections[0].send(JSON.stringify({
+              type: 'message',
+              iv: obj.iv,
+              user: obj.user,
+              data: obj.data
+            }))
+          } else {
+          // Broadcast the message to all WebSocket connections in the chat room.
+            connections.forEach(connection => {
+              if (connection.readyState === WebSocket.OPEN) {
+                connection.send(JSON.stringify({
+                  type: 'message',
+                  iv: obj.iv,
+                  user: obj.user,
+                  data: obj.data
+                }))
+              }
+            })
+
+            // Save the message in a db as read.
+            await chatController.saveChatMessage(obj, true)
+          }
+        } else if (obj.type === 'call' && connections.length > 1) { // Handle when a user is calling and there is more than one person connected in the chatroom.
+          connections.forEach(connection => {
+            if (connection.readyState === WebSocket.OPEN) {
+              connection.send(JSON.stringify(obj))
+            }
+          })
+        } else if (obj.type === 'call' && connections.length === 1) { // Handle when a user is calling and there is only one connected.
+        // First find the user being called.
+          const sender = await UserModel.findById(obj.callerID)
+          let callReceiverID = ''
 
           // Find the friend that matches the chat id.
           for (const friend of sender.friends) {
             if (friend.chatId === chatId) {
-              receiverID = friend.userId
+              callReceiverID = friend.userId
               break
             }
           }
 
-          // Find the receivers WS connection and if it's active send a notification.
-          const receiver = users.get(receiverID)
+          // Get the receivers' private ws connection.
+          const callReceiver = users.get(callReceiverID)
 
-          if (receiver !== undefined && receiver.length !== 0) {
-            // Send the notifications to the receiver.
-            userConnectionHandler(receiver[0], receiverID)
+          if (callReceiver !== undefined && callReceiver.length !== 0) {
+          // Send the call notification to the receiver if they are connected.
+            if (callReceiver[0].readyState === WebSocket.OPEN) {
+              callReceiver[0].send(JSON.stringify(obj))
+            }
           }
-
-          // Save the message in a db as unread.
-          await chatController.saveChatMessage(obj, false)
-
-          // Send the message to the sender.
-          connections[0].send(JSON.stringify({
-            type: 'message',
-            iv: obj.iv,
-            user: obj.user,
-            data: obj.data
-          }))
-        } else {
-          // Broadcast the message to all WebSocket connections in the chat room.
+        } else if (obj.type === 'endCall' || obj.type === 'confirmation' || obj.type === 'deniedCall') { // Handle when a user either accepts/denies a call or ends an ongoing call.
+        // Broadcast the message to all WebSocket connections in the chat room.
           connections.forEach(connection => {
             if (connection.readyState === WebSocket.OPEN) {
-              connection.send(JSON.stringify({
-                type: 'message',
-                iv: obj.iv,
-                user: obj.user,
-                data: obj.data
-              }))
+              connection.send(JSON.stringify(obj))
             }
           })
-
-          // Save the message in a db as read.
-          await chatController.saveChatMessage(obj, true)
-        }
-      } else if (obj.type === 'call' && connections.length > 1) { // Handle when a user is calling and there is more than one person connected in the chatroom.
-        connections.forEach(connection => {
-          if (connection.readyState === WebSocket.OPEN) {
-            connection.send(JSON.stringify(obj))
-          }
-        })
-      } else if (obj.type === 'call' && connections.length === 1) { // Handle when a user is calling and there is only one connected.
-        // First find the user being called.
-        const sender = await UserModel.findById(obj.callerID)
-        let callReceiverID = ''
-
-        // Find the friend that matches the chat id.
-        for (const friend of sender.friends) {
-          if (friend.chatId === chatId) {
-            callReceiverID = friend.userId
-            break
-          }
-        }
-
-        // Get the receivers' private ws connection.
-        const callReceiver = users.get(callReceiverID)
-
-        if (callReceiver !== undefined && callReceiver.length !== 0) {
-          // Send the call notification to the receiver if they are connected.
-          if (callReceiver[0].readyState === WebSocket.OPEN) {
-            callReceiver[0].send(JSON.stringify(obj))
-          }
-        }
-      } else if (obj.type === 'endCall' || obj.type === 'confirmation' || obj.type === 'deniedCall') { // Handle when a user either accepts/denies a call or ends an ongoing call.
-        // Broadcast the message to all WebSocket connections in the chat room.
-        connections.forEach(connection => {
-          if (connection.readyState === WebSocket.OPEN) {
-            connection.send(JSON.stringify(obj))
-          }
-        })
-      } else if (['offer', 'answer', 'ice-candidate', 'activateCamera', 'deactivateCamera'].includes(obj.type)) { // Handle when the user answers a voice call and a webRTC connection opens.
+        } else if (['offer', 'answer', 'ice-candidate', 'activateCamera', 'deactivateCamera'].includes(obj.type)) { // Handle when the user answers a voice call and a webRTC connection opens.
         // Relay the signal to other peers in the chat room.
-        connections.forEach(connection => {
-          if (connection.readyState === WebSocket.OPEN && connection !== webSocketConnection) {
-            connection.send(JSON.stringify(obj))
-          }
+          connections.forEach(connection => {
+            if (connection.readyState === WebSocket.OPEN && connection !== webSocketConnection) {
+              connection.send(JSON.stringify(obj))
+            }
+          })
+        }
+      } catch (error) {
+        logger.error('Error processing WebSocket message:', error)
+        logger.silly('Something went wrong in the websocketserver: ', error)
+        webSocketConnection.close()
+      }
+    })
+
+    // Add event listeners to the WebSocket connection
+    webSocketConnection.addEventListener('close', () => {
+      logger.silly('WebSocket: A user disconnected')
+
+      // Remove the WebSocket connection from the chat room or connected user.
+      if (chatID !== null) {
+        chatRooms.forEach((connections, chatId) => {
+          chatRooms.set(chatId, connections.filter((conn) => conn !== webSocketConnection))
+        })
+      } else {
+        users.forEach((connections, userId) => {
+          users.set(userId, connections.filter((conn) => conn !== webSocketConnection))
         })
       }
-    } catch (error) {
-      logger.error('Error processing WebSocket message:', error)
-      logger.silly('Something went wrong in the websocketserver: ', error)
-      webSocketConnection.close()
-    }
-  })
 
-  // Add event listeners to the WebSocket connection
-  webSocketConnection.addEventListener('close', () => {
-    logger.silly('WebSocket: A user disconnected')
-
-    // Remove the WebSocket connection from the chat room or connected user.
-    if (chatID !== null) {
-      chatRooms.forEach((connections, chatId) => {
-        chatRooms.set(chatId, connections.filter((conn) => conn !== webSocketConnection))
-      })
-    } else {
-      users.forEach((connections, userId) => {
-        users.set(userId, connections.filter((conn) => conn !== webSocketConnection))
-      })
-    }
-
-    // Clear heartbeat interval when the connection is closed
-    clearInterval(heartbeatInterval)
-  })
+      // Clear heartbeat interval when the connection is closed
+      clearInterval(heartbeatInterval)
+    })
+  } catch (e) {
+    logger.error('Error processing WebSocket connection: ', e)
+    console.error('Error processing WebSocket connection: ', e)
+  }
 })
 
 /**
@@ -191,28 +196,32 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
  * @param {string} userID - The id of the current user.
  */
 async function chatroomHandler (webSocketConnection, chatID, userID) {
-  // Find the conversation in the db.
-  const convo = await MessageModel.findOne({ chatId: chatID })
+  try {
+    // Find the conversation in the db.
+    const convo = await MessageModel.findOne({ chatId: chatID })
 
-  // If it doesn't exist create one and generate a new encryption key.
-  if (!convo) {
-    // Generate a random symmetric key
-    const key = crypto.randomBytes(32) // 256 bits key (32 bytes) for AES-256.
+    // If it doesn't exist create one and generate a new encryption key.
+    if (!convo) {
+      // Generate a random symmetric key
+      const key = crypto.randomBytes(32) // 256 bits key (32 bytes) for AES-256.
 
-    MessageModel.create({
-      chatId: chatID,
-      encryptionKey: key.toString('base64')
-    })
+      MessageModel.create({
+        chatId: chatID,
+        encryptionKey: key.toString('base64')
+      })
+    }
+
+    // Send all the saved messages to the connection.
+    await chatController.sendSavedChat(webSocketConnection, chatID, userID)
+
+    if (!chatRooms.has(chatID)) {
+      chatRooms.set(chatID, [])
+    }
+
+    chatRooms.get(chatID).push(webSocketConnection)
+  } catch (e) {
+    console.error('Something happened in the chatRoomHandler: ', e)
   }
-
-  // Send all the saved messages to the connection.
-  await chatController.sendSavedChat(webSocketConnection, chatID, userID)
-
-  if (!chatRooms.has(chatID)) {
-    chatRooms.set(chatID, [])
-  }
-
-  chatRooms.get(chatID).push(webSocketConnection)
 }
 
 /**
@@ -222,45 +231,49 @@ async function chatroomHandler (webSocketConnection, chatID, userID) {
  * @param {string} userID - The id of the user.
  */
 async function userConnectionHandler (webSocketConnection, userID) {
-  // Insert the user into the connected users map.
-  if (!users.has(userID)) {
-    users.set(userID, [])
-  }
+  try {
+    // Insert the user into the connected users map.
+    if (!users.has(userID)) {
+      users.set(userID, [])
+    }
 
-  const userConnection = users.get(userID)
+    const userConnection = users.get(userID)
 
-  if (userConnection.length === 0) {
-    userConnection.push(webSocketConnection)
-  }
+    if (userConnection.length === 0) {
+      userConnection.push(webSocketConnection)
+    }
 
-  // Find all the chat rooms connected to the user.
-  const user = await UserModel.findById(userID)
-  const chatIDs = []
+    // Find all the chat rooms connected to the user.
+    const user = await UserModel.findById(userID)
+    const chatIDs = []
 
-  user.friends.forEach(friend => chatIDs.push(friend.chatId))
+    user.friends.forEach(friend => chatIDs.push(friend.chatId))
 
-  const unreadMessages = []
+    const unreadMessages = []
 
-  // Check if any of the chatrooms have any unread messages.
-  for (const chat of chatIDs) {
-    const convo = await MessageModel.findOne({ chatId: chat })
+    // Check if any of the chatrooms have any unread messages.
+    for (const chat of chatIDs) {
+      const convo = await MessageModel.findOne({ chatId: chat })
 
-    // If there is a chat with that ID check all the messages.
-    if (convo) {
-      for (const msg of convo.messages) {
-        if (msg.read === false && msg.user !== userID) {
-          const message = {
-            chatID: chat,
-            from: msg.user
+      // If there is a chat with that ID check all the messages.
+      if (convo) {
+        for (const msg of convo.messages) {
+          if (msg.read === false && msg.user !== userID) {
+            const message = {
+              chatID: chat,
+              from: msg.user
+            }
+            unreadMessages.push(message)
           }
-          unreadMessages.push(message)
         }
       }
     }
-  }
 
-  // Send a notification about unread messages to the user.
-  if (unreadMessages.length > 0) {
-    webSocketConnection.send(JSON.stringify({ type: 'notification - msg', data: unreadMessages }))
+    // Send a notification about unread messages to the user.
+    if (unreadMessages.length > 0) {
+      webSocketConnection.send(JSON.stringify({ type: 'notification - msg', data: unreadMessages }))
+    }
+  } catch (e) {
+    console.error('Something happened in the userConnectionHandler: ', e)
   }
 }

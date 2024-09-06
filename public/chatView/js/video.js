@@ -13,5 +13,5 @@ function revertToTextChat () {
   const id = document.querySelector('video-audio-chat').getAttribute('chatID')
 
   // Redirect to the chat page.
-  window.location.href = `./main/chat/${id}`
+  window.location.assign(`./main/chat/${id}`)
 }

@@ -56,10 +56,7 @@ customElements.define('video-audio-chat',
     /**
      * Represents the media constraints.
      */
-    #mediaConstraints = {
-      incoming: { video: false, audio: true },
-      outgoing: { video: false, audio: true }
-    }
+    #mediaConstraints = { video: false, audio: true }
 
     /**
      * Represents the end call button.
@@ -87,6 +84,16 @@ customElements.define('video-audio-chat',
     #remoteDescriptionSet
 
     /**
+     * The RTC connection offer.
+     */
+    #offer
+
+    /**
+     * The current users id.
+     */
+    #userID
+
+    /**
      * Creates an instance of the current type.
      */
     constructor () {
@@ -101,16 +108,16 @@ customElements.define('video-audio-chat',
       this.#deactivateCameraBtn = this.shadowRoot.querySelector('#deactivateCameraBtn')
       this.#iceCandidatesQueue = []
       this.#remoteDescriptionSet = false
+      this.#offer = undefined
+      this.#userID = this.getAttribute('userID')
 
       // Create a WebSocket connection.
-      this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}`) /* USE WHEN WORKING LOCALLY */
-      // this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}`)
+      // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}/${this.#userID}`) /* USE WHEN WORKING LOCALLY */
+      this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}/${this.#userID}`)
 
-      /*
-      this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened:', event))
+      this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened for video:', event))
       this.#socket.addEventListener('close', (event) => console.log('WebSocket connection closed:', event))
       this.#socket.addEventListener('error', (event) => console.error('WebSocket encountered an error:', event))
-      */
 
       this.#socket.addEventListener('message', (event) => {
         const data = JSON.parse(event.data)
@@ -123,15 +130,21 @@ customElements.define('video-audio-chat',
 
       this.#activateCameraBtn.addEventListener('click', () => this.#activateCamera())
       this.#deactivateCameraBtn.addEventListener('click', () => this.#deactivateCamera())
+    }
 
+    /**
+     * Called when the element is inserted into the DOM.
+     */
+    connectedCallback () {
       // Start the local stream.
-      this.#startLocalStream()
+      this.#retryLocalStream()
     }
 
     /**
      * Called when the element is removed from the DOM.
      */
     disconnectedCallback () {
+      this.#sendEndCall()
       this.#peerConnection.close()
       this.stopStreams()
       this.shadowRoot.querySelector('#incomingVideo').srcObject = null
@@ -144,11 +157,16 @@ customElements.define('video-audio-chat',
      */
     async #startLocalStream () {
       try {
-        this.#localStream = await navigator.mediaDevices.getUserMedia(this.#mediaConstraints.outgoing)
-        const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
-        if (this.#mediaConstraints.outgoing.video) {
-          outgoingVideo.srcObject = this.#localStream
+        this.#localStream = await navigator.mediaDevices.getUserMedia(this.#mediaConstraints)
+
+        // Ensure audio stream is available
+        if (!this.#localStream.getAudioTracks()) {
+          throw new Error('Audio stream not available.')
         }
+
+        const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
+        outgoingVideo.srcObject = this.#localStream
+
         this.#startCall()
       } catch (error) {
         console.error('Error accessing media devices.', error)
@@ -159,13 +177,29 @@ customElements.define('video-audio-chat',
      * Initialize the webbRTC connection and start the call.
      */
     async #startCall () {
-      this.#initializePeerConnection()
-      this.#localStream.getTracks().forEach(track => this.#peerConnection.addTrack(track, this.#localStream))
+      try {
+        this.#initializePeerConnection()
 
-      const offer = await this.#peerConnection.createOffer()
+        // Get the audio stream
+        this.#localStream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-      await this.#peerConnection.setLocalDescription(offer)
-      this.#sendSignal({ type: 'offer', key: this.#chatID, offer })
+        // Add the tracks to the peer connection
+        this.#localStream.getTracks().forEach(track => {
+          this.#peerConnection.addTrack(track, this.#localStream)
+        })
+
+        // Create an offer with just audio.
+        this.#offer = await this.#peerConnection.createOffer()
+
+        await this.#peerConnection.setLocalDescription(this.#offer)
+
+        // Send the offer to the peer but wait 2 seconds.
+        setTimeout(() => {
+          this.#sendSignal({ type: 'offer', key: this.#chatID, offer: this.#offer })
+        }, 2000)
+      } catch (error) {
+        console.error('Error accessing media devices or starting the call:', error)
+      }
     }
 
     /**
@@ -184,10 +218,17 @@ customElements.define('video-audio-chat',
             if (this.#peerConnection.signalingState === 'stable' || this.#peerConnection.signalingState === 'have-local-offer') {
               await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
               const answer = await this.#peerConnection.createAnswer()
+
               await this.#peerConnection.setLocalDescription(answer)
-              this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
+
+              // Send a signal with the answer.
+              setTimeout(() => {
+                this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
+              }, 2000)
+
               this.#remoteDescriptionSet = true
-              // Process any queued ICE candidates
+
+              // Process any queued ICE candidates.
               this.#iceCandidatesQueue.forEach(async candidate => {
                 await this.#peerConnection.addIceCandidate(candidate).catch(e => {
                   console.error('Error adding queued ICE candidate', e)
@@ -201,7 +242,8 @@ customElements.define('video-audio-chat',
             if (this.#peerConnection.signalingState === 'have-local-offer') {
               await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer))
               this.#remoteDescriptionSet = true
-              // Process any queued ICE candidates
+
+              // Process any queued ICE candidates.
               this.#iceCandidatesQueue.forEach(async candidate => {
                 await this.#peerConnection.addIceCandidate(candidate).catch(e => {
                   console.error('Error adding queued ICE candidate', e)
@@ -214,6 +256,7 @@ customElements.define('video-audio-chat',
           case 'ice-candidate':
             if (data.candidate) {
               const candidate = new RTCIceCandidate(data.candidate)
+
               if (this.#remoteDescriptionSet) {
                 await this.#peerConnection.addIceCandidate(candidate).catch(e => {
                   console.error('Error adding received ICE candidate', e)
@@ -226,22 +269,23 @@ customElements.define('video-audio-chat',
 
           case 'deactivateCamera':
             if (data.userID !== this.getAttribute('user')) {
-              // Update UI on the receiving end when sender deactivates camera
+              // Update UI on the receiving end when sender deactivates camera.
               const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
               const placeholder = this.shadowRoot.querySelector('#placeholder')
               incomingVideo.classList.add('hidden')
               placeholder.classList.remove('hidden')
-              // Remove video tracks
+
+              // Remove video tracks.
               this.#remoteStream.getVideoTracks().forEach(track => {
-                this.#remoteStream.removeTrack(track)
                 track.stop()
+                this.#remoteStream.removeTrack(track)
               })
             }
             break
 
           case 'activateCamera':
             if (data.userID !== this.getAttribute('user')) {
-              // Update UI on the receiving end when sender reactivates camera
+              // Update UI on the receiving end when sender reactivates camera.
               const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
               const placeholder = this.shadowRoot.querySelector('#placeholder')
               incomingVideo.classList.remove('hidden')
@@ -262,36 +306,35 @@ customElements.define('video-audio-chat',
     }
 
     /**
-     * Activates the camera byt sending a signal to the other user and establishing a video stream via the websocket.
+     * Activates the camera by sending a signal to the other user and establishing a video stream via the websocket.
      */
     async #activateCamera () {
       try {
-        // Get a new local media stream with video enabled
-        const newVideoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        // Get the audio and video stream.
+        this.#localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 
-        // Update UI to show outgoing video stream
+        // Add the tracks to the peer connection.
+        this.#localStream.getTracks().forEach(track => {
+          this.#peerConnection.addTrack(track, this.#localStream)
+        })
+
+        // Create an offer with just audio.
+        this.#offer = await this.#peerConnection.createOffer()
+
+        // Signal the change to the remote peer.
+        await this.#peerConnection.setLocalDescription(this.#offer)
+
+        // Send the new offer to the peer.
+        setTimeout(() => {
+          this.#sendSignal({ type: 'activateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
+        }, 2000)
+
+        // Update the UI to show the outgoing video stream.
         const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
-        outgoingVideo.srcObject = newVideoStream
+        outgoingVideo.srcObject = this.#localStream
         outgoingVideo.classList.remove('hidden')
         this.#activateCameraBtn.classList.add('hidden')
         this.#deactivateCameraBtn.classList.remove('hidden')
-        this.#mediaConstraints.outgoing.video = true
-
-        // Add the new video tracks to the peer connection and remove the previous video tracks
-        this.#localStream.getVideoTracks().forEach(track => {
-          this.#peerConnection.removeTrack(this.#peerConnection.getSenders().find(sender => sender.track === track))
-          track.stop() // Stop the previous video tracks
-        })
-        newVideoStream.getTracks().forEach(track => {
-          this.#peerConnection.addTrack(track, newVideoStream) // Add the new video tracks
-        })
-
-        // Create an offer and set local description
-        const offer = await this.#peerConnection.createOffer()
-        await this.#peerConnection.setLocalDescription(offer)
-
-        // Send offer to the other peer
-        this.#sendSignal({ type: 'offer', key: this.#chatID, offer })
       } catch (error) {
         console.error('Error accessing media devices or activating camera:', error)
       }
@@ -302,29 +345,21 @@ customElements.define('video-audio-chat',
      */
     async #deactivateCamera () {
       try {
-        // Stop the video tracks in the local stream.
-        this.#localStream.getVideoTracks().forEach(track => track.stop())
+        this.#localStream = await navigator.mediaDevices.getUserMedia(this.#mediaConstraints)
 
-        // Update the media constraints
-        this.#mediaConstraints.outgoing.video = false
+        // Signal the change to the remote peer.
+        await this.#peerConnection.setLocalDescription(this.#offer)
 
-        // Update the UI
+        // Send the new offer to the peer.
+        setTimeout(() => {
+          this.#sendSignal({ type: 'deactivateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
+        }, 2000)
+
+        // Update the UI to hide the outgoing video stream.
         const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
         outgoingVideo.classList.add('hidden')
         this.#activateCameraBtn.classList.remove('hidden')
         this.#deactivateCameraBtn.classList.add('hidden')
-
-        // Remove video tracks from the peer connection
-        this.#peerConnection.getSenders().forEach(sender => {
-          if (sender.track && sender.track.kind === 'video') {
-            this.#peerConnection.removeTrack(sender)
-          }
-        })
-
-        // Signal the change to the remote peer
-        const offer = await this.#peerConnection.createOffer()
-        await this.#peerConnection.setLocalDescription(offer)
-        this.#sendSignal({ type: 'deactivateCamera', key: this.#chatID, userID: this.getAttribute('user'), offer })
       } catch (error) {
         console.error('Error deactivating camera.', error)
       }
@@ -333,11 +368,10 @@ customElements.define('video-audio-chat',
     /**
      * Initialize the WebRTC peer connection.
      */
-    #initializePeerConnection () {
+    async #initializePeerConnection () {
       this.#peerConnection = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' }
-        ]
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        sdpSemantics: 'unified-plan'
       })
 
       /**
@@ -347,7 +381,9 @@ customElements.define('video-audio-chat',
        */
       this.#peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
-          this.#sendSignal({ type: 'ice-candidate', key: this.#chatID, candidate: event.candidate })
+          setTimeout(() => {
+            this.#sendSignal({ type: 'ice-candidate', key: this.#chatID, candidate: event.candidate })
+          }, 2000)
         }
       }
 
@@ -360,16 +396,24 @@ customElements.define('video-audio-chat',
         const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
         const placeholder = this.shadowRoot.querySelector('#placeholder')
 
+        console.log('Track event:', event)
+        console.log('Track kind:', event.track.kind)
+
         if (!this.#remoteStream) {
           this.#remoteStream = new MediaStream()
           incomingVideo.srcObject = this.#remoteStream
+          console.log('Created new remote stream and set it to incomingVideo.')
         }
-        this.#remoteStream.addTrack(event.track)
 
-        // If the incoming track is a video track, update the UI accordingly
+        // Add the received track to the remote stream.
+        this.#remoteStream.addTrack(event.track)
+        console.log('Added track to remote stream:', event.track)
+
+        // If the incoming track is a video track, update the UI accordingly.
         if (event.track.kind === 'video') {
           incomingVideo.classList.remove('hidden')
           placeholder.classList.add('hidden')
+          console.log('Video track received and UI updated.')
         }
       }
     }
@@ -380,7 +424,22 @@ customElements.define('video-audio-chat',
      * @param {JSON} data - the data object to send.
      */
     #sendSignal (data) {
-      this.#socket.send(JSON.stringify(data))
+      const intervalTime = 100 // Check every 100ms.
+      const maxTime = 15000 // Maximum time to wait is 15 seconds.
+      const maxChecks = maxTime / intervalTime
+      let checks = 0
+
+      const interval = setInterval(() => {
+        if (this.#socket.readyState === WebSocket.OPEN) {
+          this.#socket.send(JSON.stringify(data))
+          clearInterval(interval) // Stop the loop once the data is sent.
+        } else if (checks >= maxChecks) {
+          clearInterval(interval) // Stop the loop after 15 seconds.
+          console.error('WebSocket did not open in time.')
+          // Handle timeout here if needed.
+        }
+        checks++
+      }, intervalTime)
     }
 
     /**
@@ -406,6 +465,25 @@ customElements.define('video-audio-chat',
 
       // Send a signal to the other user to close down the call.
       this.#sendSignal(message)
+    }
+
+    /**
+     * If the connection fails, retries again.
+     *
+     * @param {number} retries - Number of times to retry.
+     */
+    async #retryLocalStream (retries = 3) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          await this.#startLocalStream()
+          console.log('Successfully started local stream on try: ', i + 1)
+          return
+        } catch (error) {
+          console.error('Error starting local stream. Retry:', i + 1, error)
+          await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second before retrying.
+        }
+      }
+      console.error('Failed to start local stream after retries.')
     }
   }
 )
