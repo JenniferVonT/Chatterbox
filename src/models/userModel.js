@@ -75,22 +75,5 @@ schema.statics.authenticate = async function (username, password) {
   return userDocument
 }
 
-/**
- * Search for a user by complete or partial search terms.
- *
- * @param {string} searchTerm - the user/s to search for.
- * @returns {Promise<Array<UserModel>>} A promise that resolves to an array of user documents.
- */
-schema.statics.search = async function (searchTerm) {
-  // Search for users with both complete matches and partial matches.
-  const users = await this.find({ username: { $regex: searchTerm, $options: 'i' } })
-
-  if (!users || users.length === 0) {
-    throw new Error('No users found.')
-  }
-
-  return users
-}
-
 // Create a model using the schema.
 export const UserModel = mongoose.model('User', schema)

@@ -43,3 +43,19 @@ export const connectToDatabase = async (connectionString) => {
   logger.info('Mongoose connecting to MongoDB.')
   return mongoose.connect(connectionString)
 }
+
+/**
+ * Close the connection to the database.
+ * Mostly used in testing.
+ *
+ * @returns {Promise<void>} Resolves when the connection is closed.
+ */
+export const disconnectFromDatabase = async () => {
+  const { connection } = mongoose
+
+  // Close the connection
+  if (connection.readyState !== 0) {
+    await connection.close()
+    logger.info('Mongoose connection closed.')
+  }
+}

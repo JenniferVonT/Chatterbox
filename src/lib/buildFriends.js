@@ -21,13 +21,18 @@ export class FriendBuilder {
   async getFriendReqList (sessionUser) {
     // Load the friend requests for the session user
     const friendReqs = []
+
     for (const friendRequest of sessionUser.friendReqs) {
-      const friend = await UserModel.findById(
-        friendRequest.id,
-        { username: 1, id: 1, profileImg: 1 })
+      const friend = await UserModel.findById(friendRequest.id)
 
       if (friend) {
-        friendReqs.push(friend)
+        const friendObj = {
+          id: friend.id,
+          username: friend.username,
+          profileImg: friend.profileImg
+        }
+
+        friendReqs.push(friendObj)
       }
     }
 
