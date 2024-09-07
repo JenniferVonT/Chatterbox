@@ -108,6 +108,7 @@ customElements.define('video-audio-chat',
       this.#deactivateCameraBtn = this.shadowRoot.querySelector('#deactivateCameraBtn')
       this.#iceCandidatesQueue = []
       this.#remoteDescriptionSet = false
+      this.#peerConnection = undefined
       this.#offer = undefined
       this.#userID = this.getAttribute('userID')
 
@@ -180,23 +181,20 @@ customElements.define('video-audio-chat',
       try {
         this.#initializePeerConnection()
 
-        // Get the audio stream
-        this.#localStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-
         // Add the tracks to the peer connection
-        this.#localStream.getTracks().forEach(track => {
-          this.#peerConnection.addTrack(track, this.#localStream)
-        })
+        if (this.#localStream) {
+          this.#localStream.getTracks().forEach(track => {
+            this.#peerConnection.addTrack(track, this.#localStream)
+          })
+        }
 
         // Create an offer with just audio.
         this.#offer = await this.#peerConnection.createOffer()
 
         await this.#peerConnection.setLocalDescription(this.#offer)
 
-        // Send the offer to the peer but wait 2 seconds.
-        setTimeout(() => {
-          this.#sendSignal({ type: 'offer', key: this.#chatID, offer: this.#offer })
-        }, 2000)
+        // Send the offer to the peer.
+        this.#sendSignal({ type: 'offer', key: this.#chatID, offer: this.#offer })
       } catch (error) {
         console.error('Error accessing media devices or starting the call:', error)
       }
@@ -222,9 +220,7 @@ customElements.define('video-audio-chat',
               await this.#peerConnection.setLocalDescription(answer)
 
               // Send a signal with the answer.
-              setTimeout(() => {
-                this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
-              }, 2000)
+              this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
 
               this.#remoteDescriptionSet = true
 
@@ -311,28 +307,24 @@ customElements.define('video-audio-chat',
     async #activateCamera () {
       try {
         // Get the audio and video stream.
-        this.#localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        const videoStream = await navigator.mediaDevices.getUserMedia({ video: true })
 
         // Add the tracks to the peer connection.
-        this.#localStream.getTracks().forEach(track => {
+        videoStream.getTracks().forEach(track => {
           this.#peerConnection.addTrack(track, this.#localStream)
         })
 
-        // Create an offer with just audio.
-        this.#offer = await this.#peerConnection.createOffer()
-
-        // Signal the change to the remote peer.
-        await this.#peerConnection.setLocalDescription(this.#offer)
+        this.#localStream = new MediaStream([...this.#localStream.getAudioTracks(), ...videoStream.getVideoTracks()])
 
         // Send the new offer to the peer.
-        setTimeout(() => {
-          this.#sendSignal({ type: 'activateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
-        }, 2000)
+        this.#sendSignal({ type: 'activateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
 
         // Update the UI to show the outgoing video stream.
         const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
+
         outgoingVideo.srcObject = this.#localStream
         outgoingVideo.classList.remove('hidden')
+
         this.#activateCameraBtn.classList.add('hidden')
         this.#deactivateCameraBtn.classList.remove('hidden')
       } catch (error) {
@@ -345,19 +337,29 @@ customElements.define('video-audio-chat',
      */
     async #deactivateCamera () {
       try {
-        this.#localStream = await navigator.mediaDevices.getUserMedia(this.#mediaConstraints)
+        const videoTracks = this.#localStream.getVideoTracks()
 
-        // Signal the change to the remote peer.
-        await this.#peerConnection.setLocalDescription(this.#offer)
+        // Stop all the video tracks to turn off the camera.
+        videoTracks.forEach(track => {
+          track.stop() // This turns off the camera.
+          this.#localStream.removeTrack(track)
+        })
+
+        // Re-create the local stream with only audio.
+        this.#localStream = new MediaStream(this.#localStream.getAudioTracks())
+
+        // Renegotiate RTC connection.
+        const offer = await this.#peerConnection.createOffer()
+        await this.#peerConnection.setLocalDescription(offer)
 
         // Send the new offer to the peer.
-        setTimeout(() => {
-          this.#sendSignal({ type: 'deactivateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
-        }, 2000)
+        this.#sendSignal({ type: 'deactivateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
 
         // Update the UI to hide the outgoing video stream.
         const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
         outgoingVideo.classList.add('hidden')
+        outgoingVideo.srcObject = null
+
         this.#activateCameraBtn.classList.remove('hidden')
         this.#deactivateCameraBtn.classList.add('hidden')
       } catch (error) {
@@ -381,9 +383,7 @@ customElements.define('video-audio-chat',
        */
       this.#peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
-          setTimeout(() => {
-            this.#sendSignal({ type: 'ice-candidate', key: this.#chatID, candidate: event.candidate })
-          }, 2000)
+          this.#sendSignal({ type: 'ice-candidate', key: this.#chatID, candidate: event.candidate })
         }
       }
 
@@ -416,6 +416,16 @@ customElements.define('video-audio-chat',
           console.log('Video track received and UI updated.')
         }
       }
+
+      this.#peerConnection.addEventListener('negotiationneeded', async () => {
+        try {
+          // Create a new offer for the updated connection (audio + video).
+          const offer = await this.#peerConnection.createOffer()
+          await this.#peerConnection.setLocalDescription(offer)
+        } catch (error) {
+          console.error('Error during renegotiation:', error)
+        }
+      })
     }
 
     /**
@@ -424,22 +434,13 @@ customElements.define('video-audio-chat',
      * @param {JSON} data - the data object to send.
      */
     #sendSignal (data) {
-      const intervalTime = 100 // Check every 100ms.
-      const maxTime = 15000 // Maximum time to wait is 15 seconds.
-      const maxChecks = maxTime / intervalTime
-      let checks = 0
-
-      const interval = setInterval(() => {
+      // Try 15 times, if it is successfull exit/return the method.
+      for (let i = 0; i < 15; i++) {
         if (this.#socket.readyState === WebSocket.OPEN) {
           this.#socket.send(JSON.stringify(data))
-          clearInterval(interval) // Stop the loop once the data is sent.
-        } else if (checks >= maxChecks) {
-          clearInterval(interval) // Stop the loop after 15 seconds.
-          console.error('WebSocket did not open in time.')
-          // Handle timeout here if needed.
+          return
         }
-        checks++
-      }, intervalTime)
+      }
     }
 
     /**
