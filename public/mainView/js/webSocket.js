@@ -23,7 +23,7 @@ socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data)
   const page = window.location.pathname
 
-  console.log('message', event)
+  // console.log('message', event)
 
   // Listen for 'notification - msg' or 'notification - call' type messages.
   if (data.type === 'notification - msg') {
@@ -63,8 +63,6 @@ socket.addEventListener('message', (event) => {
         uniqueChats.push(obj.chatID)
       }
     })
-
-    console.log('unique: ', uniqueChats)
 
     // Update the DOM with all the notifications.
     for (const chat of uniqueChats) {

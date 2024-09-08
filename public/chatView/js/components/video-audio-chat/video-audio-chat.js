@@ -116,9 +116,11 @@ customElements.define('video-audio-chat',
       // this.#socket = new WebSocket(`ws://localhost:9696/${this.#chatID}/${this.#userID}`) /* USE WHEN WORKING LOCALLY */
       this.#socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${this.#chatID}/${this.#userID}`)
 
-      this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened for video:', event))
+      /*
+      this.#socket.addEventListener('open', (event) => console.log('WebSocket connection opened:', event))
       this.#socket.addEventListener('close', (event) => console.log('WebSocket connection closed:', event))
       this.#socket.addEventListener('error', (event) => console.error('WebSocket encountered an error:', event))
+      */
 
       this.#socket.addEventListener('message', (event) => {
         const data = JSON.parse(event.data)
@@ -407,24 +409,21 @@ customElements.define('video-audio-chat',
         const incomingVideo = this.shadowRoot.querySelector('#incomingVideo')
         const placeholder = this.shadowRoot.querySelector('#placeholder')
 
-        console.log('Track event:', event)
-        console.log('Track kind:', event.track.kind)
-
         if (!this.#remoteStream) {
           this.#remoteStream = new MediaStream()
           incomingVideo.srcObject = this.#remoteStream
-          console.log('Created new remote stream and set it to incomingVideo.')
+          // console.log('Created new remote stream and set it to incomingVideo.')
         }
 
         // Add the received track to the remote stream.
         this.#remoteStream.addTrack(event.track)
-        console.log('Added track to remote stream:', event.track)
+        // console.log('Added track to remote stream:', event.track)
 
         // If the incoming track is a video track, update the UI accordingly.
         if (event.track.kind === 'video') {
           incomingVideo.classList.remove('hidden')
           placeholder.classList.add('hidden')
-          console.log('Video track received and UI updated.')
+          // console.log('Video track received and UI updated.')
         }
       }
 
@@ -488,7 +487,7 @@ customElements.define('video-audio-chat',
       for (let i = 0; i < retries; i++) {
         try {
           await this.#startLocalStream()
-          console.log('Successfully started local stream on try: ', i + 1)
+          // console.log('Successfully started local stream on try: ', i + 1)
           return
         } catch (error) {
           console.error('Error starting local stream. Retry:', i + 1, error)
