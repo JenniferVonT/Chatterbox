@@ -1,5 +1,32 @@
 <% if (locals.user) { %>
 <div id="main-page" class="content-body">
-    <!-------------------------- INSERT CONTENT HERE -------------------------->
+    <div id="welcomeBox">
+        <h1>Welcome <%= locals.user.username %> to Chatterbox!</h1>
+        <p>This is the start of the application, news and information about future updates may appear here.</p>
+        <p>To handle all your friends you can click or hover the <img alt="friend-icon" src="./friends-icon.svg" width="25px"> icon at the top to add, remove or start a chat with a friend!</p>
+        <p>To handle your account click the <img alt="settings-icon" src="./profile-icon.svg" width="25px"> icon!</p>
+    </div>
+
+<!-------------         FRIEND REQUESTS         ---------------->
+    <div id="mainPageUpdates">
+        <div id="mainPageFriendReqs">
+            <% if (locals.user.friendReqs) { %> 
+                <h2>You have <%= locals.user.friendReqs.length === 1 ? 'an' : 'some' %> incoming friend request<%= locals.user.friendReqs.length === 1 ? '' : 's' %>!</h2>
+                <ul id="mainPageFriendReqList">
+                    <% for (const req of locals.user.friendReqs) { %>
+                        <a href="./main/friends">
+                            <li><img alt="request-img" src="./profiles/<%= req.profileImg %>" width="50px"> <b><%= req.username %></b></li>
+                        </a>
+                    <% } %>
+                </ul>
+            <% } %>
+        </div>
+        
+    <!-------------         MESSAGE NOTIFICATIONS         ---------------->
+        <div id="mainPageNotifications" class="hidden">
+            <h2>You have incoming messages!</h2>
+            <h3><b id="notificationAmount"></b> to be exact! Hover the friends icon to see who's trying to reach you!</h3>
+        </div>
+    </div>
 </div>
 <% } %>

@@ -39,3 +39,19 @@ async function importAndRun (path, functionName) {
   const module = await import(path)
   module[functionName]()
 }
+
+/**
+ * Looks up if there is any notifications and fills the main page with the information.
+ */
+export const insertMainPageData = () => {
+  const notifications = document.querySelector('#notification-badge')
+  const content = notifications.textContent
+
+  const mainPageNotif = document.querySelector('#mainPageNotifications')
+  const insertNotif = document.querySelector('#notificationAmount')
+
+  if (!content || parseInt(content) !== 0) {
+    mainPageNotif.classList.remove('hidden')
+    insertNotif.textContent = content
+  }
+}
