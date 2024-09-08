@@ -10,7 +10,7 @@
 <!-------------         FRIEND REQUESTS         ---------------->
     <div id="mainPageUpdates">
         <div id="mainPageFriendReqs">
-            <% if (locals.user.friendReqs) { %> 
+            <% if (locals.user.friendReqs.length) { %> 
                 <h2>You have <%= locals.user.friendReqs.length === 1 ? 'an' : 'some' %> incoming friend request<%= locals.user.friendReqs.length === 1 ? '' : 's' %>!</h2>
                 <ul id="mainPageFriendReqList">
                     <% for (const req of locals.user.friendReqs) { %>

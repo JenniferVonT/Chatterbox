@@ -1,8 +1,8 @@
 import { calling } from '../../chatView/js/chat.js'
 import { insertMainPageData } from './index.js'
 
-// export const socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${document.querySelector('header').getAttribute('userID')}`)
-export const socket = new WebSocket(`ws://localhost:9696/${document.querySelector('header').getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
+export const socket = new WebSocket(`wss://cscloud6-191.lnu.se/chatterbox/${document.querySelector('header').getAttribute('userID')}`)
+// export const socket = new WebSocket(`ws://localhost:9696/${document.querySelector('header').getAttribute('userID')}`) /* USE WHEN WORKING LOCALLY */
 
 // ----------------------------------------------------------------------------
 // Event handlers.
@@ -84,7 +84,7 @@ socket.addEventListener('message', (event) => {
       }
     }
 
-    if (page === '/main') {
+    if (page === '/chatterbox/main') {
       insertMainPageData()
     }
   } else if (data.type === 'call' && !page.includes(data.key)) {

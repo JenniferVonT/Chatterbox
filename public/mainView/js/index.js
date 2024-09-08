@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentPage = firstDiv[1].getAttribute('id')
     }
 
+    if (currentPage === 'main-page') {
+      insertMainPageData()
+    }
+
     const { path, functionName } = pageModuleMap[currentPage]
     if (path && functionName) {
       await importAndRun(path, functionName)
@@ -43,15 +47,35 @@ async function importAndRun (path, functionName) {
 /**
  * Looks up if there is any notifications and fills the main page with the information.
  */
-export const insertMainPageData = () => {
+export function insertMainPageData () {
   const notifications = document.querySelector('#notification-badge')
   const content = notifications.textContent
 
+  const mainPageUpdates = document.querySelector('#mainPageUpdates')
   const mainPageNotif = document.querySelector('#mainPageNotifications')
+  const mainPageFriendRequests = document.querySelector('#mainPageFriendReqs')
   const insertNotif = document.querySelector('#notificationAmount')
 
-  if (!content || parseInt(content) !== 0) {
+  // If there is any message notifications, fill the box and remove the hidden classes.
+  if (content && parseInt(content) !== 0) {
+    mainPageUpdates.classList.remove('hidden')
     mainPageNotif.classList.remove('hidden')
     insertNotif.textContent = content
+  }
+
+  const friendRequests = document.querySelectorAll('#mainPageFriendReqList li')
+
+  // If there isn't any friend requests remove the box.
+  if (friendRequests.length < 1) {
+    mainPageFriendRequests.classList.add('hidden')
+  } else {
+    mainPageFriendRequests.classList.remove('hidden')
+  }
+
+  // If there isn't any friend reqs or message notifications remove the entire block.
+  if (friendRequests.length < 1 && !content) {
+    mainPageUpdates.classList.add('hidden')
+  } else {
+    mainPageUpdates.classList.remove('hidden')
   }
 }
