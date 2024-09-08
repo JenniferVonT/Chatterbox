@@ -286,6 +286,14 @@ customElements.define('video-audio-chat',
               const placeholder = this.shadowRoot.querySelector('#placeholder')
               incomingVideo.classList.remove('hidden')
               placeholder.classList.add('hidden')
+
+              // Set the remote description and handle video feed.
+              await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
+              const answer = await this.#peerConnection.createAnswer()
+              await this.#peerConnection.setLocalDescription(answer)
+
+              // Send answer back to peer.
+              this.#sendSignal({ type: 'answer', key: this.#chatID, answer })
             }
             break
 
@@ -316,12 +324,15 @@ customElements.define('video-audio-chat',
 
         this.#localStream = new MediaStream([...this.#localStream.getAudioTracks(), ...videoStream.getVideoTracks()])
 
-        // Send the new offer to the peer.
-        this.#sendSignal({ type: 'activateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
+        // Renegotiate the connection with the new offer.
+        const offer = await this.#peerConnection.createOffer()
+        await this.#peerConnection.setLocalDescription(offer)
+
+        // Send a signaln to the peer letting them know a camera feed is coming.
+        this.#sendSignal({ type: 'activateCamera', key: this.#chatID, userID: this.#userID, offer })
 
         // Update the UI to show the outgoing video stream.
         const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
-
         outgoingVideo.srcObject = this.#localStream
         outgoingVideo.classList.remove('hidden')
 
@@ -353,7 +364,7 @@ customElements.define('video-audio-chat',
         await this.#peerConnection.setLocalDescription(offer)
 
         // Send the new offer to the peer.
-        this.#sendSignal({ type: 'deactivateCamera', key: this.#chatID, userID: this.#userID, offer: this.#offer })
+        this.#sendSignal({ type: 'deactivateCamera', key: this.#chatID, userID: this.#userID, offer })
 
         // Update the UI to hide the outgoing video stream.
         const outgoingVideo = this.shadowRoot.querySelector('#outgoingVideo')
