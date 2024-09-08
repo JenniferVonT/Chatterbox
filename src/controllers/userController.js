@@ -6,6 +6,7 @@
  */
 
 import { UserModel } from '../models/userModel.js'
+import { MessageModel } from '../models/messageModel.js'
 import bcrypt from 'bcrypt'
 import randomize from 'randomatic'
 import { transfer } from '../lib/mailer.js'
@@ -140,7 +141,7 @@ export class UserController {
   }
 
   /**
-   * Handles when a user tries to reclaim a account.
+   * Handles when a user tries to reclaim an account.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
@@ -502,7 +503,58 @@ export class UserController {
         throw error
       }
 
-      // Delete the user from the db and from the session.
+      const chats = []
+
+      // Delete the user as a friend from all of their friends and eveything connected between the friend and user.
+      const friends = user.friends
+
+      for (const friend of friends) {
+        // Save the chat id so we can remove it later.
+        chats.push = friend.chatId
+
+        // Find the friend object in the db.
+        const friendObj = await UserModel.findOne({ _id: friend.userId })
+
+        // Remove the user from the friends friend list.
+        const updatedFriendList = friendObj.friends.filter(f => f.userId.toString() !== id)
+        friendObj.friends = updatedFriendList
+
+        // Save the friend object with the updated friend list.
+        await friendObj.save({ validateBeforeSave: false })
+      }
+
+      // Delete all the chats associated with the user.
+      for (const chat of chats) {
+        const chatObj = await MessageModel.findOne({ chatId: chat })
+
+        await chatObj.deleteOne()
+      }
+
+      // Delete friend requests made by the user.
+      const sentFriendReqs = user.sentFriendReqs
+
+      for (const req of sentFriendReqs) {
+        const receiver = await UserModel.findOne({ _id: req.id })
+
+        const reqs = receiver.friendReqs.filter(r => r.id.toString() !== id)
+        receiver.friendReqs = reqs
+
+        await receiver.save({ validateBeforeSave: false })
+      }
+
+      // Delete friend requests sent to the user.
+      const receivedFriendReqs = user.friendReqs
+
+      for (const req of receivedFriendReqs) {
+        const sender = await UserModel.findOne({ _id: req.id })
+
+        const reqs = sender.sentFriendReqs.filter(r => r.id.toString() !== id)
+        sender.sentFriendReqs = reqs
+
+        await sender.save({ validateBeforeSave: false })
+      }
+
+      // Finally delete the user from the db and from the session.
       await user.deleteOne()
 
       delete req.session.user
