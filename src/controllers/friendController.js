@@ -6,6 +6,7 @@
  */
 
 import { UserModel } from '../models/userModel.js'
+import { MessageModel } from '../models/messageModel.js'
 import randomize from 'randomatic'
 import { FriendBuilder } from '../lib/buildFriends.js'
 
@@ -148,6 +149,9 @@ export class FriendController {
       user.friends.push({ userId: friend.id, chatId: code })
       friend.friends.push({ userId: sessionID, chatId: code })
 
+      // Create a chat room.
+      await MessageModel.create({ chatId: code })
+
       // Save only the changed objects.
       await user.save({ validateBeforeSave: false })
       await friend.save({ validateBeforeSave: false })
@@ -208,10 +212,26 @@ export class FriendController {
       const sessionID = req.session.user.id
       const friend = req.friend
       const sessionUser = await UserModel.findById(sessionID)
+      let chatID = ''
+
+      // Find the chat id.
+      for (const f of sessionUser.friends) {
+        if (f.userId === friend.id) {
+          chatID = f.chatId
+          break
+        }
+      }
 
       // Remove both users from eachothers friends-list.
-      friend.friends = friend.friends.filter(req => req.id !== sessionID)
-      sessionUser.friends = sessionUser.friends.filter(req => req.id !== friend.id)
+      friend.friends = friend.friends.filter(req => req.userId !== sessionID)
+      sessionUser.friends = sessionUser.friends.filter(req => req.userId !== friend.id)
+
+      // Remove the chat between the users.
+      const chat = await MessageModel.findOne({ chatId: chatID })
+
+      if (chat) {
+        await chat.deleteOne()
+      }
 
       await friend.save({ validateBeforeSave: false })
       await sessionUser.save({ validateBeforeSave: false })

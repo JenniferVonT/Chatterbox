@@ -138,9 +138,13 @@ customElements.define('video-audio-chat',
     /**
      * Called when the element is inserted into the DOM.
      */
-    connectedCallback () {
+    async connectedCallback () {
       // Start the local stream.
-      this.#retryLocalStream()
+      try {
+        await this.#retryLocalStream()
+      } catch (error) {
+        console.error('Error handling data: ', error)
+      }
     }
 
     /**
