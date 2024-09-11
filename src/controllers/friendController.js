@@ -9,6 +9,7 @@ import { UserModel } from '../models/userModel.js'
 import { MessageModel } from '../models/messageModel.js'
 import randomize from 'randomatic'
 import { FriendBuilder } from '../lib/buildFriends.js'
+import crypto from 'crypto'
 
 /**
  * Encapsulates the friend controller.
@@ -149,8 +150,12 @@ export class FriendController {
       user.friends.push({ userId: friend.id, chatId: code })
       friend.friends.push({ userId: sessionID, chatId: code })
 
+      // Create an encryption key for the chat.
+      const key = crypto.randomBytes(32) // 256 bits key (32 bytes) for AES-256.
+      const encryptionKey = key.toString('base64')
+
       // Create a chat room.
-      await MessageModel.create({ chatId: code })
+      await MessageModel.create({ chatId: code, encryptionKey })
 
       // Save only the changed objects.
       await user.save({ validateBeforeSave: false })

@@ -145,8 +145,9 @@ export class ChatController {
    * @param {object} webSocketConnection - The connection
    * @param {string} chatID - The id of the chat.
    * @param {string} userID - The id of the user being sent the chat.
+   * @param {String} encryptionKey - The encryption key to be able to decrypt them later.
    */
-  async sendSavedChat (webSocketConnection, chatID, userID) {
+  async sendSavedChat (webSocketConnection, chatID, userID, encryptionKey) {
     try {
       // Calculate the date 2 weeks ago from now
       const twoWeeksAgo = new Date()
@@ -174,8 +175,9 @@ export class ChatController {
       await chat.save({ validateBeforeSave: false })
 
       const dataToSend = {
+        type: 'allMessages',
         messages: chat.messages,
-        encryptionKey: chat.encryptionKey
+        encryptionKey
       }
 
       webSocketConnection.send(JSON.stringify(dataToSend))

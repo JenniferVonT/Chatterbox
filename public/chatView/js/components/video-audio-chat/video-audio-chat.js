@@ -143,7 +143,7 @@ customElements.define('video-audio-chat',
       try {
         await this.#retryLocalStream()
       } catch (error) {
-        console.error('Error handling data: ', error)
+        // console.error('Error handling data: ', error)
       }
     }
 
@@ -152,8 +152,8 @@ customElements.define('video-audio-chat',
      */
     disconnectedCallback () {
       this.#sendEndCall()
-      this.#peerConnection.close()
       this.stopStreams()
+      this.#peerConnection.close()
       this.shadowRoot.querySelector('#incomingVideo').srcObject = null
       this.shadowRoot.querySelector('#outgoingVideo').srcObject = null
       this.#socket.close()
@@ -187,6 +187,8 @@ customElements.define('video-audio-chat',
       try {
         this.#initializePeerConnection()
 
+        this.#waitForStableConnection()
+
         // Add the tracks to the peer connection
         if (this.#localStream) {
           this.#localStream.getTracks().forEach(track => {
@@ -202,7 +204,7 @@ customElements.define('video-audio-chat',
         // Send the offer to the peer.
         this.#sendSignal({ type: 'offer', key: this.#chatID, offer: this.#offer })
       } catch (error) {
-        console.error('Error accessing media devices or starting the call:', error)
+        // console.error('Error accessing media devices or starting the call:', error)
       }
     }
 
@@ -215,6 +217,7 @@ customElements.define('video-audio-chat',
       try {
         if (!this.#peerConnection) {
           this.#initializePeerConnection()
+          this.#waitForStableConnection()
         }
 
         switch (data.type) {
@@ -233,7 +236,7 @@ customElements.define('video-audio-chat',
               // Process any queued ICE candidates.
               this.#iceCandidatesQueue.forEach(async candidate => {
                 await this.#peerConnection.addIceCandidate(candidate).catch(e => {
-                  console.error('Error adding queued ICE candidate', e)
+                  // console.error('Error adding queued ICE candidate', e)
                 })
               })
               this.#iceCandidatesQueue = []
@@ -248,7 +251,7 @@ customElements.define('video-audio-chat',
               // Process any queued ICE candidates.
               this.#iceCandidatesQueue.forEach(async candidate => {
                 await this.#peerConnection.addIceCandidate(candidate).catch(e => {
-                  console.error('Error adding queued ICE candidate', e)
+                  // console.error('Error adding queued ICE candidate', e)
                 })
               })
               this.#iceCandidatesQueue = []
@@ -261,7 +264,7 @@ customElements.define('video-audio-chat',
 
               if (this.#remoteDescriptionSet) {
                 await this.#peerConnection.addIceCandidate(candidate).catch(e => {
-                  console.error('Error adding received ICE candidate', e)
+                  // console.error('Error adding received ICE candidate', e)
                 })
               } else {
                 this.#iceCandidatesQueue.push(candidate)
@@ -293,6 +296,8 @@ customElements.define('video-audio-chat',
               incomingVideo.classList.remove('hidden')
               placeholder.classList.add('hidden')
 
+              this.#waitForStableConnection()
+
               // Set the remote description and handle video feed.
               await this.#peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
               const answer = await this.#peerConnection.createAnswer()
@@ -311,7 +316,7 @@ customElements.define('video-audio-chat',
             break
         }
       } catch (error) {
-        console.error('Error handling signal:', error)
+        // console.error('Error handling signal:', error)
       }
     }
 
@@ -320,6 +325,8 @@ customElements.define('video-audio-chat',
      */
     async #activateCamera () {
       try {
+        this.#waitForStableConnection()
+
         // Get the audio and video stream.
         const videoStream = await navigator.mediaDevices.getUserMedia({ video: true })
 
@@ -354,6 +361,8 @@ customElements.define('video-audio-chat',
      */
     async #deactivateCamera () {
       try {
+        this.#waitForStableConnection()
+
         const videoTracks = this.#localStream.getVideoTracks()
 
         // Stop all the video tracks to turn off the camera.
@@ -437,7 +446,7 @@ customElements.define('video-audio-chat',
           const offer = await this.#peerConnection.createOffer()
           await this.#peerConnection.setLocalDescription(offer)
         } catch (error) {
-          console.error('Error during renegotiation:', error)
+          // console.error('Error during renegotiation:', error)
         }
       })
     }
@@ -494,11 +503,32 @@ customElements.define('video-audio-chat',
           // console.log('Successfully started local stream on try: ', i + 1)
           return
         } catch (error) {
-          console.error('Error starting local stream. Retry:', i + 1, error)
+          // console.error('Error starting local stream. Retry:', i + 1, error)
           await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second before retrying.
         }
       }
       console.error('Failed to start local stream after retries.')
+    }
+
+    /**
+     * Checks the state of the connection and wont continue until it is stable.
+     */
+    async #waitForStableConnection () {
+      if (this.#peerConnection.signalingState !== 'stable') {
+        await new Promise(resolve => {
+          /**
+           * Loops until the the connection is stable.
+           */
+          const checkState = () => {
+            if (this.#peerConnection.signalingState === 'stable' || this.#peerConnection.signalingState === 'have-local-offer') {
+              resolve()
+            } else {
+              setTimeout(checkState, 100) // Check every 100ms
+            }
+          }
+          checkState()
+        })
+      }
     }
   }
 )

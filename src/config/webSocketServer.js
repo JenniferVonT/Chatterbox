@@ -198,21 +198,26 @@ wss.on('connection', async (webSocketConnection, connectionRequest) => {
 async function chatroomHandler (webSocketConnection, chatID, userID) {
   try {
     // Find the conversation in the db.
-    const convo = await MessageModel.findOne({ chatId: chatID })
+    let convo = await MessageModel.findOne({ chatId: chatID })
+
+    let encryptKey = ''
 
     // If it doesn't exist create one and generate a new encryption key.
     if (!convo) {
       // Generate a random symmetric key
       const key = crypto.randomBytes(32) // 256 bits key (32 bytes) for AES-256.
+      encryptKey = key.toString('base64')
 
-      MessageModel.create({
+      convo = await MessageModel.create({
         chatId: chatID,
-        encryptionKey: key.toString('base64')
+        encryptionKey: encryptKey
       })
+    } else {
+      encryptKey = convo.encryptionKey
     }
 
     // Send all the saved messages to the connection.
-    await chatController.sendSavedChat(webSocketConnection, chatID, userID)
+    await chatController.sendSavedChat(webSocketConnection, chatID, userID, encryptKey)
 
     if (!chatRooms.has(chatID)) {
       chatRooms.set(chatID, [])

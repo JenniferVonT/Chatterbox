@@ -302,8 +302,8 @@ customElements.define('chat-app',
           this.#ringingAudio.pause()
           this.#ringingAudio.currentTime = 0
           this.#hangUpAudio.play()
-        } else if (message.type !== 'heartbeat') {
-          this.#handleConversation(message)
+        } else if (message.type === 'allMessages') {
+          await this.#handleConversation(message)
         }
       } catch (error) {
         console.error('Could not receive message: ', error)
