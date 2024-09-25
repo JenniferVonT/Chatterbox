@@ -1,11 +1,13 @@
-# Ditt projekt
+# Chatterbox
 
-Detta är ditt projekts GitLab-projekt och här hittar du bland annat Wikin i vilken du ska dokumentera ditt projekt. Du hittar länk till din Wiki i menyn till vänster.
+Välkommen till chatterbox! En enkel chatt applikation där du kan kommunicera med vänner både med text, ljud och video. En Node.js applikation som körs huvudsakligen från servern och använder sig av routes och controllers för att röra sig genom webbplatsen/applikationen.
+WebSockets gör det möjligt för användaren att få realtids uppdateringar i applikationen både för att ta emot samtal, meddelanden eller vänförfrågningar.
+WebbRTC används i sammarbete med WebSocket för att upprätta en kontakt för audio och video samtal mellan två användare.
 
-Detta GitLab-projekt kan du använda för att spara ner saker som hör till din applikation som helhet men du bör skapa egna projekt för respektive del i ditt projekt. Kanske ett projekt för en webbklient och ett för ett API. Ska du ta fram flera _"microservices"_? Då kanske ett GitLab-projekt per service är att föredra. Har du bara en kodbas så kan du naturligtvis använda detta GitLab-projekt, men observera att du inte är "maintainer" på detta projekt varför du inte kan skapa egna pipelines.
+Framtida uppdateringar/sprints:
 
-Det är på detta GitLab-projekt du kommer att göra din _"merge request"_.
-
-👉 __Ersätt gärna denna sida med eget innehåll.__
-
-Testar commit!
+GIF support
+Implementera Electron eller NW.js för att kunna köra applikationen som en desktop applikation.
+Implementera teman för vyn (endast utseende) med t.ex. andra färgteman.
+Grupp chatt.
+Effektivisera video/audio chatten för att göra den mer stabil och lägga till den "mute" knapp för kunna stänga av och sätta på ljud-input.
